@@ -1,6 +1,6 @@
 indexes:
-- kind: Greeting
+- kind: Report
   ancestor: yes
   properties:
-  - name: Date
+  - name: CreatedAt
     direction: desc

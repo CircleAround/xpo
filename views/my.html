@@ -1,0 +1,28 @@
+{{define "main"}}	
+    <div>
+		<a href="{{.LogoutURL}}">ログアウト</a>
+		<div>進んだら日報とか、分報ができるようになるはずだよ。以下やりたい事。</div>
+		<ul>
+			<li>GitHubみたいに草生やしたいよ</li>
+			<li>SPAしたいよ</li>
+			<li>GitHubとかと連携して、コミットした事とか出したいよ。</li>
+			<li>タグ付けしたいよ</li>
+			<li>同じ様な内容がどっかに表示されるようにしたいよ。似たような事している人が見つかるようにしたい</li>
+			<li>メンションしたいよ。</li>
+			<li>月・週・日などの単位で絞り込めるようにしたいよ。</li>
+			<li>「今日まだ書いてないよ！書いて！」って送りたいよ。</li>
+			<li>組織を作って、slackに投稿できるようにしたいよ。</li>
+			<li>マークダウンで書きたいよ！</li>
+			<li>シンタクスハイライトしたい</li>
+		</ul>	
+	</div>
+    <form action="/reports" method="post">
+      <div><textarea name="content" rows="3" cols="60"></textarea></div>
+      <div><input type="submit" value="ぺけぽー！"></div>
+    </form>
+	{{range .Reports}}
+        <p><b>{{.Author}}</b> wrote:</p>
+        <pre>{{.Content}}</pre>
+        <pre>{{.ID}}</pre>
+    {{end}}
+{{end}}
