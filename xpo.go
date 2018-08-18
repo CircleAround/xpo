@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -19,21 +18,11 @@ type XUser struct {
 	ID    string `datastore:"-" goon:"id"`
 	Name  string
 	Email string
-
-	// 他のアカウントの関連付けも同様にする。各アカウントタイプでIDをユニークにするためにあえて抽象化しない
-	AppEngineUserKey *datastore.Key
-}
-
-// AppEngineUser struct
-type AppEngineUser struct {
-	ID      string         `datastore:"-" goon:"id"`
-	UserKey *datastore.Key // parent を付けないのはログイン時、単独で本structを検索させるため
-	Email   string
 }
 
 // Report struct
 type Report struct {
-	ID        string         `datastore:"-" goon:"id"`
+	ID        int64          `datastore:"-" goon:"id"`
 	AuthorKey *datastore.Key `datastore:"-" goon:"parent"`
 	Author    string
 	Content   string
@@ -52,16 +41,8 @@ func init() {
 	// http.HandleFunc("/my", handleMy)
 }
 
-func userKey(c context.Context, email string) *datastore.Key {
-	return datastore.NewKey(c, "User", email, 0, nil)
-}
-
 func xUserKey(c context.Context, ID string) *datastore.Key {
 	return datastore.NewKey(c, "XUser", ID, 0, nil)
-}
-
-func appengineUserKey(c context.Context, ID string) *datastore.Key {
-	return datastore.NewKey(c, "AppEngineUser", ID, 0, nil)
 }
 
 func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
@@ -69,11 +50,26 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	u := user.Current(c)
 	// ログインしてなければリダイレクト
 	if u == nil {
-		url, _ := user.LoginURL(c, "/")
+		url, _ := user.LoginURL(c, "/loggedin")
 		http.Redirect(w, r, url, http.StatusFound)
 		return false
 	}
 	return true
+}
+
+func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+	g := goon.NewGoon(r)
+
+	xu := &XUser{ID: u.ID}
+	if err := g.Get(xu); err != nil {
+		log.Print("Oops! has not user!")
+		url, _ := user.LoginURL(c, "/loggedin")
+		http.Redirect(w, r, url, http.StatusFound)
+		return nil
+	}
+	return xu
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -81,11 +77,15 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	xu := xUserOrRedirect(w, r)
+	if xu == nil {
+		return
+	}
+
 	c := appengine.NewContext(r)
-	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	q := datastore.NewQuery("Report").Ancestor(userKey(c, u.String())).Order("-CreatedAt").Limit(10)
+	q := datastore.NewQuery("Report").Ancestor(g.Key(xu)).Order("-CreatedAt").Limit(10)
 	reports := make([]Report, 0, 10)
 	if _, err := g.GetAll(q, &reports); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,27 +122,19 @@ func handleReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	id, ierr := uuid.NewRandom()
-	if ierr != nil {
-		http.Error(w, ierr.Error(), http.StatusInternalServerError)
+	xu := xUserOrRedirect(w, r)
+	if xu == nil {
 		return
 	}
 
-	log.Println("Hello log")
-	authorKey := userKey(c, u.String())
-	log.Println(authorKey)
+	g := goon.NewGoon(r)
 
 	report := Report{
-		ID:        id.String(),
-		Author:    u.ID,
+		Author:    xu.Name,
 		Content:   r.FormValue("content"),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		AuthorKey: authorKey,
+		AuthorKey: g.Key(xu),
 	}
 	_, err := g.Put(&report)
 	if err != nil {
@@ -156,45 +148,33 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	if !redirectUnlessLoggedIn(w, r) {
 		return
 	}
+	log.Println("logged in.")
 
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	aeu := &AppEngineUser{ID: u.ID}
-	if err := g.Get(aeu); err != nil {
-		if err != datastore.ErrNoSuchEntity {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	xu := &XUser{ID: u.ID}
+	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
+		if err := g.Get(xu); err != nil {
+			if err != datastore.ErrNoSuchEntity {
+				return err
+			}
 
-		xu := &XUser{Name: u.ID, Email: u.Email}
-		xkey, ierr := g.Put(xu)
-		if ierr != nil {
-			http.Error(w, ierr.Error(), http.StatusInternalServerError)
-			return
+			log.Println("XUser not found. create new one. : " + u.ID)
+			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
+			_, ierr := g.Put(xu)
+			if ierr != nil {
+				return ierr
+			}
 		}
+		return nil
+	}, nil)
 
-		aeu.Email = u.Email
-		aeu.UserKey = xkey
-		akey, ierr := g.Put(aeu)
-		if ierr != nil {
-			http.Error(w, ierr.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		xu.AppEngineUserKey = akey
-		xkey, ierr = g.Put(xu)
-		if ierr != nil {
-			http.Error(w, ierr.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	q := datastore.NewQuery("AppEngineUser").Order("-CreatedAt").Limit(10)
-	reports := make([]Report, 0, 10)
-	if _, err := g.GetAll(q, &reports); err != nil {
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
