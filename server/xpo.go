@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -37,19 +36,7 @@ type Report struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 }
 
-func loadEnv() {
-	log.Println("### READ dotEnv ###")
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}
-
 func init() {
-	if os.Getenv("APP_ENV") != "production" {
-		loadEnv()
-	}
-
 	message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 	log.Println(message)
 
