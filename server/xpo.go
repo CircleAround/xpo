@@ -2,11 +2,14 @@ package xpo
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
@@ -34,7 +37,18 @@ type Report struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 }
 
+func loadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
 func init() {
+	loadEnv()
+	message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
+	log.Println(message)
+
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/reports", handleReports)
 	http.HandleFunc("/loggedin", handleLoggedIn)
@@ -91,7 +105,10 @@ func handleXReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	origin := os.Getenv("ALLOW_ORIGIN")
+	log.Print(origin)
+
+	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
