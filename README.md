@@ -6,6 +6,7 @@
 
 ```
 npm install -g foreman
+cp .env.sample .env
 nf start
 ```
 
