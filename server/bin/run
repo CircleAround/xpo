@@ -1,2 +1,2 @@
 #!/bin/sh
-dev_appserver.py app.yaml --port=9999
+dev_appserver.py app.yaml --port=${PORT:=9999} --env_var=ALLOW_ORIGIN=${ALLOW_ORIGIN:="http://localhost:5000"}
