@@ -1,0 +1,9 @@
+runtime: go
+api_version: go1.8
+
+env_variables:
+  APP_ENV: 'production'
+
+includes:
+  - lib/common.yaml
+  - lib/secret.yaml

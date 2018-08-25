@@ -38,6 +38,7 @@ type Report struct {
 }
 
 func loadEnv() {
+	log.Println("### READ dotEnv ###")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -45,7 +46,10 @@ func loadEnv() {
 }
 
 func init() {
-	loadEnv()
+	if os.Getenv("APP_ENV") != "production" {
+		loadEnv()
+	}
+
 	message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 	log.Println(message)
 
