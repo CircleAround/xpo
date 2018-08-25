@@ -1,9 +1,9 @@
 runtime: go
 api_version: go1.8
+version: alpha-1
 
-handlers:
-- url: /.*
-  script: _go_app
+env_variables:
+  APP_ENV: 'development'
 
-- url: /static
-  static_dir: static  
+includes:
+  - lib/common.yaml
