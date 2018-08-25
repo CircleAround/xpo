@@ -1,6 +1,7 @@
 package xpo
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"net/http"
@@ -16,27 +17,28 @@ import (
 // XUser struct
 type XUser struct {
 	ID    string `datastore:"-" goon:"id"`
-	Name  string
-	Email string
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // Report struct
 type Report struct {
 	ID        int64          `datastore:"-" goon:"id"`
 	AuthorKey *datastore.Key `datastore:"-" goon:"parent"`
-	Author    string
-	Content   string
-	Year      int16
-	Month     int8
-	Day       int8
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Author    string         `json:"author"`
+	Content   string         `json:"content"`
+	Year      int16          `json:"year"`
+	Month     int8           `json:"month"`
+	Day       int8           `json:"day"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
 func init() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/reports", handleReports)
 	http.HandleFunc("/loggedin", handleLoggedIn)
+	http.HandleFunc("/xreports", handleXReports)
 
 	// http.HandleFunc("/my", handleMy)
 }
@@ -70,6 +72,31 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
 		return nil
 	}
 	return xu
+}
+
+func handleXReports(w http.ResponseWriter, r *http.Request) {
+	g := goon.NewGoon(r)
+
+	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(10)
+	reports := make([]Report, 0, 10)
+	if _, err := g.GetAll(q, &reports); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	res, err := json.Marshal(reports)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Write(res)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
