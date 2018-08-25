@@ -1,7 +1,7 @@
 {
-  "name": "vue-init-test",
+  "name": "xpo",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "minitly-report/dayly-report/weekly-report/monthly-report",
   "author": "ms2sato",
   "private": true,
   "scripts": {

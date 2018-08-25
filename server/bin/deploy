@@ -1,2 +1,2 @@
 #!/bin/sh
-gcloud app deploy --project ms2test-209915 app.production.yaml
+gcloud app deploy app.production.yaml
