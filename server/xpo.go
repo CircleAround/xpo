@@ -1,7 +1,6 @@
 package xpo
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -14,14 +13,9 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/user"
-)
 
-// XUser struct
-type XUser struct {
-	ID    string `datastore:"-" goon:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
+	"apikit"
+)
 
 // Report struct
 type Report struct {
@@ -43,43 +37,29 @@ func init() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/reports", handleReports)
 	http.HandleFunc("/loggedin", handleLoggedIn)
-	http.HandleFunc("/xreports", handleXReports)
 
-	// http.HandleFunc("/my", handleMy)
+	http.HandleFunc("/xreports", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			getXReports(w, r)
+			return
+		}
+
+		if r.Method == "POST" {
+			if !responseIfUnauthorized(w, r) {
+				return
+			}
+
+			postXReport(w, r)
+			return
+		}
+
+		if r.Method == "OPTIONS" {
+			allowClient(w)
+		}
+	})
 }
 
-func xUserKey(c context.Context, ID string) *datastore.Key {
-	return datastore.NewKey(c, "XUser", ID, 0, nil)
-}
-
-func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	// ログインしてなければリダイレクト
-	if u == nil {
-		url, _ := user.LoginURL(c, "/loggedin")
-		http.Redirect(w, r, url, http.StatusFound)
-		return false
-	}
-	return true
-}
-
-func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	xu := &XUser{ID: u.ID}
-	if err := g.Get(xu); err != nil {
-		log.Print("Oops! has not user!")
-		url, _ := user.LoginURL(c, "/loggedin")
-		http.Redirect(w, r, url, http.StatusFound)
-		return nil
-	}
-	return xu
-}
-
-func handleXReports(w http.ResponseWriter, r *http.Request) {
+func getXReports(w http.ResponseWriter, r *http.Request) {
 	g := goon.NewGoon(r)
 
 	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(10)
@@ -89,22 +69,40 @@ func handleXReports(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := json.Marshal(reports)
+	responseJSON(w, reports)
+}
 
+func postXReport(w http.ResponseWriter, r *http.Request) {
+	xu := xUserOrRedirect(w, r)
+	if xu == nil {
+		return
+	}
+
+	jsonBody, err := apikit.ParseJSONBody(r)
+	if err != nil {
+		log.Printf("err: %v\n", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("JSON: %v\n", jsonBody)
+
+	g := goon.NewGoon(r)
+
+	report := Report{
+		Author:    xu.Name,
+		Content:   jsonBody["content"].(string),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		AuthorKey: g.Key(xu),
+	}
+	_, err = g.Put(&report)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	origin := os.Getenv("ALLOW_ORIGIN")
-	log.Print(origin)
-
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Write(res)
+	responseOk(w)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +187,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &XUser{ID: u.ID}
+	xu := &apikit.XUser{ID: u.ID}
 	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
 		if err := g.Get(xu); err != nil {
 			if err != datastore.ErrNoSuchEntity {
@@ -197,7 +195,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Println("XUser not found. create new one. : " + u.ID)
-			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
+			xu = &apikit.XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
 			_, ierr := g.Put(xu)
 			if ierr != nil {
 				return ierr

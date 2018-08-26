@@ -1,7 +1,19 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <router-view/>
+    <el-container>
+      <el-header>
+        X報
+        <router-link to='/'>ホーム</router-link>
+        <router-link to='/about'>About</router-link>
+        <router-link to='/report'>報</router-link>
+      </el-header>
+      <el-main>
+        <router-view/>
+      </el-main>  
+      <el-footer>
+        footer
+      </el-footer>  
+    </el-container>
   </div>
 </template>
 
