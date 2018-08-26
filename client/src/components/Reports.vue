@@ -1,13 +1,5 @@
 <template>
-  <div class='hello'>
-    <h1>{{ msg }}</h1>
-    <router-link to='/'>ホーム</router-link>
-    <router-link to='/about'>About</router-link>
-    <router-link to='/news'>ニュース</router-link>
-    <div>
-      あああああ！ いいい ううううaaaaa
-    </div>
-    <button @click='push()'>ボタン</button>
+  <div class='reports'>
     <ul>
       <li v-for='item in list'>
         {{item.content}}
@@ -19,7 +11,7 @@
 <script>
 import core from "../core";
 export default {
-  name: "hello",
+  name: "reports",
   data() {
     return {
       msg: "About!!!!!",

@@ -1,7 +1,7 @@
 <template>
   <div class='report_form'>
     <textarea v-model="report.content"></textarea>
-    <button type="button" @click='updateMarkdown()'>更新</button>
+    <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
     <div>{{markdown}}</div>
   </div>
 </template>
@@ -20,6 +20,11 @@ export default {
     };
   },
   methods: {
+    postReport() {
+      core.postReport(this.report).then((response)=>{
+        alert('POOST!')
+      })
+    },
     updateMarkdown() {
       this.markdown = "aamakred";
     }
@@ -29,12 +34,4 @@ export default {
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
-h1,
-h2 {
-  font-weight: normal;
-}
-
-a {
-  color: #42b983;
-}
 </style>

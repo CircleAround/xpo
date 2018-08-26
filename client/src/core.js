@@ -7,26 +7,47 @@ const api = axios.create({
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest"
   },
-  responseType: "json"
+  responseType: "json",
+  withCredentials: true
 })
+
+function errorFilter(promise){
+  return promise.catch((error)=>{
+    console.log('errro!')
+    var er = JSON.parse(JSON.stringify(error))
+    console.log(er);
+    
+
+    console.log(error)      
+    console.log(error.response.status) 
+    if (error.response.status == 401) {
+      location.href = "http://localhost:5100"
+    }
+    else {
+      return error
+    }
+  })
+}
 
 export default {
   status: {
     list: []
   },
   retriveReports() {
-    const self = this
-    if(self.status.list.length > 0) return Promise.resolve([]);
+    if(this.status.list.length > 0) return Promise.resolve([]);
 
-    return api
+    return errorFilter(api
       .get("/xreports")
-      .then(function(response) {
+      .then((response) => {
         response.data.forEach(item => {
-          self.status.list.push(item)
+          this.status.list.push(item)
         })
-      })
-      .catch(function(error) {
-        console.log(error, "ERROR!! occurred in Backend.")
-      })
+      }))
+  },
+  postReport(report){
+    return errorFilter(api.post('/xreports', report).then((response)=>{
+      console.log(response)
+      this.status.list.unshift(report)
+    }))
   }
 }
