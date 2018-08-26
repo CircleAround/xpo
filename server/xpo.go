@@ -1,14 +1,11 @@
 package xpo
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/mjibson/goon"
@@ -16,14 +13,9 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/user"
-)
 
-// XUser struct
-type XUser struct {
-	ID    string `datastore:"-" goon:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
+	"apikit"
+)
 
 // Report struct
 type Report struct {
@@ -38,19 +30,6 @@ type Report struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 }
 
-// Response
-type StatusCode string
-
-const (
-	OK StatusCode = "OK"
-	NG StatusCode = "NG"
-)
-
-type ResponseWrapper struct {
-	Status StatusCode  `json:"status"`
-	Data   interface{} `json:"data"`
-}
-
 func init() {
 	message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 	log.Println(message)
@@ -58,119 +37,26 @@ func init() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/reports", handleReports)
 	http.HandleFunc("/loggedin", handleLoggedIn)
-	http.HandleFunc("/xreports", handleXReports)
 
-	// http.HandleFunc("/my", handleMy)
-}
+	http.HandleFunc("/xreports", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			getXReports(w, r)
+			return
+		}
 
-func filter(handler func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
-	return handler
-}
+		if r.Method == "POST" {
+			if !responseIfUnauthorized(w, r) {
+				return
+			}
 
-func xUserKey(c context.Context, ID string) *datastore.Key {
-	return datastore.NewKey(c, "XUser", ID, 0, nil)
-}
+			postXReport(w, r)
+			return
+		}
 
-func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	// ログインしてなければリダイレクト
-	if u != nil {
-		return true
-	}
-
-	url, _ := user.LoginURL(c, "/loggedin")
-	allowClient(w)
-	http.Redirect(w, r, url, http.StatusFound)
-	return false
-}
-
-func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	// ログインしてなければリダイレクト
-	if u == nil {
-		responseUnauthorized(w, r)
-		return false
-	}
-	return true
-}
-
-func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	xu := &XUser{ID: u.ID}
-	if err := g.Get(xu); err != nil {
-		log.Print("Oops! has not user!")
-		url, _ := user.LoginURL(c, "/loggedin")
-		http.Redirect(w, r, url, http.StatusFound)
-		return nil
-	}
-	return xu
-}
-
-func allowOrigin(w http.ResponseWriter, origin string) {
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-}
-
-func allowClient(w http.ResponseWriter) {
-	allowOrigin(w, os.Getenv("ALLOW_ORIGIN"))
-}
-
-func responseJSON(w http.ResponseWriter, obj interface{}) {
-	res, err := json.Marshal(obj)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	allowClient(w)
-	w.Write(res)
-}
-
-func responseOk(w http.ResponseWriter) {
-	responseJSON(w, ResponseWrapper{Status: OK})
-}
-
-func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	url, _ := user.LoginURL(c, "/loggedin")
-
-	allowClient(w)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusUnauthorized)
-
-	res, err := json.Marshal(ResponseWrapper{Status: NG, Data: url})
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(res)
-}
-
-func handleXReports(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		getXReports(w, r)
-		return
-	}
-
-	if r.Method == "POST" {
-		postXReport(w, r)
-		return
-	}
-
-	if r.Method == "OPTIONS" {
-		allowClient(w)
-	}
+		if r.Method == "OPTIONS" {
+			allowClient(w)
+		}
+	})
 }
 
 func getXReports(w http.ResponseWriter, r *http.Request) {
@@ -187,36 +73,18 @@ func getXReports(w http.ResponseWriter, r *http.Request) {
 }
 
 func postXReport(w http.ResponseWriter, r *http.Request) {
-	if !responseIfUnauthorized(w, r) {
-		return
-	}
-
 	xu := xUserOrRedirect(w, r)
 	if xu == nil {
 		return
 	}
 
-	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
+	jsonBody, err := apikit.ParseJSONBody(r)
 	if err != nil {
+		log.Printf("err: %v\n", err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	//Read body data to parse json
-	body := make([]byte, length)
-	length, err = r.Body.Read(body)
-	if err != nil && err != io.EOF {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	//parse json
-	var jsonBody map[string]interface{}
-	err = json.Unmarshal(body[:length], &jsonBody)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	log.Printf("JSON: %v\n", jsonBody)
 
 	g := goon.NewGoon(r)
@@ -319,7 +187,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &XUser{ID: u.ID}
+	xu := &apikit.XUser{ID: u.ID}
 	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
 		if err := g.Get(xu); err != nil {
 			if err != datastore.ErrNoSuchEntity {
@@ -327,7 +195,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Println("XUser not found. create new one. : " + u.ID)
-			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
+			xu = &apikit.XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
 			_, ierr := g.Put(xu)
 			if ierr != nil {
 				return ierr
