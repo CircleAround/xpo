@@ -2,12 +2,12 @@ package xpo
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 
 	"github.com/mjibson/goon"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
 	"apikit"
@@ -46,7 +46,7 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *apikit.XUser {
 
 	xu := &apikit.XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
-		log.Print("Oops! has not user!")
+		log.Warningf(c, "Oops! has not user!")
 		url, _ := user.LoginURL(c, "/loggedin")
 		http.Redirect(w, r, url, http.StatusFound)
 		return nil
@@ -83,6 +83,20 @@ func responseFailure(w http.ResponseWriter, r *http.Request, failure apikit.Resp
 	}
 
 	w.Write(res)
+}
+
+func xUserOrResponse(w http.ResponseWriter, r *http.Request) *apikit.XUser {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+	g := goon.NewGoon(r)
+
+	xu := &apikit.XUser{ID: u.ID}
+	if err := g.Get(xu); err != nil {
+		log.Warningf(c, "Oops! has not user!")
+		responseUnauthorized(w, r)
+		return nil
+	}
+	return xu
 }
 
 func responseUnauthorized(w http.ResponseWriter, r *http.Request) {

@@ -1,9 +1,7 @@
 package xpo
 
 import (
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -12,6 +10,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
 	"apikit"
@@ -31,8 +30,7 @@ type Report struct {
 }
 
 func init() {
-	message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
-	log.Println(message)
+	// message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/reports", handleReports)
@@ -73,19 +71,22 @@ func getXReports(w http.ResponseWriter, r *http.Request) {
 }
 
 func postXReport(w http.ResponseWriter, r *http.Request) {
-	xu := xUserOrRedirect(w, r)
+	c := appengine.NewContext(r)
+
+	xu := xUserOrResponse(w, r)
 	if xu == nil {
+		log.Warningf(c, "xu==nil. response 401")
 		return
 	}
 
 	jsonBody, err := apikit.ParseJSONBody(r)
 	if err != nil {
-		log.Printf("err: %v\n", err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Warningf(c, "err: %v\n", err.Error())
+		responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("JSON: %v\n", jsonBody)
+	log.Infof(c, "JSON: %v\n", jsonBody)
 
 	g := goon.NewGoon(r)
 
@@ -98,7 +99,8 @@ func postXReport(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = g.Put(&report)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Warningf(c, "err: %v\n", err.Error())
+		responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusInternalServerError)
 		return
 	}
 
@@ -181,11 +183,12 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	if !redirectUnlessLoggedIn(w, r) {
 		return
 	}
-	log.Println("logged in.")
 
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
+
+	log.Infof(c, "logged in.")
 
 	xu := &apikit.XUser{ID: u.ID}
 	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
@@ -194,7 +197,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 
-			log.Println("XUser not found. create new one. : " + u.ID)
+			log.Infof(c, "XUser not found. create new one. : "+u.ID)
 			xu = &apikit.XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
 			_, ierr := g.Put(xu)
 			if ierr != nil {
@@ -209,5 +212,5 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, os.Getenv("ALLOW_ORIGIN"), http.StatusFound)
 }

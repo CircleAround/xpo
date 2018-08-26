@@ -22,7 +22,7 @@ export default {
   methods: {
     postReport() {
       core.postReport(this.report).then((response)=>{
-        alert('POOST!')
+        
       })
     },
     updateMarkdown() {
