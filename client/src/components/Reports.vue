@@ -1,10 +1,14 @@
 <template>
   <div class='reports'>
-    <ul>
-      <li v-for='item in list'>
+    <el-card class="box-card" v-for='item in list'>
+      <div slot="header" class="clearfix">
+        <strong>{{item.author}}</strong>
+        <div style="float: right; padding: 3px 0; font-size: 90%" type="text">{{item.created_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}</div>
+      </div>
+      <div class="text item">
         {{item.content}}
-      </li>
-    </ul>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -21,7 +25,7 @@ export default {
   created() {
     console.log("created");
     core.retriveReports().catch(function(error) {
-      alert("fail");
+      console.log(error)
     });
   },
   mounted() {
@@ -38,12 +42,12 @@ export default {
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
-h1,
-h2 {
-  font-weight: normal;
+.reports {
+  margin: 0 auto;
+  max-width: 960px;
 }
 
-a {
-  color: #42b983;
+.box-card {
+  margin-bottom: 10px;
 }
 </style>

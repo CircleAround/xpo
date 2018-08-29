@@ -21,6 +21,7 @@ export default {
   },
   methods: {
     postReport() {
+      this.report.created_at = new Date().toString()
       core.postReport(this.report).then((response)=>{
         
       })

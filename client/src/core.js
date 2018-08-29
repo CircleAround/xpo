@@ -1,5 +1,8 @@
 import consts from "./consts"
 import axios from "axios"
+import moment from "moment-timezone"
+
+moment.tz.setDefault("Asia/Tokyo");
 
 const api = axios.create({
   baseURL: consts.API_ENDPOINT,
@@ -13,13 +16,7 @@ const api = axios.create({
 
 function errorFilter(promise){
   return promise.catch((error)=>{
-    console.log('errro!')
     var er = JSON.parse(JSON.stringify(error))
-    console.log(er);
-    
-
-    console.log(error)      
-    console.log(error.response.status) 
     if (error.response.status == 401) {
       location.href = "http://localhost:5100"
     }
@@ -40,6 +37,8 @@ export default {
       .get("/xreports")
       .then((response) => {
         response.data.forEach(item => {
+          item.created_at = moment(item.created_at)
+          item.updated_at = moment(item.updated_at)
           this.status.list.push(item)
         })
       }))
