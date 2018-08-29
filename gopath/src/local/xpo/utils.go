@@ -10,7 +10,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
-	"apikit"
+	"local/apikit"
 )
 
 func allowOrigin(w http.ResponseWriter, origin string) {

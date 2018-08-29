@@ -1,2 +1,4 @@
 #!/bin/sh
+export GOPATH=$(dirname `pwd`)/gobuild
+echo "GOPATH: ${GOPATH}"
 gcloud app deploy index.yaml

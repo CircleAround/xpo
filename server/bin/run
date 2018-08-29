@@ -1,2 +1,4 @@
 #!/bin/sh
+export GOPATH=$(dirname `pwd`)/gopath
+echo "GOPATH: ${GOPATH}"
 dev_appserver.py app.yaml --port=${PORT:=9999} --env_var=ALLOW_ORIGIN=${ALLOW_ORIGIN:="http://localhost:5000"}
