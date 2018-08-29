@@ -13,7 +13,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
-	"apikit"
+	"local/apikit"
 )
 
 // Report struct
