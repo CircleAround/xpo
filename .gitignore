@@ -1,3 +1,4 @@
 .DS_Store
 gopath/src/local/vendor
+gopath/pkg
 .env
