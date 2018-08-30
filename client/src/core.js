@@ -1,8 +1,9 @@
 import consts from "./consts"
 import axios from "axios"
 import moment from "moment-timezone"
-import router from './router'
 import events from 'events'
+import marked from 'marked'
+import router from './router'
 
 moment.tz.setDefault("Asia/Tokyo");
 
@@ -37,6 +38,7 @@ function errorFilter(promise){
 function enhanceReport(item) {
   item.created_at = moment(item.created_at)
   item.updated_at = moment(item.updated_at)
+  item.markdown = function(){ return marked(this.content) }
   return item
 }
 

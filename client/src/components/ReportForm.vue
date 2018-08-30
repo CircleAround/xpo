@@ -1,13 +1,14 @@
 <template>
   <div class='report_form'>
-    <textarea v-model="report.content"></textarea>
+    <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
     <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
-    <div>{{markdown}}</div>
+    <div v-html="markdown"></div>
   </div>
 </template>
 
 <script>
-import core from "../core";
+import core from "../core"
+import marked from 'marked'
 export default {
   name: "report_form",
   data() {
@@ -21,13 +22,12 @@ export default {
   },
   methods: {
     postReport() {
-      this.report.created_at = new Date().toString()
       core.postReport(this.report).then((response)=>{
         
       })
     },
     updateMarkdown() {
-      this.markdown = "aamakred";
+      this.markdown = marked(this.report.content);
     }
   }
 };
@@ -35,4 +35,8 @@ export default {
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
+  .textcontent{
+    width: 100%;
+    height: 10em;
+  }
 </style>
