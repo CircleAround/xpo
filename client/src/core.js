@@ -18,18 +18,23 @@ const api = axios.create({
 
 function errorFilter(promise){
   return promise.catch((error)=>{
-    console.error('error', error)
+    try{
+      console.error('error', error)
 
-    if(!error.response) {
+      if(!error.response) {
+        return error
+      }
+  
+      if (error.response.status == 401) {
+        location.href = process.env.API_ENDPOINT
+        return
+      }
+      
       return error
+    } catch(ex) {
+      console.error('エラー処理中のエラー')
+      console.error(ex)
     }
-
-    if (error.response.status == 401) {
-      location.href = process.env.API_ENDPOINT
-      return
-    }
-    
-    return error
   })
 }
 

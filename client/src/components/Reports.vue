@@ -5,7 +5,7 @@
         <strong>{{item.author}}</strong>
         <div style="float: right; padding: 3px 0; font-size: 90%" type="text">{{item.created_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}</div>
       </div>
-      <div v-html="item.markdown()" class="text item"></div>
+      <div v-html="item.markdown()" class="markdown"></div>
     </el-card>
   </div>
 </template>
@@ -16,7 +16,6 @@ export default {
   name: "reports",
   data() {
     return {
-      msg: "About!!!!!",
       list: core.status.list
     };
   },
@@ -50,11 +49,6 @@ export default {
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
-.reports {
-  margin: 0 auto;
-  max-width: 960px;
-}
-
 .box-card {
   margin-bottom: 10px;
 }
