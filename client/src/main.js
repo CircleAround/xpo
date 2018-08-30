@@ -6,6 +6,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import App from './App'
 import router from './router'
+import core from './core'
 
 Vue.config.productionTip = false
 
@@ -13,9 +14,11 @@ Vue.use(ElementUI);
 Vue.use(moment);
 
 /* eslint-disable no-new */
-new Vue({
+vue = new Vue({
   el: '#app',
   router,
   components: { App },
   template: '<App/>'
 })
+
+core.init(vue)
