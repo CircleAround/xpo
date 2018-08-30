@@ -2,10 +2,16 @@
   <div id="app">
     <el-container>
       <el-header>
-        X報
-        <router-link to='/'>ホーム</router-link>
-        <router-link to='/about'>About</router-link>
-        <router-link to='/report'>報</router-link>
+        <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
+        <ul class="topmenu">
+          <li>
+            <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
+          </li>
+          <li>
+            <router-link to='/report'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
+          </li>
+        </ul>
+        
       </el-header>
       <el-main>
         <router-view/>
@@ -28,8 +34,22 @@ export default {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
+
+.el-container {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
+.site_title {
+  display: inline-block;
+}
+
+.topmenu {
+  list-style: none;
+  display: flex;
+  float: right;
+}
+
 </style>
