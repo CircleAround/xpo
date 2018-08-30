@@ -27,6 +27,16 @@ export default {
     core.retriveReports().catch(function(error) {
       console.log(error)
     });
+
+    if(core.posted) {
+      this.$message({
+        showClose: true,
+        message: '投稿しました！',
+        type: 'success',
+        center: true
+      });
+      core.posted = false
+    }
   },
   mounted() {
     console.log("mounted");
