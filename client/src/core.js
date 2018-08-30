@@ -1,7 +1,6 @@
 import consts from "./consts"
 import axios from "axios"
 import moment from "moment-timezone"
-import events from 'events'
 import marked from 'marked'
 import router from './router'
 
@@ -19,7 +18,6 @@ const api = axios.create({
 
 function errorFilter(promise){
   return promise.catch((error)=>{
-    eventEmitter.emit('error', error)
     console.error('error', error)
 
     if(!error.response) {
@@ -42,14 +40,10 @@ function enhanceReport(item) {
   return item
 }
 
-const EventEmitter = events.EventEmitter;
-const eventEmitter = new EventEmitter();
-
 export default {
   status: {
     list: [],
-    posted: false,
-    eventEmitter: eventEmitter
+    posted: false
   },
   retriveReports() {
     if(this.status.list.length > 0) return Promise.resolve([]);
