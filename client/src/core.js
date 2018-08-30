@@ -2,6 +2,7 @@ import consts from "./consts"
 import axios from "axios"
 import moment from "moment-timezone"
 import router from './router'
+import events from 'events'
 
 moment.tz.setDefault("Asia/Tokyo");
 
@@ -17,6 +18,9 @@ const api = axios.create({
 
 function errorFilter(promise){
   return promise.catch((error)=>{
+    eventEmitter.emit('error', error)
+    console.error('error', error)
+
     if(!error.response) {
       return error
     }
@@ -36,14 +40,14 @@ function enhanceReport(item) {
   return item
 }
 
+const EventEmitter = events.EventEmitter;
+const eventEmitter = new EventEmitter();
+
 export default {
   status: {
-    vue: null,
     list: [],
-    posted: true
-  },
-  init(vue) {
-    this.vue = vue
+    posted: false,
+    eventEmitter: eventEmitter
   },
   retriveReports() {
     if(this.status.list.length > 0) return Promise.resolve([]);
@@ -52,13 +56,12 @@ export default {
       .get("/xreports")
       .then((response) => {
         response.data.forEach(item => {
-          this.status.list.push(ehnahceReport(item))
+          this.status.list.push(enhanceReport(item))
         })
       }))
   },
   postReport(report){
     return errorFilter(api.post('/xreports', report).then((response)=>{
-      console.log(response)
       this.status.list.unshift(enhanceReport(report))
       this.posted = true
       router.push('/')
