@@ -5,9 +5,7 @@
         <strong>{{item.author}}</strong>
         <div style="float: right; padding: 3px 0; font-size: 90%" type="text">{{item.created_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}</div>
       </div>
-      <div class="text item">
-        {{item.content}}
-      </div>
+      <div v-html="item.markdown()" class="text item"></div>
     </el-card>
   </div>
 </template>
