@@ -63,7 +63,7 @@ export default {
   },
   postReport(report){
     return errorFilter(api.post('/xreports', report).then((response)=>{
-      this.status.list.unshift(enhanceReport(report))
+      this.status.list.unshift(enhanceReport(response.data))
       this.posted = true
       router.push('/')
     }))
