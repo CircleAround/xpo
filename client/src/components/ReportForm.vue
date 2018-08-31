@@ -1,8 +1,12 @@
 <template>
   <div class='report_form'>
-    <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
-    <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
-    <div v-html="markdown"></div>
+    <div class="editor">
+      <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
+      <div class="preview" v-html="markdown"></div>
+    </div>  
+    <div class="actions">
+      <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
+    </div>
   </div>
 </template>
 
@@ -35,8 +39,31 @@ export default {
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
+  .report_form {
+  }
+
+  .editor {
+    display: flex;
+  }
+
   .textcontent{
+    flex: 1;
     width: 100%;
     height: 10em;
+
+    font-size: 22px;
+    border: solid 1px #CCC;
+  }
+
+  .preview {
+    flex: 1;
+    margin: 0 10px;
+    padding: 10px;
+    background-color: #f2f2f2;
+  }
+
+  .actions {
+    padding: 5px;
+    text-align: right;
   }
 </style>

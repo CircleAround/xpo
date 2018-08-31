@@ -17,7 +17,8 @@
         <router-view/>
       </el-main>  
       <el-footer>
-        footer
+        利用規約とか気になる人はまだ使っちゃダメです！まだそんなに責任持てるレベルまで仕上げていません。
+        データの永続性とか保証しません。
       </el-footer>  
     </el-container>
   </div>
@@ -43,7 +44,11 @@ export default {
 }
 
 .site_title {
-  display: inline-block;
+  display: inline-block;  
+}
+
+.site_title a {
+  text-decoration: none;
 }
 
 .topmenu {
