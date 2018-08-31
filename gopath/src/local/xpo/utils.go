@@ -70,7 +70,7 @@ func responseOk(w http.ResponseWriter) {
 	responseJSON(w, apikit.NewSuccess())
 }
 
-func responseFailure(w http.ResponseWriter, r *http.Request, failure apikit.ResponseWrapper, code int) {
+func responseFailure(w http.ResponseWriter, r *http.Request, failure apikit.Failure, code int) {
 	allowClient(w)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)

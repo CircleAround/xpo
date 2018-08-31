@@ -104,7 +104,7 @@ func postXReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseOk(w)
+	responseJSON(w, report)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
