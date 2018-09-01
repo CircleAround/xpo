@@ -48,11 +48,17 @@ function enhanceReport(item) {
 export default {
   status: {
     list: [],
+    newReport: {},
     posted: false
   },
-  retriveReports() {
-    if(this.status.list.length > 0) return Promise.resolve([]);
+  initialize() {
+    this.retriveReports().catch(function(error) {
+      console.log(error)
+    });
 
+    this.initNewReport();
+  },
+  retriveReports() {
     return errorFilter(api
       .get("/xreports")
       .then((response) => {
@@ -61,11 +67,18 @@ export default {
         })
       }))
   },
-  postReport(report){
-    return errorFilter(api.post('/xreports', report).then((response)=>{
+  postReport(){
+    return errorFilter(api.post('/xreports', this.newReport).then((response)=>{
       this.status.list.unshift(enhanceReport(response.data))
       this.posted = true
+      this.initNewReport();
       router.push('/')
     }))
+  },
+  initNewReport(){
+    this.newReport = {
+      content: "",
+      "content-type": "text/x-markdown"
+    }
   }
 }

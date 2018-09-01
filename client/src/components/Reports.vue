@@ -21,9 +21,6 @@ export default {
   },
   created() {
     console.log("created");
-    core.retriveReports().catch(function(error) {
-      console.log(error)
-    });
 
     if(core.posted) {
       this.$message({
