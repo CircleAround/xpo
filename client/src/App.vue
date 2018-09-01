@@ -11,15 +11,15 @@
             <router-link to='/report'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
           </li>
         </ul>
-        
+
       </el-header>
       <el-main>
         <router-view/>
-      </el-main>  
+      </el-main>
       <el-footer>
         利用規約とか気になる人はまだ使っちゃダメです！まだそんなに責任持てるレベルまで仕上げていません。
         データの永続性とか保証しません。
-      </el-footer>  
+      </el-footer>
     </el-container>
   </div>
 </template>
@@ -44,7 +44,7 @@ export default {
 }
 
 .site_title {
-  display: inline-block;  
+  display: inline-block;
 }
 
 .site_title a {
@@ -56,5 +56,4 @@ export default {
   display: flex;
   float: right;
 }
-
 </style>

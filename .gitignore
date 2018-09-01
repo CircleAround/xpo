@@ -2,3 +2,5 @@
 gopath/src/local/vendor
 gopath/pkg
 .env
+npm-debug.log
+.vscode
