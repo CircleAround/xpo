@@ -1,9 +1,9 @@
 <template>
-  <div class='report_form'>
+  <div class="report_form">
     <div class="editor">
       <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
       <div class="preview" v-html="markdown"></div>
-    </div>  
+    </div>
     <div class="actions">
       <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
     </div>
@@ -11,56 +11,56 @@
 </template>
 
 <script>
-import core from "../core"
+import core from '../core'
 import marked from 'marked'
 export default {
-  name: "report_form",
+  name: 'report_form',
   data() {
     return {
       report: core.newReport,
-      markdown: ""
-    };
+      markdown: ''
+    }
   },
   methods: {
     postReport() {
-      core.postReport().then((response)=>{
-        //TODO inidicator
+      core.postReport().then(response => {
+        // TODO: inidicator
       })
     },
     updateMarkdown() {
-      this.markdown = marked(this.report.content);
+      this.markdown = marked(this.report.content)
     }
   }
-};
+}
 </script>
 
 <!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
-  .report_form {
-  }
+.report_form {
+}
 
-  .editor {
-    display: flex;
-  }
+.editor {
+  display: flex;
+}
 
-  .textcontent{
-    flex: 1;
-    width: 100%;
-    height: 10em;
+.textcontent {
+  flex: 1;
+  width: 100%;
+  height: 10em;
 
-    font-size: 22px;
-    border: solid 1px #CCC;
-  }
+  font-size: 22px;
+  border: solid 1px #ccc;
+}
 
-  .preview {
-    flex: 1;
-    margin: 0 10px;
-    padding: 10px;
-    background-color: #f2f2f2;
-  }
+.preview {
+  flex: 1;
+  margin: 0 10px;
+  padding: 10px;
+  background-color: #f2f2f2;
+}
 
-  .actions {
-    padding: 5px;
-    text-align: right;
-  }
+.actions {
+  padding: 5px;
+  text-align: right;
+}
 </style>
