@@ -6,6 +6,7 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import App from './App'
 import router from './router'
+import core from './core'
 
 Vue.config.productionTip = false
 
@@ -19,3 +20,5 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
+
+core.initialize()

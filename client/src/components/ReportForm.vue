@@ -17,17 +17,14 @@ export default {
   name: "report_form",
   data() {
     return {
-      report: {
-        content: "test",
-        "content-type": "text/x-markdown"
-      },
+      report: core.newReport,
       markdown: ""
     };
   },
   methods: {
     postReport() {
-      core.postReport(this.report).then((response)=>{
-        
+      core.postReport().then((response)=>{
+        //TODO inidicator
       })
     },
     updateMarkdown() {
