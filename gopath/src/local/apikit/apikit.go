@@ -18,7 +18,7 @@ type Success struct {
 
 type Failure struct {
 	Status StatusCode  `json:"status"`
-	Errors interface{} `json:"errors,omitempty"`
+	Error  interface{} `json:"error,omitempty"`
 }
 
 // NewSuccess is create Response for success
@@ -28,5 +28,5 @@ func NewSuccess() Success {
 
 // NewFailure is create Response for failure
 func NewFailure(data interface{}) Failure {
-	return Failure{Status: NG, Errors: data}
+	return Failure{Status: NG, Error: data}
 }

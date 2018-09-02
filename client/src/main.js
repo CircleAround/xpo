@@ -13,6 +13,8 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(moment)
 
+core.initialize()
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
@@ -20,5 +22,3 @@ new Vue({
   components: { App },
   template: '<App/>'
 })
-
-core.initialize()

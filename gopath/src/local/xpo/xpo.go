@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
@@ -15,19 +14,6 @@ import (
 
 	"local/apikit"
 )
-
-// Report struct
-type Report struct {
-	ID        int64          `datastore:"-" goon:"id"`
-	AuthorKey *datastore.Key `datastore:"-" goon:"parent"`
-	Author    string         `json:"author"`
-	Content   string         `json:"content"`
-	Year      int16          `json:"year"`
-	Month     int8           `json:"month"`
-	Day       int8           `json:"day"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-}
 
 func init() {
 	// message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
@@ -57,15 +43,12 @@ func init() {
 }
 
 func getReports(w http.ResponseWriter, r *http.Request) {
-	g := goon.NewGoon(r)
-
-	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(10)
-	reports := make([]Report, 0, 10)
-	if _, err := g.GetAll(q, &reports); err != nil {
+	s := NewReportService(r)
+	reports, err := s.RetriveAll()
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	responseJSON(w, reports)
 }
 
@@ -87,20 +70,21 @@ func postReport(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof(c, "JSON: %v\n", jsonBody)
 
-	g := goon.NewGoon(r)
+	content := jsonBody["content"].(string)
+	s := NewReportService(r)
+	report := Report{Content: content}
 
-	report := Report{
-		Author:    xu.Name,
-		Content:   jsonBody["content"].(string),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		AuthorKey: g.Key(xu),
-	}
-	_, err = g.Put(&report)
+	err = s.Create(xu, &report)
 	if err != nil {
-		log.Warningf(c, "err: %v\n", err.Error())
-		responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusInternalServerError)
-		return
+		switch err.(type) {
+		default:
+			log.Warningf(c, "err: %v\n", err.Error())
+			responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusInternalServerError)
+			return
+		case *apikit.ValidationError:
+			responseFailure(w, r, apikit.NewFailure(err), http.StatusUnprocessableEntity)
+			return
+		}
 	}
 
 	responseJSON(w, report)

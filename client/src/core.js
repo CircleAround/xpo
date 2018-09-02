@@ -22,7 +22,7 @@ function errorFilter(promise) {
       console.error('error', error)
 
       if (!error.response) {
-        return error
+        throw error
       }
 
       if (error.response.status === 401) {
@@ -30,10 +30,10 @@ function errorFilter(promise) {
         return
       }
 
-      return error
+      throw error
     } catch (ex) {
-      console.error('エラー処理中のエラー')
       console.error(ex)
+      throw ex
     }
   })
 }
@@ -79,6 +79,26 @@ export default {
     this.newReport = {
       content: '',
       'content-type': 'text/x-markdown'
+    }
+  },
+  getMessagesOfValidationError(error) {
+    if (error.response.data.error.type === 'ValidationError') {
+      const items = error.response.data.error.items
+      let ret = []
+      Object.keys(items).forEach(property => {
+        const item = items[property]
+        ret = item.reasons
+          .map(reason => {
+            if (reason === 'required') {
+              return `${property}は必須です`
+            }
+            if (reason === 'toolong') {
+              return `${property}は長すぎます`
+            }
+            return `${property}が何らかのエラーです`
+          })
+      })
+      return ret
     }
   }
 }

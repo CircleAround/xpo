@@ -4,6 +4,11 @@
       <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
       <div class="preview" v-html="markdown"></div>
     </div>
+    <div class="errors" v-if="errors.length > 0">
+      <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
+        {{item}}
+      </div>
+    </div>
     <div class="actions">
       <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
     </div>
@@ -18,13 +23,17 @@ export default {
   data() {
     return {
       report: core.newReport,
-      markdown: ''
+      markdown: '',
+      errors: []
     }
   },
   methods: {
     postReport() {
-      core.postReport().then(response => {
-        // TODO: inidicator
+      this.errors = []
+      core.postReport().catch(error => {
+        core.getMessagesOfValidationError(error).forEach(msg => {
+          this.errors.push(msg)
+        })
       })
     },
     updateMarkdown() {
@@ -45,7 +54,7 @@ export default {
   width: 100%;
   height: 10em;
 
-  font-size: 22px;
+  font-size: 16px;
   border: solid 1px #ccc;
 }
 
@@ -59,5 +68,9 @@ export default {
 .actions {
   padding: 5px;
   text-align: right;
+}
+
+.errors {
+  color: red;
 }
 </style>
