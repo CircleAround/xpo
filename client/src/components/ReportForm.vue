@@ -47,7 +47,7 @@ export default {
       })
     },
     updateMarkdown() {
-      this.markdown = marked(this.report.content)
+      this.markdown = marked(this.state.newReport.content)
     }
   }
 }
