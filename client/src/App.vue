@@ -4,9 +4,9 @@
       <el-header>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
         <ul class="topmenu">
-          <!-- <li>
+          <li class="user_name">
             {{state.me.name}}
-          </li> -->
+          </li>
           <li>
             <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
           </li>
@@ -62,5 +62,12 @@ export default {
   list-style: none;
   display: flex;
   float: right;
+}
+
+.user_name {
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  font-weight: bold;
 }
 </style>
