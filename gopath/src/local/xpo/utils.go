@@ -1,7 +1,6 @@
 package xpo
 
 import (
-	"encoding/json"
 	"net/http"
 	"os"
 
@@ -34,7 +33,6 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	}
 
 	url, _ := user.LoginURL(c, "/loggedin")
-	allowClient(w)
 	http.Redirect(w, r, url, http.StatusFound)
 	return false
 }
@@ -54,37 +52,6 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
 	return xu
 }
 
-func responseJSON(w http.ResponseWriter, obj interface{}) {
-	res, err := json.Marshal(obj)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	allowClient(w)
-	w.Write(res)
-}
-
-func responseOk(w http.ResponseWriter) {
-	responseJSON(w, apikit.NewSuccess())
-}
-
-func responseFailure(w http.ResponseWriter, r *http.Request, failure apikit.Failure, code int) {
-	allowClient(w)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
-	res, err := json.Marshal(failure)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(res)
-}
-
 func xUserOrResponse(w http.ResponseWriter, r *http.Request) *XUser {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
@@ -102,10 +69,9 @@ func xUserOrResponse(w http.ResponseWriter, r *http.Request) *XUser {
 func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	url, _ := user.LoginURL(c, "/loggedin")
-	failure := apikit.NewFailure(url)
 	code := http.StatusUnauthorized
 
-	responseFailure(w, r, failure, code)
+	apikit.ResponseFailure(w, r, url, code)
 }
 
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {

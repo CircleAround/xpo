@@ -22,6 +22,8 @@ func init() {
 	http.HandleFunc("/loggedin", handleLoggedIn)
 
 	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
+		allowClient(w)
+
 		if r.Method == "GET" {
 			getReports(w, r)
 			return
@@ -37,7 +39,7 @@ func init() {
 		}
 
 		if r.Method == "OPTIONS" {
-			allowClient(w)
+			//nop
 		}
 	})
 }
@@ -49,7 +51,7 @@ func getReports(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	responseJSON(w, reports)
+	apikit.ResponseJSON(w, reports)
 }
 
 func postReport(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +66,7 @@ func postReport(w http.ResponseWriter, r *http.Request) {
 	jsonBody, err := apikit.ParseJSONBody(r)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
-		responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusBadRequest)
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
 		return
 	}
 
@@ -79,15 +81,15 @@ func postReport(w http.ResponseWriter, r *http.Request) {
 		switch err.(type) {
 		default:
 			log.Warningf(c, "err: %v\n", err.Error())
-			responseFailure(w, r, apikit.NewFailure(err.Error()), http.StatusInternalServerError)
+			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
 			return
 		case *apikit.ValidationError:
-			responseFailure(w, r, apikit.NewFailure(err), http.StatusUnprocessableEntity)
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
 		}
 	}
 
-	responseJSON(w, report)
+	apikit.ResponseJSON(w, report)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -125,6 +127,8 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
+	allowClient(w)
+
 	if !redirectUnlessLoggedIn(w, r) {
 		return
 	}

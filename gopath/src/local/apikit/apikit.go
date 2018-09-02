@@ -11,11 +11,13 @@ const (
 	NG StatusCode = "NG"
 )
 
+// Success is response OK
 type Success struct {
 	Status StatusCode  `json:"status"`
 	Data   interface{} `json:"data,omitempty"`
 }
 
+// Failure is response NG
 type Failure struct {
 	Status StatusCode  `json:"status"`
 	Error  interface{} `json:"error,omitempty"`

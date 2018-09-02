@@ -28,3 +28,34 @@ func ParseJSONBody(r *http.Request) (map[string]interface{}, error) {
 
 	return jsonBody, nil
 }
+
+func ResponseJSON(w http.ResponseWriter, obj interface{}) {
+	w.WriteHeader(http.StatusOK)
+	writeJSON(w, obj)
+}
+
+func ResponseOk(w http.ResponseWriter) {
+	ResponseJSON(w, NewSuccess())
+}
+
+func ResponseFailure(w http.ResponseWriter, r *http.Request, err interface{}, code int) {
+	DoResponseFailure(w, r, NewFailure(err), code)
+}
+
+func DoResponseFailure(w http.ResponseWriter, r *http.Request, failure Failure, code int) {
+	w.WriteHeader(code)
+
+	writeJSON(w, failure)
+}
+
+func writeJSON(w http.ResponseWriter, obj interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	res, err := json.Marshal(obj)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(res)
+}
