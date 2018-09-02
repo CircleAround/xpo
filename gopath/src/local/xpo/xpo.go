@@ -20,6 +20,18 @@ func init() {
 
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/loggedin", handleLoggedIn)
+	http.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
+		allowClient(w)
+
+		if r.Method == "GET" {
+			if !responseIfUnauthorized(w, r) {
+				return
+			}
+
+			getMe(w, r)
+			return
+		}
+	})
 
 	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
@@ -37,11 +49,19 @@ func init() {
 			postReport(w, r)
 			return
 		}
-
-		if r.Method == "OPTIONS" {
-			//nop
-		}
 	})
+}
+
+func getMe(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
+
+	xu := xUserOrResponse(w, r)
+	if xu == nil {
+		log.Warningf(c, "xu==nil. response 401")
+		return
+	}
+
+	apikit.ResponseJSON(w, &xu)
 }
 
 func getReports(w http.ResponseWriter, r *http.Request) {

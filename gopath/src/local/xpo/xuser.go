@@ -8,7 +8,7 @@ import (
 
 // XUser struct
 type XUser struct {
-	ID    string `datastore:"-" goon:"id"`
+	ID    string `datastore:"-" goon:"id" json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }

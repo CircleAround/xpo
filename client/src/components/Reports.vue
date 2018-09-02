@@ -16,7 +16,7 @@ export default {
   name: 'reports',
   data() {
     return {
-      list: core.status.list
+      list: core.state.list
     }
   },
   created() {

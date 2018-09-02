@@ -1,16 +1,21 @@
 <template>
   <div class="report_form">
-    <div class="editor">
-      <textarea v-model="report.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
-      <div class="preview" v-html="markdown"></div>
-    </div>
-    <div class="errors" v-if="errors.length > 0">
-      <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
-        {{item}}
+    <div v-if="state.me.id">
+      <div class="editor">
+        <textarea v-model="state.newReport.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
+        <div class="preview" v-html="markdown"></div>
+      </div>
+      <div class="errors" v-if="errors.length > 0">
+        <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
+          {{item}}
+        </div>
+      </div>
+      <div class="actions">
+        <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
       </div>
     </div>
-    <div class="actions">
-      <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
+    <div v-if="!state.me.id">
+      ログインすると使えます
     </div>
   </div>
 </template>
@@ -22,10 +27,15 @@ export default {
   name: 'report_form',
   data() {
     return {
-      report: core.newReport,
       markdown: '',
-      errors: []
+      errors: [],
+      state: core.state
     }
+  },
+  created() {
+    console.log('created')
+    console.log(core)
+    console.log(core.state)
   },
   methods: {
     postReport() {

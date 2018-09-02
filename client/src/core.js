@@ -46,37 +46,52 @@ function enhanceReport(item) {
 }
 
 export default {
-  status: {
+  state: {
+    me: { id: null, email: null, name: null },
     list: [],
-    newReport: {},
+    newReport: { content: null },
     posted: false
   },
   initialize() {
+    this.retriveMe()
     this.retriveReports().catch(function (error) {
       console.log(error)
     })
 
     this.initNewReport()
   },
+  retriveMe() {
+    return api.get('/users/me').then(response => {
+      this.state.me = response.data
+    }).catch(error => {
+      if (!error.response) {
+        throw error
+      }
+
+      if (error.response.status !== 401) {
+        throw error
+      }
+    })
+  },
   retriveReports() {
     return errorFilter(api
       .get('/reports')
       .then((response) => {
         response.data.forEach(item => {
-          this.status.list.push(enhanceReport(item))
+          this.state.list.push(enhanceReport(item))
         })
       }))
   },
   postReport() {
-    return errorFilter(api.post('/reports', this.newReport).then((response) => {
-      this.status.list.unshift(enhanceReport(response.data))
+    return errorFilter(api.post('/reports', this.state.newReport).then((response) => {
+      this.state.list.unshift(enhanceReport(response.data))
       this.posted = true
       this.initNewReport()
       router.push('/')
     }))
   },
   initNewReport() {
-    this.newReport = {
+    this.state.newReport = {
       content: '',
       'content-type': 'text/x-markdown'
     }

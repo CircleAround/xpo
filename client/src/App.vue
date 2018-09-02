@@ -4,6 +4,9 @@
       <el-header>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
         <ul class="topmenu">
+          <!-- <li>
+            {{state.me.name}}
+          </li> -->
           <li>
             <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
           </li>
@@ -25,8 +28,12 @@
 </template>
 
 <script>
+import core from './core'
 export default {
-  name: 'App'
+  name: 'App',
+  data() {
+    return { state: core.state }
+  }
 }
 </script>
 
