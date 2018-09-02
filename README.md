@@ -1,8 +1,10 @@
 ## Getting Start
 
-### Setting gcloud 
+### Before install 
+- Config gcloud 
+- Config node.js with npm
 
-### Install foreman
+### Install foreman and start
 
 ```
 npm install -g foreman
