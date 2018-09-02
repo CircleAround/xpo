@@ -39,12 +39,12 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *apikit.XUser {
+func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &apikit.XUser{ID: u.ID}
+	xu := &XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
 		log.Warningf(c, "Oops! has not user!")
 		url, _ := user.LoginURL(c, "/loggedin")
@@ -85,12 +85,12 @@ func responseFailure(w http.ResponseWriter, r *http.Request, failure apikit.Fail
 	w.Write(res)
 }
 
-func xUserOrResponse(w http.ResponseWriter, r *http.Request) *apikit.XUser {
+func xUserOrResponse(w http.ResponseWriter, r *http.Request) *XUser {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &apikit.XUser{ID: u.ID}
+	xu := &XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
 		log.Warningf(c, "Oops! has not user!")
 		responseUnauthorized(w, r)

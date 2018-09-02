@@ -1,4 +1,4 @@
-package apikit
+package xpo
 
 import (
 	"context"

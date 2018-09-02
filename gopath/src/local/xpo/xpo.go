@@ -135,7 +135,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof(c, "logged in.")
 
-	xu := &apikit.XUser{ID: u.ID}
+	xu := &XUser{ID: u.ID}
 	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
 		if err := g.Get(xu); err != nil {
 			if err != datastore.ErrNoSuchEntity {
@@ -143,7 +143,7 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 			}
 
 			log.Infof(c, "XUser not found. create new one. : "+u.ID)
-			xu = &apikit.XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
+			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
 			_, ierr := g.Put(xu)
 			if ierr != nil {
 				return ierr

@@ -46,7 +46,7 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 	return
 }
 
-func (s *ReportService) Create(xu *apikit.XUser, report *Report) (err error) {
+func (s *ReportService) Create(xu *XUser, report *Report) (err error) {
 	verr := apikit.NewValidationError()
 	if report.Content == "" {
 		verr.PushOne("content", apikit.Required)
