@@ -48,7 +48,7 @@ func getReports(w http.ResponseWriter, r *http.Request) {
 	s := NewReportService(r)
 	reports, err := s.RetriveAll()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
 		return
 	}
 	apikit.ResponseJSON(w, reports)
