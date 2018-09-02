@@ -35,9 +35,9 @@ func init() {
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/loggedin", handleLoggedIn)
 
-	http.HandleFunc("/xreports", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			getXReports(w, r)
+			getReports(w, r)
 			return
 		}
 
@@ -46,7 +46,7 @@ func init() {
 				return
 			}
 
-			postXReport(w, r)
+			postReport(w, r)
 			return
 		}
 
@@ -56,7 +56,7 @@ func init() {
 	})
 }
 
-func getXReports(w http.ResponseWriter, r *http.Request) {
+func getReports(w http.ResponseWriter, r *http.Request) {
 	g := goon.NewGoon(r)
 
 	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(10)
@@ -69,7 +69,7 @@ func getXReports(w http.ResponseWriter, r *http.Request) {
 	responseJSON(w, reports)
 }
 
-func postXReport(w http.ResponseWriter, r *http.Request) {
+func postReport(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
 	xu := xUserOrResponse(w, r)
