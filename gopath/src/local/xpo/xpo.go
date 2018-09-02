@@ -33,12 +33,11 @@ func init() {
 	// message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 
 	http.HandleFunc("/", handleRoot)
-	http.HandleFunc("/reports", handleReports)
 	http.HandleFunc("/loggedin", handleLoggedIn)
 
-	http.HandleFunc("/xreports", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			getXReports(w, r)
+			getReports(w, r)
 			return
 		}
 
@@ -47,7 +46,7 @@ func init() {
 				return
 			}
 
-			postXReport(w, r)
+			postReport(w, r)
 			return
 		}
 
@@ -57,7 +56,7 @@ func init() {
 	})
 }
 
-func getXReports(w http.ResponseWriter, r *http.Request) {
+func getReports(w http.ResponseWriter, r *http.Request) {
 	g := goon.NewGoon(r)
 
 	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(10)
@@ -70,7 +69,7 @@ func getXReports(w http.ResponseWriter, r *http.Request) {
 	responseJSON(w, reports)
 }
 
-func postXReport(w http.ResponseWriter, r *http.Request) {
+func postReport(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
 	xu := xUserOrResponse(w, r)
@@ -118,22 +117,11 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := appengine.NewContext(r)
-	g := goon.NewGoon(r)
-
-	q := datastore.NewQuery("Report").Ancestor(g.Key(xu)).Order("-CreatedAt").Limit(10)
-	reports := make([]Report, 0, 10)
-	if _, err := g.GetAll(q, &reports); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	logoutURL, _ := user.LogoutURL(c, "/")
 
 	data := struct {
-		Reports   []Report
 		LogoutURL string
 	}{
-		Reports:   reports,
 		LogoutURL: logoutURL,
 	}
 
@@ -150,33 +138,6 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	if err := templates.ExecuteTemplate(w, "layout", data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
-
-func handleReports(w http.ResponseWriter, r *http.Request) {
-	if !redirectUnlessLoggedIn(w, r) {
-		return
-	}
-
-	xu := xUserOrRedirect(w, r)
-	if xu == nil {
-		return
-	}
-
-	g := goon.NewGoon(r)
-
-	report := Report{
-		Author:    xu.Name,
-		Content:   r.FormValue("content"),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		AuthorKey: g.Key(xu),
-	}
-	_, err := g.Put(&report)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func handleLoggedIn(w http.ResponseWriter, r *http.Request) {

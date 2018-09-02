@@ -60,7 +60,7 @@ export default {
   },
   retriveReports() {
     return errorFilter(api
-      .get('/xreports')
+      .get('/reports')
       .then((response) => {
         response.data.forEach(item => {
           this.status.list.push(enhanceReport(item))
@@ -68,7 +68,7 @@ export default {
       }))
   },
   postReport() {
-    return errorFilter(api.post('/xreports', this.newReport).then((response) => {
+    return errorFilter(api.post('/reports', this.newReport).then((response) => {
       this.status.list.unshift(enhanceReport(response.data))
       this.posted = true
       this.initNewReport()
