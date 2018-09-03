@@ -1,9 +1,9 @@
 package xpo
 
 import (
-	"context"
+	"net/http"
 
-	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/user"
 )
 
 // XUser struct
@@ -13,6 +13,19 @@ type XUser struct {
 	Email string `json:"email"`
 }
 
-func xUserKey(c context.Context, ID string) *datastore.Key {
-	return datastore.NewKey(c, "XUser", ID, 0, nil)
+type XUserService struct {
+	AppEngineService
+}
+
+func NewXUserService(r *http.Request) *XUserService {
+	s := new(XUserService)
+	s.InitAppEngineService(r)
+	return s
+}
+
+func (s *XUserService) GetOrCreate(u *user.User, name string) (xu *XUser, err error) {
+	xu = &XUser{ID: u.ID, Name: name, Email: u.Email}
+	xret, err := s.FindOrCreate(xu)
+	xu = xret.(*XUser)
+	return
 }

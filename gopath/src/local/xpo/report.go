@@ -5,9 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mjibson/goon"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -25,16 +22,12 @@ type Report struct {
 }
 
 type ReportService struct {
-	Request *http.Request
-	Goon    *goon.Goon
-	Context context.Context
+	AppEngineService
 }
 
 func NewReportService(r *http.Request) *ReportService {
 	s := new(ReportService)
-	s.Request = r
-	s.Goon = goon.NewGoon(r)
-	s.Context = appengine.NewContext(r)
+	s.InitAppEngineService(r)
 	return s
 }
 
@@ -60,8 +53,8 @@ func (s *ReportService) Create(xu *XUser, report *Report) (err error) {
 	report.Author = xu.Name
 	report.CreatedAt = now
 	report.UpdatedAt = now
-	report.AuthorKey = s.Goon.Key(xu)
+	report.AuthorKey = s.KeyOf(xu)
 
-	_, err = s.Goon.Put(report)
+	err = s.Put(report)
 	return
 }

@@ -5,10 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mjibson/goon"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
@@ -154,27 +151,11 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := appengine.NewContext(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
 	log.Infof(c, "logged in.")
+	u := user.Current(c)
 
-	xu := &XUser{ID: u.ID}
-	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
-		if err := g.Get(xu); err != nil {
-			if err != datastore.ErrNoSuchEntity {
-				return err
-			}
-
-			log.Infof(c, "XUser not found. create new one. : "+u.ID)
-			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
-			_, ierr := g.Put(xu)
-			if ierr != nil {
-				return ierr
-			}
-		}
-		return nil
-	}, nil)
+	s := NewXUserService(r)
+	_, err := s.GetOrCreate(u, "user"+u.ID)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
