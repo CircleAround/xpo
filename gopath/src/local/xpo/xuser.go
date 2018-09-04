@@ -43,48 +43,52 @@ func (s *XUserService) GetOrCreate(u *user.User, name string) (xu *XUser, err er
 }
 
 func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *XUser, err error) {
-	verr := apikit.NewValidationError()
-
-	unr := regexp.MustCompile(USER_NAME_REGEX)
-	if name == "" {
-		verr.PushOne("name", apikit.Required)
-	} else if !unr.MatchString(name) {
-		verr.PushOne("name", apikit.InvalidFormat)
-	}
-
-	if nickname == "" {
-		verr.PushOne("nickname", apikit.Required)
-	}
-	// TODO: screenname や　user_name の禁則文字対応
-
-	if verr.HasItem() {
-		return nil, verr
-	}
-
 	xu = &XUser{ID: u.ID, Name: name, Email: u.Email}
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
-		if err := s.Get(xu); err != nil {
-			if err != datastore.ErrNoSuchEntity {
-				return err
-			}
-
-			log.Infof(s.Context, "%v not found.", xu)
-			i := &_XUserNameUniqueIndex{Value: name}
-			err = s.CreateUnique(i, "Name")
-			if err != nil {
-				return err
-			}
-
-			log.Infof(s.Context, "keep name of %v.", name)
-
-			log.Infof(s.Context, "%v not found. create new one.", xu)
-			_, ierr := s.Goon.Put(xu)
-			if ierr != nil {
-				return ierr
-			}
-		} else {
+		if err = s.Get(xu); err == nil {
 			log.Infof(s.Context, "%v found!. get one.", xu)
+			return &DuplicatedObjectError{Type: "DuplicatedObjectError"}
 		}
+		if err != datastore.ErrNoSuchEntity {
+			log.Infof(s.Context, "%v error.", err)
+			return err
+		}
+
+		log.Infof(s.Context, "%v not found.", xu)
+
+		log.Infof(s.Context, "validation start.")
+		verr := apikit.NewValidationError()
+		unr := regexp.MustCompile(USER_NAME_REGEX)
+		if name == "" {
+			verr.PushOne("name", apikit.Required)
+		} else if !unr.MatchString(name) {
+			verr.PushOne("name", apikit.InvalidFormat)
+		}
+
+		if nickname == "" {
+			verr.PushOne("nickname", apikit.Required)
+		}
+		// TODO: screenname や　user_name の禁則文字対応
+		if verr.HasItem() {
+			return verr
+		}
+
+		log.Infof(s.Context, "validation end.")
+
+		i := &_XUserNameUniqueIndex{Value: name}
+		err = s.CreateUnique(i, "name")
+		if err != nil {
+			return err
+		}
+
+		log.Infof(s.Context, "keep name of %v.", name)
+
+		log.Infof(s.Context, "%v not found. create new one.", xu)
+		_, err := s.Goon.Put(xu)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}, nil)
 	return

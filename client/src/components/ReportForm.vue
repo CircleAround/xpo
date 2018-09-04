@@ -40,11 +40,21 @@ export default {
   methods: {
     postReport() {
       this.errors = []
-      core.postReport().catch(error => {
-        core.getMessagesOfValidationError(error).forEach(msg => {
-          this.errors.push(msg)
+      core
+        .postReport()
+        .then(() => {
+          this.$message({
+            showClose: true,
+            message: '投稿しました！',
+            type: 'success',
+            center: true
+          })
         })
-      })
+        .catch(error => {
+          core.eachResponseErrors(error, (msg, type, property) => {
+            this.errors.push(msg)
+          })
+        })
     },
     updateMarkdown() {
       this.markdown = marked(this.state.newReport.content)

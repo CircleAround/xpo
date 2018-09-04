@@ -52,32 +52,23 @@ func (s *AppEngineService) Put(obj interface{}) (err error) {
 	return
 }
 
-type ValueNotUniqueError struct {
-	Type string `json:"type"`
-	Name string `json:"name"`
-}
-
-func (e *ValueNotUniqueError) Error() string {
-	return "Not unique error"
-}
-
 // CreateUnique can create unique index.
 //
 // type UniqueIndexOfString struct {
 // 	Value string `datastore:"-" goon:"id"`
 // }
-func (s *AppEngineService) CreateUnique(i interface{}, name string) error {
+func (s *AppEngineService) CreateUnique(i interface{}, property string) error {
 	err := s.Get(i)
 	if err == nil {
-		log.Infof(s.Context, "%v not unique. %v", name, i)
-		return &ValueNotUniqueError{Type: "ValueNotUniqueError", Name: name}
+		log.Infof(s.Context, "%v is not unique. %v", property, i)
+		return &ValueNotUniqueError{Type: "ValueNotUniqueError", Property: property}
 	}
 
 	if err != datastore.ErrNoSuchEntity {
 		return err
 	}
 
-	log.Infof(s.Context, "%v is free.", name)
+	log.Infof(s.Context, "%v is free.", property)
 
 	_, err = s.Goon.Put(i)
 	if err != nil {
@@ -85,4 +76,22 @@ func (s *AppEngineService) CreateUnique(i interface{}, name string) error {
 	}
 
 	return nil
+}
+
+type ValueNotUniqueError struct {
+	Type     string `json:"type"`
+	Property string `json:"property"`
+}
+
+func (e *ValueNotUniqueError) Error() string {
+	return "Not unique error"
+}
+
+type DuplicatedObjectError struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
+func (e *DuplicatedObjectError) Error() string {
+	return "Duplicated object error"
 }

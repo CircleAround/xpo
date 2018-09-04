@@ -7,7 +7,14 @@
     </div>
     <div>
       <el-input placeholder="ユーザー名（半角英数小文字）" v-model="name"></el-input>
+      <div class="errors" v-if="propErrors.name">
+        <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
+      </div>
+
       <el-input placeholder="ニックネーム" v-model="nickname"></el-input>
+      <div class="errors" v-if="propErrors.nickname">
+        <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
+      </div>
     </div>
     <div class="actions">
       <el-button type="success" icon="el-icon-check" circle @click='postXUser()'></el-button>
@@ -21,6 +28,7 @@ export default {
   name: 'signup_form',
   data() {
     return {
+      propErrors: {},
       errors: [],
       name: '',
       nickname: ''
@@ -29,11 +37,51 @@ export default {
   methods: {
     postXUser() {
       this.errors = []
-      core.postXUser(this.name, this.nickname).catch(error => {
-        core.getMessagesOfValidationError(error).forEach(msg => {
-          this.errors.push(msg)
+      this.propErrors = {}
+      core
+        .postXUser(this.name, this.nickname)
+        .then(() => {
+          this.$message({
+            showClose: true,
+            message: 'サインアップしました！',
+            type: 'success',
+            center: true
+          })
+          this.$router.push('/')
         })
-      })
+        .catch(error => {
+          core.eachResponseErrors(error, (msg, type, property) => {
+            if (type === 'DuplicatedObjectError') {
+              this.$message({
+                showClose: true,
+                message: 'すでにユーザー登録済みです',
+                type: 'error',
+                center: true
+              })
+
+              return this.$router.push('/')
+            }
+
+            if (type === 'ValueNotUniqueError') {
+              if (!this.propErrors[property]) {
+                this.$set(this.propErrors, property, [])
+              }
+              return this.propErrors[property].push(
+                '既に取得されてしまったユーザー名です。別の名前にしましょう。'
+              )
+            }
+
+            if (!property) {
+              return this.errors.push(msg)
+            }
+
+            if (!this.propErrors[property]) {
+              this.$set(this.propErrors, property, [])
+            }
+
+            this.propErrors[property].push(msg)
+          })
+        })
     }
   }
 }
@@ -66,7 +114,7 @@ export default {
   text-align: right;
 }
 
-.errors {
+.error {
   color: red;
 }
 </style>

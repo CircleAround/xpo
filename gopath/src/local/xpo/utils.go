@@ -38,6 +38,10 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
 
+		case *DuplicatedObjectError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
 		case *apikit.ValidationError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return

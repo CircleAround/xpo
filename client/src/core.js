@@ -83,12 +83,7 @@ export default {
       })
   },
   postXUser(name, nickname) {
-    return errorFilter(
-      api.post('/users/me', { name, nickname }).then(response => {
-        console.log(response)
-        alert('success')
-      })
-    )
+    return errorFilter(api.post('/users/me', { name, nickname }))
   },
   retriveReports() {
     return errorFilter(
@@ -115,23 +110,43 @@ export default {
       'content-type': 'text/x-markdown'
     }
   },
-  getMessagesOfValidationError(error) {
-    if (error.response.data.error.type === 'ValidationError') {
-      const items = error.response.data.error.items
-      let ret = []
-      Object.keys(items).forEach(property => {
-        const item = items[property]
-        ret = item.reasons.map(reason => {
-          if (reason === 'required') {
-            return `${property}は必須です`
-          }
-          if (reason === 'toolong') {
-            return `${property}は長すぎます`
-          }
-          return `${property}が何らかのエラーです`
+  eachResponseErrors(error, handler) {
+    const e = error.response.data.error
+
+    const i18n = {
+      required: property => {
+        return `${property}は必須です`
+      },
+      toolong: property => {
+        return `${property}は長すぎます`
+      },
+      nothing: property => {
+        return `${property}が何らかのエラーです`
+      }
+    }
+
+    switch (e.type) {
+      case 'ValidationError':
+        const items = e.items
+        Object.keys(items).forEach(property => {
+          const item = items[property]
+          item.reasons.forEach(reason => {
+            if (i18n[reason]) {
+              return handler(i18n[reason](property), e.type, property)
+            }
+            handler(i18n['nothing'](property), e.type, property)
+          })
         })
-      })
-      return ret
+        break
+      case 'ValueNotUniqueError':
+        handler(`${e.property}は既に存在します`, e.type, e.property)
+        break
+      case 'DuplicatedObjectError':
+        handler(`既に存在します`, e.type, null)
+        break
+
+      default:
+        break
     }
   }
 }
