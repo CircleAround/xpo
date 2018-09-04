@@ -27,6 +27,10 @@ func (s *AppEngineService) KeyOf(obj interface{}) *datastore.Key {
 	return s.Goon.Key(obj)
 }
 
+func (s *AppEngineService) Get(obj interface{}) error {
+	return s.Goon.Get(obj)
+}
+
 func (s *AppEngineService) FindOrCreate(xu interface{}) (xret interface{}, err error) {
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
 		if err := s.Goon.Get(xu); err != nil {

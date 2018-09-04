@@ -9,6 +9,8 @@ const (
 	// Required is specify required error
 	Required string = "required"
 
+	InvalidFormat string = "invalid_format"
+
 	// TooLong is specify too long contents
 	TooLong string = "toolong"
 )

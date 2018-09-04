@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
@@ -17,24 +18,37 @@ func init() {
 
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/loggedin", handleLoggedIn)
+
 	http.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
-
-		if r.Method == "GET" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
-
-			getMe(w, r)
+		if r.Method == "OPTIONS" {
 			return
 		}
+
+		if !responseIfUnauthorized(w, r) {
+			return
+		}
+
+		if r.Method == "GET" {
+			safeFilter(w, r, getMe(w, r))
+			return
+		}
+		if r.Method == "POST" {
+			safeFilter(w, r, postMe(w, r))
+			return
+		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
 	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
+		if r.Method == "OPTIONS" {
+			return
+		}
 
 		if r.Method == "GET" {
-			getReports(w, r)
+			safeFilter(w, r, getReports(w, r))
 			return
 		}
 
@@ -43,48 +57,89 @@ func init() {
 				return
 			}
 
-			postReport(w, r)
+			safeFilter(w, r, postReport(w, r))
 			return
 		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 }
 
-func getMe(w http.ResponseWriter, r *http.Request) {
+func getMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
+	u := user.Current(c)
 
-	xu := xUserOrResponse(w, r)
-	if xu == nil {
-		log.Warningf(c, "xu==nil. response 401")
-		return
+	s := NewXUserService(r)
+	xu, err := s.GetByUser(u)
+	if err == nil {
+		apikit.ResponseJSON(w, xu)
+		return nil
 	}
 
-	apikit.ResponseJSON(w, &xu)
+	if err == datastore.ErrNoSuchEntity {
+		apikit.ResponseJSON(w, "BE_SIGN_UP")
+		return nil
+	}
+
+	return err
 }
 
-func getReports(w http.ResponseWriter, r *http.Request) {
+func postMe(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	jsonBody, err := apikit.ParseJSONBody(r)
+	if err != nil {
+		log.Warningf(c, "err: %v\n", err.Error())
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
+		return nil
+	}
+
+	log.Infof(c, "JSON: %v\n", jsonBody)
+
+	name := jsonBody["name"].(string)
+	nickname := jsonBody["nickname"].(string)
+
+	s := NewXUserService(r)
+	xu, err := s.Create(u, name, nickname)
+
+	if err != nil {
+		switch err.(type) {
+		case *AlreadyKeptNameError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return nil
+		}
+		return err
+	}
+
+	apikit.ResponseJSON(w, xu)
+	return nil
+}
+
+func getReports(w http.ResponseWriter, r *http.Request) error {
 	s := NewReportService(r)
 	reports, err := s.RetriveAll()
 	if err != nil {
-		apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
-		return
+		return err
 	}
 	apikit.ResponseJSON(w, reports)
+	return nil
 }
 
-func postReport(w http.ResponseWriter, r *http.Request) {
+func postReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 
 	xu := xUserOrResponse(w, r)
 	if xu == nil {
 		log.Warningf(c, "xu==nil. response 401")
-		return
+		return nil
 	}
 
 	jsonBody, err := apikit.ParseJSONBody(r)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return
+		return nil
 	}
 
 	log.Infof(c, "JSON: %v\n", jsonBody)
@@ -95,18 +150,11 @@ func postReport(w http.ResponseWriter, r *http.Request) {
 
 	err = s.Create(xu, &report)
 	if err != nil {
-		switch err.(type) {
-		default:
-			log.Warningf(c, "err: %v\n", err.Error())
-			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
-			return
-		case *apikit.ValidationError:
-			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
-			return
-		}
+		return err
 	}
 
 	apikit.ResponseJSON(w, report)
+	return nil
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -147,18 +195,6 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	allowClient(w)
 
 	if !redirectUnlessLoggedIn(w, r) {
-		return
-	}
-
-	c := appengine.NewContext(r)
-	log.Infof(c, "logged in.")
-	u := user.Current(c)
-
-	s := NewXUserService(r)
-	_, err := s.GetOrCreate(u, "user"+u.ID)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

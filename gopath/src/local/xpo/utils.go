@@ -24,6 +24,22 @@ func allowClient(w http.ResponseWriter) {
 	allowOrigin(w, os.Getenv("ALLOW_ORIGIN"))
 }
 
+func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
+	c := appengine.NewContext(r)
+
+	if err != nil {
+		switch err.(type) {
+		default:
+			log.Warningf(c, "err: %v\n", err.Error())
+			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
+			return
+		case *apikit.ValidationError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+		}
+	}
+}
+
 func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
@@ -77,11 +93,14 @@ func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
-	// ログインしてなければリダイレクト
+
+	log.Infof(c, "user: %v", u)
+
 	if u != nil {
 		return true
 	}
 
+	// ログインしてなければリダイレクト
 	responseUnauthorized(w, r)
 	return false
 }
