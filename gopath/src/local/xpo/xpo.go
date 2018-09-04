@@ -69,7 +69,7 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	s := NewXUserService(r)
+	s := NewXUserService(c)
 	xu, err := s.GetByUser(u)
 	if err == nil {
 		apikit.ResponseJSON(w, xu)
@@ -100,7 +100,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	name := jsonBody["name"].(string)
 	nickname := jsonBody["nickname"].(string)
 
-	s := NewXUserService(r)
+	s := NewXUserService(c)
 	xu, err := s.Create(u, name, nickname)
 
 	if err != nil {
@@ -117,7 +117,8 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 }
 
 func getReports(w http.ResponseWriter, r *http.Request) error {
-	s := NewReportService(r)
+	c := appengine.NewContext(r)
+	s := NewReportService(c)
 	reports, err := s.RetriveAll()
 	if err != nil {
 		return err
@@ -145,7 +146,7 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "JSON: %v\n", jsonBody)
 
 	content := jsonBody["content"].(string)
-	s := NewReportService(r)
+	s := NewReportService(c)
 	report := Report{Content: content}
 
 	err = s.Create(xu, &report)

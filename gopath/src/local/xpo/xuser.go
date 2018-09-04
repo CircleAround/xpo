@@ -2,7 +2,6 @@ package xpo
 
 import (
 	"local/apikit"
-	"net/http"
 	"regexp"
 
 	"golang.org/x/net/context"
@@ -39,9 +38,9 @@ func (e *AlreadyKeptNameError) Error() string {
 	return "Already kept name"
 }
 
-func NewXUserService(r *http.Request) *XUserService {
+func NewXUserService(c context.Context) *XUserService {
 	s := new(XUserService)
-	s.InitAppEngineService(r)
+	s.InitAppEngineService(c)
 	return s
 }
 

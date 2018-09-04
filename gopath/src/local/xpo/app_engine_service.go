@@ -1,26 +1,21 @@
 package xpo
 
 import (
-	"net/http"
-
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 )
 
 // AppEngineService is Basi Service of AppEngine
 type AppEngineService struct {
-	Request *http.Request
 	Goon    *goon.Goon
 	Context context.Context
 }
 
-func (s *AppEngineService) InitAppEngineService(r *http.Request) {
-	s.Request = r
-	s.Goon = goon.NewGoon(r)
-	s.Context = appengine.NewContext(r)
+func (s *AppEngineService) InitAppEngineService(c context.Context) {
+	s.Context = c
+	s.Goon = goon.FromContext(c)
 }
 
 func (s *AppEngineService) KeyOf(obj interface{}) *datastore.Key {

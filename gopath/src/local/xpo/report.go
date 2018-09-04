@@ -2,9 +2,9 @@ package xpo
 
 import (
 	"local/apikit"
-	"net/http"
 	"time"
 
+	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -25,9 +25,9 @@ type ReportService struct {
 	AppEngineService
 }
 
-func NewReportService(r *http.Request) *ReportService {
+func NewReportService(c context.Context) *ReportService {
 	s := new(ReportService)
-	s.InitAppEngineService(r)
+	s.InitAppEngineService(c)
 	return s
 }
 
