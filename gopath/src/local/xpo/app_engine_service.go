@@ -51,3 +51,38 @@ func (s *AppEngineService) Put(obj interface{}) (err error) {
 	_, err = s.Goon.Put(obj)
 	return
 }
+
+type ValueNotUniqueError struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
+func (e *ValueNotUniqueError) Error() string {
+	return "Not unique error"
+}
+
+// CreateUnique can create unique index.
+//
+// type UniqueIndexOfString struct {
+// 	Value string `datastore:"-" goon:"id"`
+// }
+func (s *AppEngineService) CreateUnique(i interface{}, name string) error {
+	err := s.Get(i)
+	if err == nil {
+		log.Infof(s.Context, "%v not unique. %v", name, i)
+		return &ValueNotUniqueError{Type: "ValueNotUniqueError", Name: name}
+	}
+
+	if err != datastore.ErrNoSuchEntity {
+		return err
+	}
+
+	log.Infof(s.Context, "%v is free.", name)
+
+	_, err = s.Goon.Put(i)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

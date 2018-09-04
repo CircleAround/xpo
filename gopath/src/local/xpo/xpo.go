@@ -104,11 +104,6 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	xu, err := s.Create(u, name, nickname)
 
 	if err != nil {
-		switch err.(type) {
-		case *AlreadyKeptNameError:
-			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
-			return nil
-		}
 		return err
 	}
 

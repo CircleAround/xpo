@@ -22,20 +22,11 @@ type XUser struct {
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
 type _XUserNameUniqueIndex struct {
-	Name string `datastore:"-" goon:"id"`
+	Value string `datastore:"-" goon:"id"`
 }
 
 type XUserService struct {
 	AppEngineService
-}
-
-type AlreadyKeptNameError struct {
-	Type string `json:"type"`
-	Name string `json:"name"`
-}
-
-func (e *AlreadyKeptNameError) Error() string {
-	return "Already kept name"
 }
 
 func NewXUserService(c context.Context) *XUserService {
@@ -78,21 +69,8 @@ func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *X
 			}
 
 			log.Infof(s.Context, "%v not found.", xu)
-
-			nameUniqueIndex := &_XUserNameUniqueIndex{Name: name}
-			err = s.Goon.Get(nameUniqueIndex)
-			if err == nil {
-				log.Infof(s.Context, "%v alreay kept.", name)
-				return &AlreadyKeptNameError{Type: "AlreadyKeptNameError", Name: name}
-			}
-
-			if err != datastore.ErrNoSuchEntity {
-				return err
-			}
-
-			log.Infof(s.Context, "%v is free name.", name)
-
-			_, err = s.Goon.Put(nameUniqueIndex)
+			i := &_XUserNameUniqueIndex{Value: name}
+			err = s.CreateUnique(i, "Name")
 			if err != nil {
 				return err
 			}

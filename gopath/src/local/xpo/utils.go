@@ -33,6 +33,11 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 			log.Warningf(c, "err: %v\n", err.Error())
 			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
 			return
+
+		case *ValueNotUniqueError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
 		case *apikit.ValidationError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
