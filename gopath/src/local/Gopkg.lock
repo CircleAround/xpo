@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:491c1da65a24421134a5d49ce70ad8cbe72ec884b4f0ca27afe51c2ddb13f12d"
+  name = "github.com/favclip/testerator"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "04c1c0fc2a5a12ba14068ee37e764af81a4ac575"
+
+[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -18,18 +26,28 @@
   revision = "0c01b4bc4f4970fa6f91409bf7f134a10809219c"
 
 [[projects]]
+  digest = "1:92d68f6e77198b5da8d32e13283d75d2ba4fe01f369bc63cdf48c77cc138bfaf"
+  name = "github.com/thoas/go-funk"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e2f8da694c9c4fa123eea42cb0d6d47e08f11ff6"
+  version = "0.3"
+
+[[projects]]
   branch = "master"
   digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "161cd47e91fd58ac17490ef4d742dc98bb4cf60e"
 
 [[projects]]
-  digest = "1:6e576c2b6cd37904780c1ba95ca72ee867970c7d2e9c9139538f7b27a9c00cc3"
+  branch = "master"
+  digest = "1:537ed7be71d10e4e5497d91d441bd894908efabaf7a01d6707077441b579bd62"
   name = "google.golang.org/appengine"
   packages = [
     ".",
+    "aetest",
     "datastore",
     "internal",
     "internal/app_identity",
@@ -45,14 +63,15 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
-  version = "v1.1.0"
+  revision = "03cac3b07182cfb08c0d0c0b6ee72a1ceb151c92"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/favclip/testerator",
     "github.com/mjibson/goon",
+    "github.com/thoas/go-funk",
     "golang.org/x/net/context",
     "google.golang.org/appengine",
     "google.golang.org/appengine/datastore",

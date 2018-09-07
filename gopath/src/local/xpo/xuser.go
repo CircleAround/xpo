@@ -43,10 +43,10 @@ func (s *XUserService) GetOrCreate(u *user.User, name string) (xu *XUser, err er
 }
 
 func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *XUser, err error) {
-	xu = &XUser{ID: u.ID, Name: name, Email: u.Email}
+	xu = &XUser{ID: u.ID, Name: name, Email: u.Email, NickName: nickname}
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
 		if err = s.Get(xu); err == nil {
-			log.Infof(s.Context, "%v found!. get one.", xu)
+			log.Infof(s.Context, "%v found!. duplicated.", xu)
 			return &DuplicatedObjectError{Type: "DuplicatedObjectError"}
 		}
 		if err != datastore.ErrNoSuchEntity {

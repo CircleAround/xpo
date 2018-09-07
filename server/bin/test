@@ -1,0 +1,4 @@
+#!/bin/sh
+export GOPATH=$(dirname `pwd`)/gopath
+echo "GOPATH: ${GOPATH}"
+cd "${GOPATH}/src/local/xpo/"; goapp test -v
