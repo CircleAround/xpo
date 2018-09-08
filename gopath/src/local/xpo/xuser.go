@@ -10,7 +10,8 @@ import (
 	"google.golang.org/appengine/user"
 )
 
-const USER_NAME_REGEX = `^[0-9a-zA-Z_]{1,15}$`
+// UserNameRegex is for validation
+const UserNameRegex = `^[0-9a-zA-Z_]{1,15}$`
 
 // XUser struct
 type XUser struct {
@@ -25,23 +26,19 @@ type _XUserNameUniqueIndex struct {
 	Value string `datastore:"-" goon:"id"`
 }
 
+// XUserService is Service for XUser
 type XUserService struct {
 	AppEngineService
 }
 
+// NewXUserService is function for construction
 func NewXUserService(c context.Context) *XUserService {
 	s := new(XUserService)
 	s.InitAppEngineService(c)
 	return s
 }
 
-func (s *XUserService) GetOrCreate(u *user.User, name string) (xu *XUser, err error) {
-	xu = &XUser{ID: u.ID, Name: name, Email: u.Email}
-	xret, err := s.FindOrCreate(xu)
-	xu = xret.(*XUser)
-	return
-}
-
+// Create is method for create XUser
 func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID, Name: name, Email: u.Email, NickName: nickname}
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
@@ -58,7 +55,7 @@ func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *X
 
 		log.Infof(s.Context, "validation start.")
 		verr := apikit.NewValidationError()
-		unr := regexp.MustCompile(USER_NAME_REGEX)
+		unr := regexp.MustCompile(UserNameRegex)
 		if name == "" {
 			verr.PushOne("name", apikit.Required)
 		} else if !unr.MatchString(name) {
@@ -94,8 +91,9 @@ func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *X
 	return
 }
 
+// GetByUser is method for getting XUser by user.User
 func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID}
-	err = s.Goon.Get(xu)
+	err = s.Get(xu)
 	return
 }

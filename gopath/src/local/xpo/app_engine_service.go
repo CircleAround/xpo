@@ -13,19 +13,23 @@ type AppEngineService struct {
 	Context context.Context
 }
 
+// InitAppEngineService is initialzer for Extended Services
 func (s *AppEngineService) InitAppEngineService(c context.Context) {
 	s.Context = c
 	s.Goon = goon.FromContext(c)
 }
 
+// KeyOf is a method for getting key from obj
 func (s *AppEngineService) KeyOf(obj interface{}) *datastore.Key {
 	return s.Goon.Key(obj)
 }
 
+// Get is a method for retriving object
 func (s *AppEngineService) Get(obj interface{}) error {
 	return s.Goon.Get(obj)
 }
 
+// FindOrCreate is a method for find or create XUser
 func (s *AppEngineService) FindOrCreate(xu interface{}) (xret interface{}, err error) {
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
 		if err := s.Goon.Get(xu); err != nil {
@@ -47,6 +51,7 @@ func (s *AppEngineService) FindOrCreate(xu interface{}) (xret interface{}, err e
 	return
 }
 
+// Put is a method for saving obj
 func (s *AppEngineService) Put(obj interface{}) (err error) {
 	_, err = s.Goon.Put(obj)
 	return
@@ -78,20 +83,24 @@ func (s *AppEngineService) CreateUnique(i interface{}, property string) error {
 	return nil
 }
 
+// ValueNotUniqueError is a struct for a error value not unique
 type ValueNotUniqueError struct {
 	Type     string `json:"type"`
 	Property string `json:"property"`
 }
 
+// Error is a method for creating message
 func (e *ValueNotUniqueError) Error() string {
 	return "Not unique error"
 }
 
+// DuplicatedObjectError is a struc for a error when object already exist
 type DuplicatedObjectError struct {
 	Type string `json:"type"`
 	Name string `json:"name"`
 }
 
+// Error is am method for creating message
 func (e *DuplicatedObjectError) Error() string {
 	return "Duplicated object error"
 }
