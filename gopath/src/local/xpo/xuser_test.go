@@ -2,6 +2,7 @@ package xpo
 
 import (
 	"local/apikit"
+	"local/testkit"
 	"reflect"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	apikit.BootstrapTest(m)
+	testkit.BootstrapTest(m)
 }
 
 func TestDummy(t *testing.T) {
@@ -22,7 +23,7 @@ func TestDummy(t *testing.T) {
 }
 
 func TestScenario(t *testing.T) {
-	_, c, done := apikit.StartTest(t)
+	_, c, done := testkit.StartTest(t)
 	defer done()
 
 	s := NewXUserService(c)
@@ -89,7 +90,7 @@ func TestScenario(t *testing.T) {
 }
 
 func TestValidation(t *testing.T) {
-	_, c, done := apikit.StartTest(t)
+	_, c, done := testkit.StartTest(t)
 	defer done()
 
 	s := NewXUserService(c)
