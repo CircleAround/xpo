@@ -83,7 +83,11 @@ export default {
       })
   },
   postXUser(name, nickname) {
-    return errorFilter(api.post('/users/me', { name, nickname }))
+    return errorFilter(
+      api.post('/users/me', { name, nickname }).then(response => {
+        this.state.me = response.data
+      })
+    )
   },
   retriveReports() {
     return errorFilter(

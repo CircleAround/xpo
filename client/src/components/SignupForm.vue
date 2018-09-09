@@ -1,24 +1,49 @@
 <template>
-  <div class="signup_form">
-    <div class="errors" v-if="errors.length > 0">
-      <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
-        {{item}}
+  <div>
+    <el-form ref="form" class="signup_form" :model="form" :rules="rules">
+      <el-row>
+        <el-col :sm="{offset:4, span: 16}">
+          <el-alert
+            title="初めてのご利用の方ですね？ユーザー名とニックネームを入れてから進みましょう。"
+            type="success">
+          </el-alert>
+        </el-col>  
+      </el-row>
+      <div class="errors" v-if="errors.length > 0">
+        <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
+          {{item}}
+        </div>
       </div>
-    </div>
-    <div>
-      <el-input placeholder="ユーザー名（半角英数小文字）" v-model="name"></el-input>
-      <div class="errors" v-if="propErrors.name">
-        <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
+      <div>
+        <el-row>
+          <el-col  :sm="{span:6, offset: 4}">
+            <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>          
+          </el-col>
+          <el-col  :sm="10">
+            <el-input placeholder="ユーザー名（半角英数小文字）" v-model="form.name" id="input-name"></el-input>
+            <div class="errors" v-if="propErrors.name">
+              <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col  :sm="{span:6, offset: 4}">
+            <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>          
+          </el-col>
+          <el-col  :sm="10">
+            <el-input placeholder="ニックネーム" v-model="form.nickname" id="input-nickname"></el-input>
+            <div class="errors" v-if="propErrors.nickname">
+              <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
-
-      <el-input placeholder="ニックネーム" v-model="nickname"></el-input>
-      <div class="errors" v-if="propErrors.nickname">
-        <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
-      </div>
-    </div>
-    <div class="actions">
-      <el-button type="success" icon="el-icon-check" circle @click='postXUser()'></el-button>
-    </div>
+      <el-row class="actions">
+        <el-col :sm="{offset:4, span: 16}">
+          <el-button type="primary" icon="el-icon-check" @click='postXUser()'></el-button>
+        </el-col>
+      </el-row>
+    </el-form>
   </div>
 </template>
 
@@ -30,8 +55,11 @@ export default {
     return {
       propErrors: {},
       errors: [],
-      name: '',
-      nickname: ''
+      form: {
+        name: '',
+        nickname: ''
+      },
+      rules: {}
     }
   },
   methods: {
@@ -43,7 +71,9 @@ export default {
         .then(() => {
           this.$message({
             showClose: true,
-            message: 'サインアップしました！',
+            message: `${
+              this.nickname
+            }さん、サインアップできました！楽しんでください！`,
             type: 'success',
             center: true
           })
@@ -87,8 +117,7 @@ export default {
 }
 </script>
 
-<!-- Add 'scoped' attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
 .editor {
   display: flex;
 }
@@ -110,11 +139,10 @@ export default {
 }
 
 .actions {
-  padding: 5px;
   text-align: right;
 }
 
-.error {
-  color: red;
+.el-row {
+  margin-bottom: 18px;
 }
 </style>

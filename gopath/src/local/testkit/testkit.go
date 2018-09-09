@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"runtime"
 	"testing"
 
 	"github.com/favclip/testerator"
@@ -42,7 +43,8 @@ func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
 
 		err := recover()
 		if err != nil {
-			t.Fatalf("Panic!:", err)
+			pc, fn, line, _ := runtime.Caller(1)
+			t.Fatalf("Panic!: %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), fn, line, err)
 		}
 	}
 

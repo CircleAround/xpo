@@ -89,8 +89,4 @@ export default {
   padding: 5px;
   text-align: right;
 }
-
-.errors {
-  color: red;
-}
 </style>

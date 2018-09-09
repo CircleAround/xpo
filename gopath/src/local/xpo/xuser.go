@@ -13,6 +13,9 @@ import (
 // UserNameRegex is for validation
 const UserNameRegex = `^[0-9a-zA-Z_]{1,15}$`
 
+// UserNameRegex is for validation
+const UserNicknameRegex = `^[0-9a-zA-Z_][ぁ-んァ-ヶー一-龠]+$/u{1,128}$`
+
 // XUser struct
 type XUser struct {
 	ID       string `datastore:"-" goon:"id" json:"id"`
@@ -39,7 +42,46 @@ func NewXUserService(c context.Context) *XUserService {
 }
 
 // Create is method for create XUser
-func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *XUser, err error) {
+func (s *XUserService) Create(u *user.User, params map[string]interface{}) (xu *XUser, err error) {
+	log.Infof(s.Context, "validation start.")
+
+	verr := apikit.NewValidationError()
+	unr := regexp.MustCompile(UserNameRegex)
+
+	nameRaw, ok := params["name"]
+	var name string
+	if ok {
+		name = nameRaw.(string)
+		if name == "" {
+			verr.PushOne("name", apikit.Required)
+		} else if !unr.MatchString(name) {
+			verr.PushOne("name", apikit.InvalidFormat)
+		}
+	} else {
+		verr.PushOne("name", apikit.Required)
+	}
+
+	nicknameRaw, ok := params["nickname"]
+	unnr := regexp.MustCompile(UserNameRegex)
+
+	var nickname string
+	if ok {
+		nickname = nicknameRaw.(string)
+		if nickname == "" {
+			verr.PushOne("nickname", apikit.Required)
+		} else if !unnr.MatchString(nickname) {
+			verr.PushOne("nickname", apikit.InvalidFormat)
+		}
+	} else {
+		verr.PushOne("nickname", apikit.Required)
+	}
+	// TODO: screenname や　user_name の禁則文字対応
+	if verr.HasItem() {
+		return nil, verr
+	}
+
+	log.Infof(s.Context, "validation end.")
+
 	xu = &XUser{ID: u.ID, Name: name, Email: u.Email, NickName: nickname}
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
 		if err = s.Get(xu); err == nil {
@@ -52,25 +94,6 @@ func (s *XUserService) Create(u *user.User, name string, nickname string) (xu *X
 		}
 
 		log.Infof(s.Context, "%v not found.", xu)
-
-		log.Infof(s.Context, "validation start.")
-		verr := apikit.NewValidationError()
-		unr := regexp.MustCompile(UserNameRegex)
-		if name == "" {
-			verr.PushOne("name", apikit.Required)
-		} else if !unr.MatchString(name) {
-			verr.PushOne("name", apikit.InvalidFormat)
-		}
-
-		if nickname == "" {
-			verr.PushOne("nickname", apikit.Required)
-		}
-		// TODO: screenname や　user_name の禁則文字対応
-		if verr.HasItem() {
-			return verr
-		}
-
-		log.Infof(s.Context, "validation end.")
 
 		i := &_XUserNameUniqueIndex{Value: name}
 		err = s.CreateUnique(i, "name")

@@ -97,11 +97,8 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 
 	log.Infof(c, "JSON: %v\n", jsonBody)
 
-	name := jsonBody["name"].(string)
-	nickname := jsonBody["nickname"].(string)
-
 	s := NewXUserService(c)
-	xu, err := s.Create(u, name, nickname)
+	xu, err := s.Create(u, jsonBody)
 
 	if err != nil {
 		return err
