@@ -25,6 +25,10 @@ type ReportService struct {
 	AppEngineService
 }
 
+type ReportCreationParams struct {
+	content string
+}
+
 func NewReportService(c context.Context) *ReportService {
 	s := new(ReportService)
 	s.InitAppEngineService(c)

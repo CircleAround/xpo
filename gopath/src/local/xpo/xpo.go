@@ -88,17 +88,18 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	jsonBody, err := apikit.ParseJSONBody(r)
+	p := &XUserCreationParams{}
+	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
 		return nil
 	}
 
-	log.Infof(c, "JSON: %v\n", jsonBody)
+	log.Infof(c, "params: %v\n", p)
 
 	s := NewXUserService(c)
-	xu, err := s.Create(u, jsonBody)
+	xu, err := s.Create(u, p)
 
 	if err != nil {
 		return err
@@ -128,18 +129,19 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	jsonBody, err := apikit.ParseJSONBody(r)
+	p := &ReportCreationParams{}
+
+	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
 		return nil
 	}
 
-	log.Infof(c, "JSON: %v\n", jsonBody)
+	log.Infof(c, "params: %v\n", p)
 
-	content := jsonBody["content"].(string)
 	s := NewReportService(c)
-	report := Report{Content: content}
+	report := Report{Content: p.content}
 
 	err = s.Create(xu, &report)
 	if err != nil {

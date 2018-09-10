@@ -9,6 +9,8 @@ import (
 
 	"github.com/favclip/testerator"
 	"google.golang.org/appengine/aetest"
+
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
 func BootstrapTest(m *testing.M) {
@@ -48,38 +50,39 @@ func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
 	return i, c, done
 }
 
-// ShouldHaveValidationError is matcher for property with reason
-func ShouldHaveValidationError(t *testing.T, err error, property string, reason string) {
+// ShouldHaveValidationError is matcher for property with tag
+func ShouldHaveValidationError(t *testing.T, err error, property string, tag string) {
 	t.Logf("for %v", property)
 	if err == nil {
 		t.Fatal("It should have error")
 	}
 
-	if reflect.TypeOf(err) != reflect.TypeOf(&ValidationError{}) {
-		t.Fatalf("It should be apikit.ValidationError: %v", reflect.TypeOf(err))
+	if reflect.TypeOf(err) != reflect.TypeOf(validator.ValidationErrors{}) {
+		t.Fatalf("It should be validator.ValidationErrors: %v, %v", reflect.TypeOf(err), err)
 	}
 
-	ei := err.(*ValidationError).Items[property]
-	if ei == nil {
-		t.Fatalf("It should not be nil. should have property: %v", property)
+	ei := err.(validator.ValidationErrors)[0]
+	t.Logf("kind: %v, type: %v, value: %v, param: %v", ei.Kind(), ei.Type(), ei.Value(), ei.Param())
+	if ei.Field() != property {
+		t.Fatalf("It should not be nil. should have property: %v, %v", ei.Field(), property)
 	}
 
-	if !ei.HasReason(reason) {
-		t.Fatalf("It should be includes %v in %v", reason, ei.Reasons)
+	if ei.Tag() != tag {
+		t.Fatalf("It should be tag %v in %v", tag, ei.Tag())
 	}
 }
 
 // ShouldHaveRequiredError is matcher for property with required
 func ShouldHaveRequiredError(t *testing.T, err error, property string) {
-	ShouldHaveValidationError(t, err, property, Required)
+	ShouldHaveValidationError(t, err, property, "required")
 }
 
 // ShouldHaveInvalidFormatError is matcher for property with invalid format
-func ShouldHaveInvalidFormatError(t *testing.T, err error, property string) {
-	ShouldHaveValidationError(t, err, property, InvalidFormat)
+func ShouldHaveInvalidFormatError(t *testing.T, err error, property string, tag string) {
+	ShouldHaveValidationError(t, err, property, tag)
 }
 
 // ShouldHaveTooLongError is matcher for property with too long
 func ShouldHaveTooLongError(t *testing.T, err error, property string) {
-	ShouldHaveValidationError(t, err, property, TooLong)
+	ShouldHaveValidationError(t, err, property, "max")
 }

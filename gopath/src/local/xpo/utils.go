@@ -3,11 +3,15 @@ package xpo
 import (
 	"net/http"
 	"os"
+	"reflect"
 
 	"github.com/mjibson/goon"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
+
+	"github.com/iancoleman/strcase"
+	validator "gopkg.in/go-playground/validator.v9"
 
 	"local/apikit"
 )
@@ -29,21 +33,23 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 
 	if err != nil {
 		switch err.(type) {
-		default:
-			log.Warningf(c, "err: %v\n", err.Error())
-			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
-			return
-
 		case *ValueNotUniqueError:
-			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
-			return
-
 		case *DuplicatedObjectError:
+		case *validator.InvalidValidationError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
 
-		case *apikit.ValidationError:
-			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+		case validator.ValidationErrors:
+			ve := apikit.NewValidationError()
+			for _, err := range err.(validator.ValidationErrors) {
+				ve.PushOne(strcase.ToSnake(err.Field()), err.Tag())
+			}
+			apikit.ResponseFailure(w, r, ve, http.StatusUnprocessableEntity)
+			return
+
+		default:
+			log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
+			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
 			return
 		}
 	}

@@ -35,7 +35,7 @@ func TestScenario(t *testing.T) {
 		u.Email = "test@example.com"
 		u.ID = "1"
 
-		xu, err := s.Create(&u, map[string]interface{}{"name": "myname", "nickname": "mynickname"})
+		xu, err := s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "mynicknameニックネーム"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,13 +53,13 @@ func TestScenario(t *testing.T) {
 			if ret.Name != "myname" {
 				t.Fatalf("It should get saved Name!: %v", ret.Name)
 			}
-			if ret.NickName != "mynickname" {
-				t.Fatalf("It should get saved Nickname!: %v", ret.NickName)
+			if ret.Nickname != "mynicknameニックネーム" {
+				t.Fatalf("It should get saved Nickname!: %v", ret.Nickname)
 			}
 
 			{
 				t.Logf("Duplicaed")
-				xu, err = s.Create(&u, map[string]interface{}{"name": "myname", "nickname": "mynickname"})
+				xu, err = s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "mynickname"})
 				if err == nil {
 					t.Fatal("It should error on creating duplicated user")
 				}
@@ -76,7 +76,7 @@ func TestScenario(t *testing.T) {
 				u.Email = "test3@example.com"
 				u.ID = "3"
 
-				xu, err = s.Create(&u, map[string]interface{}{"name": "myname", "nickname": "nynickname3"})
+				xu, err = s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "nynickname3"})
 				if err == nil {
 					t.Fatal("It should error on creating duplicated name user")
 				}
@@ -103,36 +103,36 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Name")
 		{
-			_, err := s.Create(&u, map[string]interface{}{"nickname": "nynickname"})
-			apikit.ShouldHaveRequiredError(t, err, "name")
+			_, err := s.Create(&u, &XUserCreationParams{Nickname: "nynickname"})
+			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, map[string]interface{}{"name": "", "nickname": "nynickname"})
-			apikit.ShouldHaveRequiredError(t, err, "name")
+			_, err := s.Create(&u, &XUserCreationParams{Name: "", Nickname: "nynickname"})
+			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, map[string]interface{}{"name": "a_&", "nickname": "nynickname"})
-			apikit.ShouldHaveInvalidFormatError(t, err, "name")
+			_, err := s.Create(&u, &XUserCreationParams{Name: "a_&", Nickname: "nynickname"})
+			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
 		}
 	}
 
 	{
 		t.Logf("Nickname")
 		{
-			_, err := s.Create(&u, map[string]interface{}{"name": "myname4"})
-			apikit.ShouldHaveRequiredError(t, err, "nickname")
+			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4"})
+			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, map[string]interface{}{"name": "myname4", "nickname": ""})
-			apikit.ShouldHaveRequiredError(t, err, "nickname")
+			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4", Nickname: ""})
+			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, map[string]interface{}{"name": "myname4", "nickname": "<nynickname"})
-			apikit.ShouldHaveInvalidFormatError(t, err, "nickname")
+			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4", Nickname: "<nynickname"})
+			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
 		}
 	}
 }

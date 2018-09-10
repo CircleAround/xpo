@@ -10,12 +10,39 @@
   revision = "04c1c0fc2a5a12ba14068ee37e764af81a4ac575"
 
 [[projects]]
+  digest = "1:e1ff887e232b2d8f4f7c7db15a5fac7be418025afc4dda53c59c765dbb5aa6b4"
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency",
+  ]
+  pruneopts = "UT"
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
+  digest = "1:e022cf244bcac1b6ef933f1a2e0adcf6a6dfd7b872d8d41e4d4179bb09a87cbc"
+  name = "github.com/go-playground/universal-translator"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
+  version = "v0.16.0"
+
+[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:89cd2208bdeb192cc83ee287216af3c987fc87a90b9087718ad6631b636cefcf"
+  name = "github.com/iancoleman/strcase"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3605ed457bf7f8caa1371b4fafadadc026673479"
 
 [[projects]]
   branch = "master"
@@ -65,18 +92,29 @@
   pruneopts = "UT"
   revision = "03cac3b07182cfb08c0d0c0b6ee72a1ceb151c92"
 
+[[projects]]
+  digest = "1:e2f64cca6e235f32cd4c2f9be9ae0cda1f8608fc6fdb68936e8d10e4e0bb074d"
+  name = "gopkg.in/go-playground/validator.v9"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "e69e9a28bb62b977fdc58d051f1bb477b7cbe486"
+  version = "v9.21.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/favclip/testerator",
+    "github.com/iancoleman/strcase",
     "github.com/mjibson/goon",
     "github.com/thoas/go-funk",
     "golang.org/x/net/context",
     "google.golang.org/appengine",
+    "google.golang.org/appengine/aetest",
     "google.golang.org/appengine/datastore",
     "google.golang.org/appengine/log",
     "google.golang.org/appengine/user",
+    "gopkg.in/go-playground/validator.v9",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
