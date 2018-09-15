@@ -1,7 +1,7 @@
 package xpo
 
 import (
-	"local/apikit"
+	"local/validatekit"
 	"time"
 
 	"golang.org/x/net/context"
@@ -26,7 +26,7 @@ type ReportService struct {
 }
 
 type ReportCreationParams struct {
-	content string
+	Content string `json:"content" validate:"required"`
 }
 
 func NewReportService(c context.Context) *ReportService {
@@ -43,15 +43,14 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 	return
 }
 
-func (s *ReportService) Create(xu *XUser, report *Report) (err error) {
-	verr := apikit.NewValidationError()
-	if report.Content == "" {
-		verr.PushOne("content", apikit.Required)
+func (s *ReportService) Create(xu *XUser, params ReportCreationParams) (report *Report, err error) {
+	v := validatekit.NewValidate()
+	err = v.Struct(params)
+	if err != nil {
+		return nil, err
 	}
 
-	if verr.HasItem() {
-		return verr
-	}
+	report = &Report{Content: params.Content}
 
 	now := time.Now()
 	report.Author = xu.Name

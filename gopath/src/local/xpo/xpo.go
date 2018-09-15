@@ -130,7 +130,6 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	p := &ReportCreationParams{}
-
 	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
@@ -141,9 +140,7 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewReportService(c)
-	report := Report{Content: p.content}
-
-	err = s.Create(xu, &report)
+	report, err := s.Create(xu, *p)
 	if err != nil {
 		return err
 	}
