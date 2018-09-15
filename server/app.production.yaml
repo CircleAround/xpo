@@ -7,3 +7,10 @@ env_variables:
 includes:
   - lib/common.yaml
   - lib/secret.yaml
+
+skip_files:
+  - ^(.*/)?test.go$
+  - ^(.*/)?testkit.go
+  - ^(.*/)?instance_classic.go
+  - ^(.*/)?testarator.go
+  - ^(.*)/appengine/aetest/(.*)
