@@ -116,7 +116,12 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	apikit.ResponseJSON(w, xu)
+	res := XUserResponse{
+		XUser:     *xu,
+		LoginURL:  LoginFullURL(r),
+		LogoutURL: LogoutFullURL(r),
+	}
+	apikit.ResponseJSON(w, res)
 	return nil
 }
 

@@ -72,7 +72,7 @@ export default {
           this.$message({
             showClose: true,
             message: `${
-              this.nickname
+              this.form.nickname
             }さん、サインアップできました！楽しんでください！`,
             type: 'success',
             center: true
