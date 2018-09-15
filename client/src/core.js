@@ -17,7 +17,7 @@ const api = axios.create({
 })
 
 function errorFilter(promise) {
-  return promise.catch((error) => {
+  return promise.catch(error => {
     try {
       console.error('error', error)
 
@@ -41,7 +41,9 @@ function errorFilter(promise) {
 function enhanceReport(item) {
   item.created_at = moment(item.created_at)
   item.updated_at = moment(item.updated_at)
-  item.markdown = function () { return marked(this.content) }
+  item.markdown = function() {
+    return marked(this.content)
+  }
   return item
 }
 
@@ -54,41 +56,57 @@ export default {
   },
   initialize() {
     this.retriveMe()
-    this.retriveReports().catch(function (error) {
+    this.retriveReports().catch(function(error) {
       console.log(error)
     })
 
     this.initNewReport()
   },
   retriveMe() {
-    return api.get('/users/me').then(response => {
-      this.state.me = response.data
-    }).catch(error => {
-      if (!error.response) {
-        throw error
-      }
+    return api
+      .get('/users/me')
+      .then(response => {
+        if (response.data === 'BE_SIGN_UP') {
+          router.push('/signup')
+        } else {
+          this.state.me = response.data
+        }
+      })
+      .catch(error => {
+        if (!error.response) {
+          throw error
+        }
 
-      if (error.response.status !== 401) {
-        throw error
-      }
-    })
+        if (error.response.status !== 401) {
+          throw error
+        }
+      })
+  },
+  postXUser(name, nickname) {
+    return errorFilter(
+      api.post('/users/me', { name, nickname }).then(response => {
+        this.state.me = response.data
+      })
+    )
   },
   retriveReports() {
-    return errorFilter(api
-      .get('/reports')
-      .then((response) => {
+    return errorFilter(
+      api.get('/reports').then(response => {
         response.data.forEach(item => {
           this.state.list.push(enhanceReport(item))
         })
-      }))
+      })
+    )
   },
   postReport() {
-    return errorFilter(api.post('/reports', this.state.newReport).then((response) => {
-      this.state.list.unshift(enhanceReport(response.data))
-      this.posted = true
-      this.initNewReport()
-      router.push('/')
-    }))
+    return errorFilter(
+      api.post('/reports', this.state.newReport).then(response => {
+        this.state.list.unshift(enhanceReport(response.data))
+        this.posted = true
+        this.initNewReport()
+        router.push('/')
+      })
+    )
   },
   initNewReport() {
     this.state.newReport = {
@@ -96,24 +114,49 @@ export default {
       'content-type': 'text/x-markdown'
     }
   },
-  getMessagesOfValidationError(error) {
-    if (error.response.data.error.type === 'ValidationError') {
-      const items = error.response.data.error.items
-      let ret = []
-      Object.keys(items).forEach(property => {
-        const item = items[property]
-        ret = item.reasons
-          .map(reason => {
-            if (reason === 'required') {
-              return `${property}は必須です`
+  eachResponseErrors(error, handler) {
+    const e = error.response.data.error
+
+    const i18n = {
+      required: property => {
+        return `${property}は必須です`
+      },
+      toolong: property => {
+        return `${property}は長すぎます`
+      },
+      username_format: property => {
+        return `${property}に利用できる文字は半角英数小文字です`
+      },
+      usernickname_format: property => {
+        return `ニックネームに利用できる文字に一致しませんでした`
+      },
+      nothing: property => {
+        return `${property}が何らかのエラーです`
+      }
+    }
+
+    switch (e.type) {
+      case 'ValidationError':
+        const items = e.items
+        Object.keys(items).forEach(property => {
+          const item = items[property]
+          item.reasons.forEach(reason => {
+            if (i18n[reason]) {
+              return handler(i18n[reason](property), e.type, property)
             }
-            if (reason === 'toolong') {
-              return `${property}は長すぎます`
-            }
-            return `${property}が何らかのエラーです`
+            handler(i18n['nothing'](property), e.type, property)
           })
-      })
-      return ret
+        })
+        break
+      case 'ValueNotUniqueError':
+        handler(`${e.property}は既に存在します`, e.type, e.property)
+        break
+      case 'DuplicatedObjectError':
+        handler(`既に存在します`, e.type, null)
+        break
+
+      default:
+        break
     }
   }
 }

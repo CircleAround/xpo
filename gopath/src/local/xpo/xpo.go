@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/mjibson/goon"
-	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -20,24 +18,37 @@ func init() {
 
 	http.HandleFunc("/", handleRoot)
 	http.HandleFunc("/loggedin", handleLoggedIn)
+
 	http.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
-
-		if r.Method == "GET" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
-
-			getMe(w, r)
+		if r.Method == "OPTIONS" {
 			return
 		}
+
+		if !responseIfUnauthorized(w, r) {
+			return
+		}
+
+		if r.Method == "GET" {
+			safeFilter(w, r, getMe(w, r))
+			return
+		}
+		if r.Method == "POST" {
+			safeFilter(w, r, postMe(w, r))
+			return
+		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
 	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
+		if r.Method == "OPTIONS" {
+			return
+		}
 
 		if r.Method == "GET" {
-			getReports(w, r)
+			safeFilter(w, r, getReports(w, r))
 			return
 		}
 
@@ -46,70 +57,96 @@ func init() {
 				return
 			}
 
-			postReport(w, r)
+			safeFilter(w, r, postReport(w, r))
 			return
 		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 }
 
-func getMe(w http.ResponseWriter, r *http.Request) {
+func getMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
+	u := user.Current(c)
 
-	xu := xUserOrResponse(w, r)
-	if xu == nil {
-		log.Warningf(c, "xu==nil. response 401")
-		return
+	s := NewXUserService(c)
+	xu, err := s.GetByUser(u)
+	if err == nil {
+		apikit.ResponseJSON(w, xu)
+		return nil
 	}
 
-	apikit.ResponseJSON(w, &xu)
+	if err == datastore.ErrNoSuchEntity {
+		apikit.ResponseJSON(w, "BE_SIGN_UP")
+		return nil
+	}
+
+	return err
 }
 
-func getReports(w http.ResponseWriter, r *http.Request) {
-	s := NewReportService(r)
-	reports, err := s.RetriveAll()
-	if err != nil {
-		apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
-		return
-	}
-	apikit.ResponseJSON(w, reports)
-}
-
-func postReport(w http.ResponseWriter, r *http.Request) {
+func postMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
+	u := user.Current(c)
 
-	xu := xUserOrResponse(w, r)
-	if xu == nil {
-		log.Warningf(c, "xu==nil. response 401")
-		return
-	}
-
-	jsonBody, err := apikit.ParseJSONBody(r)
+	p := &XUserCreationParams{}
+	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return
+		return nil
 	}
 
-	log.Infof(c, "JSON: %v\n", jsonBody)
+	log.Infof(c, "params: %v\n", p)
 
-	content := jsonBody["content"].(string)
-	s := NewReportService(r)
-	report := Report{Content: content}
+	s := NewXUserService(c)
+	xu, err := s.Create(u, p)
 
-	err = s.Create(xu, &report)
 	if err != nil {
-		switch err.(type) {
-		default:
-			log.Warningf(c, "err: %v\n", err.Error())
-			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
-			return
-		case *apikit.ValidationError:
-			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
-			return
-		}
+		return err
+	}
+
+	apikit.ResponseJSON(w, xu)
+	return nil
+}
+
+func getReports(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+	s := NewReportService(c)
+	reports, err := s.RetriveAll()
+	if err != nil {
+		return err
+	}
+	apikit.ResponseJSON(w, reports)
+	return nil
+}
+
+func postReport(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+
+	xu := xUserOrResponse(w, r)
+	if xu == nil {
+		log.Warningf(c, "xu==nil. response 401")
+		return nil
+	}
+
+	p := &ReportCreationParams{}
+	err := apikit.ParseJSONBody(r, p)
+	if err != nil {
+		log.Warningf(c, "err: %v\n", err.Error())
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
+		return nil
+	}
+
+	log.Infof(c, "params: %v\n", p)
+
+	s := NewReportService(c)
+	report, err := s.Create(xu, *p)
+	if err != nil {
+		return err
 	}
 
 	apikit.ResponseJSON(w, report)
+	return nil
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -150,34 +187,6 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	allowClient(w)
 
 	if !redirectUnlessLoggedIn(w, r) {
-		return
-	}
-
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	log.Infof(c, "logged in.")
-
-	xu := &XUser{ID: u.ID}
-	err := datastore.RunInTransaction(c, func(ctx context.Context) error {
-		if err := g.Get(xu); err != nil {
-			if err != datastore.ErrNoSuchEntity {
-				return err
-			}
-
-			log.Infof(c, "XUser not found. create new one. : "+u.ID)
-			xu = &XUser{ID: u.ID, Name: "user" + u.ID, Email: u.Email}
-			_, ierr := g.Put(xu)
-			if ierr != nil {
-				return ierr
-			}
-		}
-		return nil
-	}, nil)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

@@ -1,13 +1,10 @@
 package xpo
 
 import (
-	"local/apikit"
-	"net/http"
+	"local/validatekit"
 	"time"
 
-	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -25,16 +22,16 @@ type Report struct {
 }
 
 type ReportService struct {
-	Request *http.Request
-	Goon    *goon.Goon
-	Context context.Context
+	AppEngineService
 }
 
-func NewReportService(r *http.Request) *ReportService {
+type ReportCreationParams struct {
+	Content string `json:"content" validate:"required"`
+}
+
+func NewReportService(c context.Context) *ReportService {
 	s := new(ReportService)
-	s.Request = r
-	s.Goon = goon.NewGoon(r)
-	s.Context = appengine.NewContext(r)
+	s.InitAppEngineService(c)
 	return s
 }
 
@@ -46,22 +43,21 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 	return
 }
 
-func (s *ReportService) Create(xu *XUser, report *Report) (err error) {
-	verr := apikit.NewValidationError()
-	if report.Content == "" {
-		verr.PushOne("content", apikit.Required)
+func (s *ReportService) Create(xu *XUser, params ReportCreationParams) (report *Report, err error) {
+	v := validatekit.NewValidate()
+	err = v.Struct(params)
+	if err != nil {
+		return nil, err
 	}
 
-	if verr.HasItem() {
-		return verr
-	}
+	report = &Report{Content: params.Content}
 
 	now := time.Now()
 	report.Author = xu.Name
 	report.CreatedAt = now
 	report.UpdatedAt = now
-	report.AuthorKey = s.Goon.Key(xu)
+	report.AuthorKey = s.KeyOf(xu)
 
-	_, err = s.Goon.Put(report)
+	err = s.Put(report)
 	return
 }

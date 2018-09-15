@@ -4,8 +4,8 @@
       <el-header>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
         <ul class="topmenu">
-          <li class="user_name">
-            {{state.me.name}}
+          <li class="user_name" v-if="state.me.id != null">
+            {{state.me.nickname}}[{{state.me.name}}]
           </li>
           <li>
             <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
@@ -32,12 +32,16 @@ import core from './core'
 export default {
   name: 'App',
   data() {
-    return { state: core.state }
+    return {
+      state: core.state
+    }
   }
 }
 </script>
 
-<style>
+<style lang="scss">
+@import '@/scss/main.scss';
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

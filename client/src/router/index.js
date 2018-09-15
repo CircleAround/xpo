@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Reports from '@/components/Reports'
 import ReportForm from '@/components/ReportForm'
+import SignupForm from '@/components/SignupForm'
 import About from '@/components/About'
 
 Vue.use(Router)
@@ -19,10 +20,14 @@ export default new Router({
       component: ReportForm
     },
     {
+      path: '/signup',
+      name: 'SignupForm',
+      component: SignupForm
+    },
+    {
       path: '/about',
       name: 'About',
       component: About
     }
-
   ]
 })

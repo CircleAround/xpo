@@ -21,15 +21,6 @@ export default {
   },
   created() {
     console.log('created')
-    if (core.posted) {
-      this.$message({
-        showClose: true,
-        message: '投稿しました！',
-        type: 'success',
-        center: true
-      })
-      core.posted = false
-    }
   },
   mounted() {
     console.log('mounted')

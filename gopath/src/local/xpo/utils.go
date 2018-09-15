@@ -3,11 +3,15 @@ package xpo
 import (
 	"net/http"
 	"os"
+	"reflect"
 
 	"github.com/mjibson/goon"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
+
+	"github.com/iancoleman/strcase"
+	validator "gopkg.in/go-playground/validator.v9"
 
 	"local/apikit"
 )
@@ -22,6 +26,33 @@ func allowOrigin(w http.ResponseWriter, origin string) {
 
 func allowClient(w http.ResponseWriter) {
 	allowOrigin(w, os.Getenv("ALLOW_ORIGIN"))
+}
+
+func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
+	c := appengine.NewContext(r)
+
+	if err != nil {
+		switch err.(type) {
+		case *ValueNotUniqueError:
+		case *DuplicatedObjectError:
+		case *validator.InvalidValidationError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
+		case validator.ValidationErrors:
+			ve := apikit.NewValidationError()
+			for _, err := range err.(validator.ValidationErrors) {
+				ve.PushOne(strcase.ToSnake(err.Field()), err.Tag())
+			}
+			apikit.ResponseFailure(w, r, ve, http.StatusUnprocessableEntity)
+			return
+
+		default:
+			log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
+			apikit.ResponseFailure(w, r, err, http.StatusInternalServerError)
+			return
+		}
+	}
 }
 
 func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
@@ -77,11 +108,14 @@ func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
-	// ログインしてなければリダイレクト
+
+	log.Infof(c, "user: %v", u)
+
 	if u != nil {
 		return true
 	}
 
+	// ログインしてなければリダイレクト
 	responseUnauthorized(w, r)
 	return false
 }

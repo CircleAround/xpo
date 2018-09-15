@@ -3,11 +3,15 @@ package apikit
 import (
 	"fmt"
 	"strings"
+
+	funk "github.com/thoas/go-funk"
 )
 
 const (
 	// Required is specify required error
 	Required string = "required"
+
+	InvalidFormat string = "invalid_format"
 
 	// TooLong is specify too long contents
 	TooLong string = "toolong"
@@ -68,4 +72,24 @@ func (eri ValidationErrorItem) Error() string {
 // JoinReasons is a function for getting joinded reasons to string
 func (eri *ValidationErrorItem) JoinReasons() string {
 	return strings.Join(eri.Reasons, ",")
+}
+
+// HasReason is a check function for containing reason string.
+func (eri *ValidationErrorItem) HasReason(reason string) bool {
+	return funk.Contains(eri.Reasons, reason)
+}
+
+// HasRequired is a check function for being required
+func (eri *ValidationErrorItem) HasRequired() bool {
+	return funk.Contains(eri.Reasons, Required)
+}
+
+// HasInvalidFormat is a check function for being invalid format
+func (eri *ValidationErrorItem) HasInvalidFormat() bool {
+	return funk.Contains(eri.Reasons, InvalidFormat)
+}
+
+// HasTooLong is a check function for being too long
+func (eri *ValidationErrorItem) HasTooLong() bool {
+	return funk.Contains(eri.Reasons, TooLong)
 }
