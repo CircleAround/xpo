@@ -1,6 +1,7 @@
 package xpo
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"reflect"
@@ -15,6 +16,17 @@ import (
 
 	"local/apikit"
 )
+
+func FullURL(r *http.Request, path string) string {
+	hostName := r.Host
+	var scheme string
+	if r.TLS == nil {
+		scheme = "http"
+	} else {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%v://%v%v", scheme, hostName, path)
+}
 
 func allowOrigin(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -102,7 +114,7 @@ func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 	url, _ := user.LoginURL(c, "/loggedin")
 	code := http.StatusUnauthorized
 
-	apikit.ResponseFailure(w, r, url, code)
+	apikit.ResponseFailure(w, r, FullURL(r, url), code)
 }
 
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {

@@ -13,6 +13,12 @@ import (
 	"local/apikit"
 )
 
+type XUserResponse struct {
+	XUser
+	LoginURL  string `json:"login_url"`
+	LogoutURL string `json:"logout_url"`
+}
+
 func init() {
 	// message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
 
@@ -71,8 +77,15 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 
 	s := NewXUserService(c)
 	xu, err := s.GetByUser(u)
+	loginURL, _ := user.LoginURL(c, "/")
+	logoutURL, _ := user.LogoutURL(c, "/")
 	if err == nil {
-		apikit.ResponseJSON(w, xu)
+		res := XUserResponse{
+			XUser:     *xu,
+			LoginURL:  FullURL(r, loginURL),
+			LogoutURL: FullURL(r, logoutURL),
+		}
+		apikit.ResponseJSON(w, res)
 		return nil
 	}
 

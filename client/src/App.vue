@@ -4,17 +4,32 @@
       <el-header>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
         <ul class="topmenu">
-          <li class="user_name" v-if="state.me.id != null">
-            {{state.me.nickname}}[{{state.me.name}}]
-          </li>
-          <li>
-            <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
-          </li>
-          <li>
-            <router-link to='/report'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
-          </li>
+          <template v-if="isLoggedIn">
+            <li class="user_name">
+              {{state.me.nickname}}[{{state.me.name}}]
+            </li>
+            <li>
+              <router-link to='/report'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
+            </li>
+            <li>
+              <el-dropdown>
+                <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item >
+                    <router-link to='/about'>About</router-link>
+                  </el-dropdown-item>
+                  <el-dropdown-item divided><a v-bind:href="state.me.logout_url">Logout</a></el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </li>
+          </template>
+          <template v-else>
+            <li>
+              <a v-bind:href="state.me.logout_url">Googleアカウントでログイン</a>して投稿する
+              <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
+            </li>
+          </template>
         </ul>
-
       </el-header>
       <el-main>
         <router-view/>
@@ -35,6 +50,11 @@ export default {
     return {
       state: core.state
     }
+  },
+  computed: {
+    isLoggedIn() {
+      return core.isLoggedIn()
+    }
   }
 }
 </script>
@@ -52,6 +72,14 @@ export default {
 .el-container {
   margin: 0 auto;
   max-width: 960px;
+}
+
+.el-dropdown-menu__item a {
+  text-decoration: none;
+}
+
+.el-dropdown-menu__item a:visited {
+  text-decoration: none;
 }
 
 .site_title {
