@@ -11,6 +11,5 @@ includes:
 skip_files:
   - ^(.*/)?test.go$
   - ^(.*/)?testkit.go
-  - ^(.*/)?instance_classic.go
   - ^(.*/)?testarator.go
   - ^(.*)/appengine/aetest/(.*)
