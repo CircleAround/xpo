@@ -1,6 +1,7 @@
 .DS_Store
 gopath/src/local/vendor
 gopath/pkg
+gobuild/pkg
 .env
 npm-debug.log
 .vscode
