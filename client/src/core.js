@@ -124,6 +124,12 @@ export default {
       toolong: property => {
         return `${property}は長すぎます`
       },
+      username_format: property => {
+        return `${property}に利用できる文字は半角英数小文字です`
+      },
+      usernickname_format: property => {
+        return `ニックネームに利用できる文字に一致しませんでした`
+      },
       nothing: property => {
         return `${property}が何らかのエラーです`
       }

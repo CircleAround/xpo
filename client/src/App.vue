@@ -4,7 +4,7 @@
       <el-header>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
         <ul class="topmenu">
-          <li class="user_name">
+          <li class="user_name" v-if="state.me.id != null">
             {{state.me.nickname}}[{{state.me.name}}]
           </li>
           <li>
@@ -32,7 +32,9 @@ import core from './core'
 export default {
   name: 'App',
   data() {
-    return { state: core.state }
+    return {
+      state: core.state
+    }
   }
 }
 </script>
