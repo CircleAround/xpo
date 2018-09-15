@@ -49,7 +49,13 @@ function enhanceReport(item) {
 
 export default {
   state: {
-    me: { id: null, email: null, name: null },
+    me: {
+      id: null,
+      email: null,
+      name: null,
+      login_url: null,
+      logout_url: null
+    },
     list: [],
     newReport: { content: null },
     posted: false
@@ -85,7 +91,7 @@ export default {
           throw error
         }
 
-        this.state.me.logout_url = error.response.data.error
+        this.state.me.login_url = error.response.data.error
       })
   },
   postXUser(name, nickname) {
