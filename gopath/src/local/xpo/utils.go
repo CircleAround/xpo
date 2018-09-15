@@ -28,6 +28,25 @@ func FullURL(r *http.Request, path string) string {
 	return fmt.Sprintf("%v://%v%v", scheme, hostName, path)
 }
 
+func LoginFullURL(r *http.Request) string {
+	c := appengine.NewContext(r)
+	url, _ := user.LoginURL(c, "/loggedin")
+	return safeFullUrl(r, url)
+}
+
+func LogoutFullURL(r *http.Request) string {
+	c := appengine.NewContext(r)
+	url, _ := user.LogoutURL(c, "/")
+	return safeFullUrl(r, url)
+}
+
+func safeFullUrl(r *http.Request, url string) string {
+	if appengine.IsDevAppServer() {
+		return FullURL(r, url)
+	}
+	return url
+}
+
 func allowOrigin(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Origin", origin)
 	w.Header().Set("Content-Type", "application/json")
@@ -110,11 +129,8 @@ func xUserOrResponse(w http.ResponseWriter, r *http.Request) *XUser {
 }
 
 func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	url, _ := user.LoginURL(c, "/loggedin")
 	code := http.StatusUnauthorized
-
-	apikit.ResponseFailure(w, r, FullURL(r, url), code)
+	apikit.ResponseFailure(w, r, LoginFullURL(r), code)
 }
 
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {

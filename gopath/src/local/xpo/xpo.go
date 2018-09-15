@@ -77,13 +77,11 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 
 	s := NewXUserService(c)
 	xu, err := s.GetByUser(u)
-	loginURL, _ := user.LoginURL(c, "/")
-	logoutURL, _ := user.LogoutURL(c, "/")
 	if err == nil {
 		res := XUserResponse{
 			XUser:     *xu,
-			LoginURL:  FullURL(r, loginURL),
-			LogoutURL: FullURL(r, logoutURL),
+			LoginURL:  LoginFullURL(r),
+			LogoutURL: LogoutFullURL(r),
 		}
 		apikit.ResponseJSON(w, res)
 		return nil
