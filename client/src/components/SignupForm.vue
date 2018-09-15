@@ -7,7 +7,7 @@
             title="初めてのご利用の方ですね？ユーザー名とニックネームを入れてから進みましょう。"
             type="success">
           </el-alert>
-        </el-col>  
+        </el-col>
       </el-row>
       <div class="errors" v-if="errors.length > 0">
         <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
@@ -17,7 +17,7 @@
       <div>
         <el-row>
           <el-col  :sm="{span:6, offset: 4}">
-            <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>          
+            <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>
           </el-col>
           <el-col  :sm="10">
             <el-input placeholder="ユーザー名（半角英数小文字）" v-model="form.name" id="input-name"></el-input>
@@ -28,7 +28,7 @@
         </el-row>
         <el-row>
           <el-col  :sm="{span:6, offset: 4}">
-            <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>          
+            <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>
           </el-col>
           <el-col  :sm="10">
             <el-input placeholder="ニックネーム" v-model="form.nickname" id="input-nickname"></el-input>
@@ -67,7 +67,7 @@ export default {
       this.errors = []
       this.propErrors = {}
       core
-        .postXUser(this.name, this.nickname)
+        .postXUser(this.form.name, this.form.nickname)
         .then(() => {
           this.$message({
             showClose: true,

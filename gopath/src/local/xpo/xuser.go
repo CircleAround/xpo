@@ -95,7 +95,7 @@ func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
 
 func newValidator() *validatekit.Validate {
 	v := validatekit.NewValidate()
-	v.RegisterRegexValidation("username_format", `^[0-9a-zA-Z_]+$`)
+	v.RegisterRegexValidation("username_format", `^[0-9a-z_]+$`)
 	v.RegisterRegexValidation("usernickname_format", `^[0-9a-zA-Z_ぁ-んァ-ヶー一-龠]+$`)
 	return v
 }
