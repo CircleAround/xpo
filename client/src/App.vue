@@ -25,7 +25,7 @@
           </template>
           <template v-else>
             <li>
-              <a v-bind:href="state.me.logout_url">Googleアカウントでログイン</a>して投稿する
+              <a v-bind:href="state.me.login_url">Googleアカウントでログイン</a>して投稿する
               <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
             </li>
           </template>
