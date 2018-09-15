@@ -62,6 +62,10 @@ export default {
 
     this.initNewReport()
   },
+  isLoggedIn() {
+    if (!this.state) return false
+    return this.state.me.id != null
+  },
   retriveMe() {
     return api
       .get('/users/me')
@@ -80,6 +84,8 @@ export default {
         if (error.response.status !== 401) {
           throw error
         }
+
+        this.state.me.logout_url = error.response.data.error
       })
   },
   postXUser(name, nickname) {
