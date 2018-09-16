@@ -7,7 +7,7 @@ import About from '@/components/About'
 
 Vue.use(Router)
 
-export default new Router({
+const routerConfig = {
   routes: [
     {
       path: '/',
@@ -30,4 +30,10 @@ export default new Router({
       component: About
     }
   ]
-})
+}
+
+if (NODE_ENV === 'production') {
+  routerConfig.mode = 'history'
+}
+
+export default new Router(routerConfig)
