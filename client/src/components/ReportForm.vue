@@ -3,7 +3,7 @@
     <div v-if="state.me.id">
       <div class="editor">
         <textarea v-model="state.newReport.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
-        <div class="preview" v-html="markdown"></div>
+        <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
         <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
