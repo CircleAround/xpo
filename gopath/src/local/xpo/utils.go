@@ -15,6 +15,7 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 
 	"local/apikit"
+	"local/gaekit"
 )
 
 func FullURL(r *http.Request, path string) string {
@@ -64,8 +65,8 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 
 	if err != nil {
 		switch err.(type) {
-		case *ValueNotUniqueError:
-		case *DuplicatedObjectError:
+		case *gaekit.ValueNotUniqueError:
+		case *gaekit.DuplicatedObjectError:
 		case *validator.InvalidValidationError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return

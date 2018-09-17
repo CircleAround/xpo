@@ -1,70 +1,62 @@
-package xpo
+package xpo_test
 
 import (
 	"local/apikit"
+	"local/gaekit"
 	"local/testkit"
+	"local/xpo"
 	"reflect"
 	"testing"
 
 	"google.golang.org/appengine/user"
 )
 
-func TestMain(m *testing.M) {
-	testkit.BootstrapTest(m)
-}
-
-func TestDummy(t *testing.T) {
-	t.Logf("Start")
-	actual := 30
-	expected := 30
-	if actual != expected {
-		t.Errorf("got %v\nwant %v", actual, expected)
-	}
-}
-
-func TestScenario(t *testing.T) {
+func TestXUserScenario(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	s := NewXUserService(c)
+	f := NewTestFactory(c)
+	s := xpo.NewXUserService(c)
 
 	{
 		t.Log("Scenario")
 
-		var u user.User
-		u.Email = "test@example.com"
-		u.ID = "1"
+		d := f.BuildXUser()
 
-		xu, err := s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "mynicknameニックネーム"})
+		var u user.User
+		u.Email = d.Email
+		u.ID = d.ID
+
+		xu, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		{
 			t.Logf("Standard")
-			ret := &XUser{ID: xu.ID}
+			ret := &xpo.XUser{ID: xu.ID}
 			if err = s.Get(ret); err != nil {
 				t.Fatal(err)
 			}
 
-			if ret.Email != "test@example.com" {
+			if ret.Email != d.Email {
 				t.Fatalf("It should get saved email!: %v", ret.Email)
 			}
-			if ret.Name != "myname" {
+			if ret.Name != d.Name {
 				t.Fatalf("It should get saved Name!: %v", ret.Name)
 			}
-			if ret.Nickname != "mynicknameニックネーム" {
+			if ret.Nickname != d.Nickname {
 				t.Fatalf("It should get saved Nickname!: %v", ret.Nickname)
 			}
 
 			{
 				t.Logf("Duplicaed")
-				xu, err = s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "mynickname"})
+				xu, err = s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
 				if err == nil {
 					t.Fatal("It should error on creating duplicated user")
 				}
 
-				if reflect.TypeOf(err) != reflect.TypeOf(&DuplicatedObjectError{}) {
+				if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
 					t.Fatalf("It should be DuplicatedObjectError: %v", reflect.TypeOf(err))
 				}
 			}
@@ -72,16 +64,17 @@ func TestScenario(t *testing.T) {
 			{
 				t.Logf("Unique email")
 
+				d2 := f.BuildXUser()
 				var u user.User
-				u.Email = "test3@example.com"
-				u.ID = "3"
+				u.Email = d2.Email
+				u.ID = d2.ID
 
-				xu, err = s.Create(&u, &XUserCreationParams{Name: "myname", Nickname: "nynickname3"})
+				xu, err = s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
 				if err == nil {
 					t.Fatal("It should error on creating duplicated name user")
 				}
 
-				if reflect.TypeOf(err) != reflect.TypeOf(&ValueNotUniqueError{}) {
+				if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.ValueNotUniqueError{}) {
 					t.Fatalf("It should be ValueNotUniqueError: %v", reflect.TypeOf(err))
 				}
 			}
@@ -93,27 +86,30 @@ func TestValidation(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	s := NewXUserService(c)
+	f := NewTestFactory(c)
+	s := xpo.NewXUserService(c)
 	t.Logf("Validation")
 
+	d := f.BuildXUser()
+
 	var u user.User
-	u.Email = "test2@example.com"
-	u.ID = "2"
+	u.Email = d.Email
+	u.ID = d.ID
 
 	{
 		t.Logf("Name")
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Nickname: "nynickname"})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Name: "", Nickname: "nynickname"})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: "", Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Name: "a_&", Nickname: "nynickname"})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: "a_&", Nickname: d.Nickname})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
 		}
 	}
@@ -121,17 +117,17 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Nickname")
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4"})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4", Nickname: ""})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: ""})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, &XUserCreationParams{Name: "myname4", Nickname: "<nynickname"})
+			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: "<nynickname"})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
 		}
 	}

@@ -156,7 +156,7 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewReportService(c)
-	report, err := s.Create(xu, *p)
+	report, err := s.Create(*xu, *p)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,14 @@ import (
 	funk "github.com/thoas/go-funk"
 )
 
+type IllegalAccessError struct {
+	Message string
+}
+
+func (err IllegalAccessError) Error() string {
+	return err.Message
+}
+
 const (
 	// Required is specify required error
 	Required string = "required"

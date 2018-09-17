@@ -1,7 +1,6 @@
 package xpo
 
 import (
-	_ "local/apikit"
 	_ "local/xpo"
 )
 
