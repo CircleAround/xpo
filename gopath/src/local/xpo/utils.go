@@ -66,7 +66,13 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 	if err != nil {
 		switch err.(type) {
 		case *gaekit.ValueNotUniqueError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
 		case *gaekit.DuplicatedObjectError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
 		case *validator.InvalidValidationError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
