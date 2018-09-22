@@ -9,7 +9,7 @@
           </el-alert>
         </el-col>
       </el-row>
-      <profile-form :errors="errors" :propErrors="propErrors" :name="form.name" :nickname="form.nickname" v-on:clicked-submit="postXUser">        
+      <profile-form :errors="errors" :propErrors="propErrors" :name="form.name" :nickname="form.nickname" v-on:clicked-submit="postXUser">
       </profile-form>
     </el-form>
   </div>

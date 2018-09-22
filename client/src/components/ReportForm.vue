@@ -36,13 +36,31 @@ export default {
     console.log('created')
     console.log(core)
     console.log(core.state)
+
+    if (this.$route.params.id) {
+      core
+        .findReport4Update(this.$route.params.user_id, this.$route.params.id)
+        .then(() => {
+          this.updateMarkdown()
+        })
+    }
   },
   methods: {
     postReport() {
       this.errors = []
-      core
-        .postReport()
-        .then(() => {
+
+      var ret
+      if (this.$route.params.id) {
+        ret = core.updateReport(this.$route.params).then(() => {
+          this.$message({
+            showClose: true,
+            message: '更新しました！',
+            type: 'success',
+            center: true
+          })
+        })
+      } else {
+        ret = core.postReport().then(() => {
           this.$message({
             showClose: true,
             message: '投稿しました！',
@@ -50,11 +68,13 @@ export default {
             center: true
           })
         })
-        .catch(error => {
-          core.eachResponseErrors(error, (msg, type, property) => {
-            this.errors.push(msg)
-          })
+      }
+
+      ret.catch(error => {
+        core.eachResponseErrors(error, (msg, type, property) => {
+          this.errors.push(msg)
         })
+      })
     },
     updateMarkdown() {
       this.markdown = marked(this.state.newReport.content)

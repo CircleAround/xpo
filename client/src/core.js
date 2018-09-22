@@ -1,42 +1,10 @@
-import consts from './consts'
-import axios from 'axios'
 import moment from 'moment-timezone'
 import marked from 'marked'
 import router from './router'
+import service from './service'
+import collection from './lib/collection'
 
 moment.tz.setDefault('Asia/Tokyo')
-
-const api = axios.create({
-  baseURL: consts.API_ENDPOINT,
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest'
-  },
-  responseType: 'json',
-  withCredentials: true
-})
-
-function errorFilter(promise) {
-  return promise.catch(error => {
-    try {
-      console.error('error', error)
-
-      if (!error.response) {
-        throw error
-      }
-
-      if (error.response.status === 401) {
-        location.href = process.env.API_ENDPOINT
-        return
-      }
-
-      throw error
-    } catch (ex) {
-      console.error(ex)
-      throw ex
-    }
-  })
-}
 
 function enhanceReport(item) {
   item.created_at = moment(item.created_at)
@@ -47,6 +15,18 @@ function enhanceReport(item) {
   return item
 }
 
+class ReportListMap extends collection.ListMap {
+  getKey(object) {
+    return `${object.author_id}/${object.id}`
+  }
+
+  enhanceObject(object) {
+    return enhanceReport(object)
+  }
+}
+
+const listMap = new ReportListMap()
+
 export default {
   state: {
     me: {
@@ -56,7 +36,7 @@ export default {
       login_url: null,
       logout_url: null
     },
-    list: [],
+    list: listMap.array,
     newReport: { content: null },
     posted: false
   },
@@ -73,8 +53,8 @@ export default {
     return this.state.me.id != null
   },
   retriveMe() {
-    return api
-      .get('/users/me')
+    return service.users
+      .retriveMe()
       .then(response => {
         if (response.data === 'BE_SIGN_UP') {
           router.push('/signup')
@@ -95,30 +75,42 @@ export default {
       })
   },
   postXUser(name, nickname) {
-    return errorFilter(
-      api.post('/users/me', { name, nickname }).then(response => {
-        this.state.me = response.data
-      })
-    )
+    return service.users.postXUser(name, nickname).then(response => {
+      this.state.me = response.data
+    })
   },
   retriveReports() {
-    return errorFilter(
-      api.get('/reports').then(response => {
-        response.data.forEach(item => {
-          this.state.list.push(enhanceReport(item))
-        })
+    return service.reports.retriveReports().then(response => {
+      response.data.forEach(item => {
+        listMap.push(item)
       })
-    )
+    })
+  },
+  findReport(authorId, id) {
+    return service.reports.findReport(authorId, id).then(response => {
+      return listMap.push(response.data)
+    })
+  },
+  findReport4Update(authorId, id) {
+    return this.findReport(authorId, id).then(newObject => {
+      Object.assign(this.state.newReport, newObject)
+    })
   },
   postReport() {
-    return errorFilter(
-      api.post('/reports', this.state.newReport).then(response => {
-        this.state.list.unshift(enhanceReport(response.data))
-        this.posted = true
+    return service.reports.postReport(this.state.newReport).then(response => {
+      listMap.unshift(response.data)
+      this.initNewReport()
+      router.push('/')
+    })
+  },
+  updateReport(params) {
+    return service.reports
+      .updateReport(this.state.newReport, params)
+      .then(response => {
+        listMap.updateItem(response.data)
         this.initNewReport()
         router.push('/')
       })
-    )
   },
   initNewReport() {
     this.state.newReport = {

@@ -85,5 +85,20 @@ func TestReportScenario(t *testing.T) {
 			}
 
 		}
+
+		{
+			t.Logf("Find: %v", r)
+			hit, err := s.Find(xu.ID, r.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if *hit.AuthorKey != *s.KeyOf(xu) {
+				t.Error("It should be equal AuthorKey and Key of xu")
+			}
+			if hit.ID != r.ID {
+				t.Error("It should be equal ID")
+			}
+		}
 	}
 }

@@ -9,7 +9,7 @@
               {{state.me.nickname}}[{{state.me.name}}]
             </li>
             <li>
-              <router-link to='/report'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
+              <router-link to='/reports/new'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
             </li>
             <li>
               <el-dropdown>

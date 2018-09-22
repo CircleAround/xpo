@@ -15,8 +15,13 @@ const routerConfig = {
       component: Reports
     },
     {
-      path: '/report',
+      path: '/reports/new',
       name: 'ReportForm',
+      component: ReportForm
+    },
+    {
+      path: '/reports/:user_id/:id/edit',
+      name: 'ReportEditForm',
       component: ReportForm
     },
     {

@@ -12,9 +12,10 @@ import (
 
 // Report struct
 type Report struct {
-	ID        int64          `datastore:"-" goon:"id"`
-	AuthorKey *datastore.Key `datastore:"-" goon:"parent" validate:"required"`
-	Author    string         `json:"author"`
+	ID        int64          `json:"id" datastore:"-" goon:"id"`
+	AuthorKey *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
+	AuthorID  string         `json:"author_id" validate:"required"`
+	Author    string         `json:"author" validate:"required"`
 	Content   string         `json:"content" validate:"required"`
 	Year      int16          `json:"year"`
 	Month     int8           `json:"month"`
@@ -56,15 +57,28 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 	return
 }
 
+func (s *ReportService) Find(uid string, id int64) (report *Report, err error) {
+	xu := XUser{ID: uid}
+	return s.FindByXUserAndID(xu, id)
+}
+
+func (s *ReportService) FindByXUserAndID(xu XUser, id int64) (report *Report, err error) {
+	ak := s.KeyOf(xu)
+	report = &Report{AuthorKey: ak, ID: id}
+	err = s.Get(report)
+	return
+}
+
 func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *Report, err error) {
 	err = validatekit.NewValidate().Struct(params)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	report = &Report{}
 	report.Content = params.Content
 	report.Author = xu.Name
+	report.AuthorID = xu.ID
 	report.AuthorKey = s.KeyOf(xu)
 
 	now := s.now()
@@ -78,13 +92,12 @@ func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *R
 func (s *ReportService) Update(xu XUser, params ReportUpdatingParams) (report *Report, err error) {
 	err = validatekit.NewValidate().Struct(params)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	report = &Report{ID: params.ID, AuthorKey: s.KeyOf(xu)}
-	err = s.Get(report)
+	report, err = s.FindByXUserAndID(xu, params.ID)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	report.Content = params.Content

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -20,12 +21,11 @@ type XUserResponse struct {
 }
 
 func init() {
-	// message := fmt.Sprintf("ALLOW_ORIGIN=%s", os.Getenv("ALLOW_ORIGIN"))
+	r := mux.NewRouter()
+	r.HandleFunc("/", handleRoot)
+	r.HandleFunc("/loggedin", handleLoggedIn)
 
-	http.HandleFunc("/", handleRoot)
-	http.HandleFunc("/loggedin", handleLoggedIn)
-
-	http.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -47,7 +47,34 @@ func init() {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
-	http.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/reports/{user_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+		allowClient(w)
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		if r.Method == "GET" {
+			if !responseIfUnauthorized(w, r) {
+				return
+			}
+
+			safeFilter(w, r, getReport(w, r))
+			return
+		}
+
+		if r.Method == "PUT" {
+			if !responseIfUnauthorized(w, r) {
+				return
+			}
+
+			safeFilter(w, r, updateReport(w, r))
+			return
+		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	})
+
+	r.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -69,6 +96,8 @@ func init() {
 
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
+
+	http.Handle("/", r)
 }
 
 func getMe(w http.ResponseWriter, r *http.Request) error {
@@ -125,6 +154,24 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func getReport(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+	s := NewReportService(c)
+	p := apikit.URLParams(r)
+	uid := p.Get("user_id")
+	id, err := p.AsInt64("id")
+	if err != nil {
+		return err
+	}
+
+	reports, err := s.Find(uid, id)
+	if err != nil {
+		return err
+	}
+	apikit.ResponseJSON(w, reports)
+	return nil
+}
+
 func getReports(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	s := NewReportService(c)
@@ -157,6 +204,41 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 
 	s := NewReportService(c)
 	report, err := s.Create(*xu, *p)
+	if err != nil {
+		return err
+	}
+
+	apikit.ResponseJSON(w, report)
+	return nil
+}
+
+func updateReport(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+
+	xu := xUserOrResponse(w, r)
+	if xu == nil {
+		log.Warningf(c, "xu==nil. response 401")
+		return nil
+	}
+
+	p := &ReportUpdatingParams{}
+	err := apikit.ParseJSONBody(r, p)
+	if err != nil {
+		log.Warningf(c, "err: %v\n", err.Error())
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
+		return nil
+	}
+
+	id, err := apikit.URLParams(r).AsInt64("id")
+	if err != nil {
+		return err
+	}
+	p.ID = id
+
+	log.Infof(c, "params: %v\n", p)
+
+	s := NewReportService(c)
+	report, err := s.Update(*xu, *p)
 	if err != nil {
 		return err
 	}
