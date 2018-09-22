@@ -2,6 +2,7 @@
   <div class="report_form">
     <div v-if="state.me.id">
       <div class="editor">
+        <overlay :visible="loading"></overlay>
         <textarea v-model="state.newReport.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
@@ -11,6 +12,7 @@
         </div>
       </div>
       <div class="actions">
+        <overlay :visible="loading"></overlay>
         <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
       </div>
     </div>
@@ -21,56 +23,72 @@
 </template>
 
 <script>
-import core from '../core'
+import core from '../../core'
 import marked from 'marked'
+import Overlay from './Overlay'
+
+const creatingStrategy = {
+  initialize() {
+    core.initNewReport()
+    this.updateMarkdown()
+  },
+  postReport() {
+    return core.postReport().then(() => {
+      this.$message({
+        showClose: true,
+        message: '投稿しました！',
+        type: 'success',
+        center: true
+      })
+    })
+  }
+}
+
+const updatingStrategy = {
+  initialize() {
+    this.loading = true
+    core
+      .findReport4Update(this.$route.params.user_id, this.$route.params.id)
+      .then(() => {
+        this.updateMarkdown()
+        this.loading = false
+      })
+  },
+  postReport() {
+    return core.updateReport(this.$route.params).then(() => {
+      this.$message({
+        showClose: true,
+        message: '更新しました！',
+        type: 'success',
+        center: true
+      })
+    })
+  }
+}
+
 export default {
-  name: 'report_form',
+  name: 'BasicReportForm',
+  components: { Overlay },
   data() {
     return {
       markdown: '',
       errors: [],
-      state: core.state
+      state: core.state,
+      loading: false
     }
   },
   created() {
     console.log('created')
-    console.log(core)
-    console.log(core.state)
-
-    if (this.$route.params.id) {
-      core
-        .findReport4Update(this.$route.params.user_id, this.$route.params.id)
-        .then(() => {
-          this.updateMarkdown()
-        })
-    }
+    this.initialize()
   },
   methods: {
+    initialize() {},
+
+    doPostReport() {},
+
     postReport() {
       this.errors = []
-
-      var ret
-      if (this.$route.params.id) {
-        ret = core.updateReport(this.$route.params).then(() => {
-          this.$message({
-            showClose: true,
-            message: '更新しました！',
-            type: 'success',
-            center: true
-          })
-        })
-      } else {
-        ret = core.postReport().then(() => {
-          this.$message({
-            showClose: true,
-            message: '投稿しました！',
-            type: 'success',
-            center: true
-          })
-        })
-      }
-
-      ret.catch(error => {
+      this.doPostReport.call(this).catch(error => {
         core.eachResponseErrors(error, (msg, type, property) => {
           this.errors.push(msg)
         })
@@ -83,10 +101,10 @@ export default {
 }
 </script>
 
-<!-- Add 'scoped' attribute to limit CSS to this component only -->
 <style scoped>
 .editor {
   display: flex;
+  position: relative;
 }
 
 .textcontent {
@@ -108,5 +126,6 @@ export default {
 .actions {
   padding: 5px;
   text-align: right;
+  position: relative;
 }
 </style>
