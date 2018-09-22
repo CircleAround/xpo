@@ -9,48 +9,18 @@
           </el-alert>
         </el-col>
       </el-row>
-      <div class="errors" v-if="errors.length > 0">
-        <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
-          {{item}}
-        </div>
-      </div>
-      <div>
-        <el-row>
-          <el-col  :sm="{span:6, offset: 4}">
-            <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>
-          </el-col>
-          <el-col  :sm="10">
-            <el-input placeholder="ユーザー名（半角英数小文字）" v-model="form.name" id="input-name"></el-input>
-            <div class="errors" v-if="propErrors.name">
-              <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
-            </div>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col  :sm="{span:6, offset: 4}">
-            <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>
-          </el-col>
-          <el-col  :sm="10">
-            <el-input placeholder="ニックネーム" v-model="form.nickname" id="input-nickname"></el-input>
-            <div class="errors" v-if="propErrors.nickname">
-              <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
-            </div>
-          </el-col>
-        </el-row>
-      </div>
-      <el-row class="actions">
-        <el-col :sm="{offset:4, span: 16}">
-          <el-button type="primary" icon="el-icon-check" @click='postXUser()'></el-button>
-        </el-col>
-      </el-row>
+      <profile-form :errors="errors" :propErrors="propErrors" :name="form.name" :nickname="form.nickname" v-on:clicked-submit="postXUser">
+      </profile-form>
     </el-form>
   </div>
 </template>
 
 <script>
+import ProfileForm from './parts/ProfileForm'
 import core from '../core'
 export default {
   name: 'signup_form',
+  components: { ProfileForm },
   data() {
     return {
       propErrors: {},
@@ -63,7 +33,9 @@ export default {
     }
   },
   methods: {
-    postXUser() {
+    postXUser(params) {
+      this.form.name = params.username
+      this.form.nickname = params.nickname
       this.errors = []
       this.propErrors = {}
       core
@@ -118,30 +90,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.editor {
-  display: flex;
-}
-
-.textcontent {
-  flex: 1;
-  width: 100%;
-  height: 10em;
-
-  font-size: 16px;
-  border: solid 1px #ccc;
-}
-
-.preview {
-  flex: 1;
-  margin: 0 10px;
-  padding: 10px;
-  background-color: #f2f2f2;
-}
-
-.actions {
-  text-align: right;
-}
-
 .el-row {
   margin-bottom: 18px;
 }

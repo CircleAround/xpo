@@ -1,4 +1,4 @@
-package xpo
+package gaekit
 
 import (
 	"github.com/mjibson/goon"

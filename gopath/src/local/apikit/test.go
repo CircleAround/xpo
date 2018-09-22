@@ -1,54 +1,11 @@
 package apikit
 
 import (
-	"context"
-	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
-	"github.com/favclip/testerator"
-	"google.golang.org/appengine/aetest"
-
 	validator "gopkg.in/go-playground/validator.v9"
 )
-
-func BootstrapTest(m *testing.M) {
-	_, _, err := testerator.SpinUp()
-
-	if err != nil {
-		fmt.Printf(err.Error())
-		os.Exit(1)
-	}
-
-	status := m.Run()
-
-	err = testerator.SpinDown()
-	if err != nil {
-		fmt.Printf(err.Error())
-		os.Exit(1)
-	}
-
-	os.Exit(status)
-}
-
-func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
-	i, c, err := testerator.SpinUp()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	done := func() {
-		testerator.SpinDown()
-
-		err := recover()
-		if err != nil {
-			t.Fatalf("Panic!:", err)
-		}
-	}
-
-	return i, c, done
-}
 
 // ShouldHaveValidationError is matcher for property with tag
 func ShouldHaveValidationError(t *testing.T, err error, property string, tag string) {

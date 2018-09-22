@@ -32,3 +32,8 @@ func NewSuccess() Success {
 func NewFailure(data interface{}) Failure {
 	return Failure{Status: NG, Error: data}
 }
+
+type Params interface {
+	Get(key string) string
+	AsInt64(key string) (int64, error)
+}

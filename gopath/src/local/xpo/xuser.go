@@ -6,6 +6,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
+	"local/gaekit"
 	"local/validatekit"
 )
 
@@ -24,7 +25,7 @@ type _XUserNameUniqueIndex struct {
 
 // XUserService is Service for XUser
 type XUserService struct {
-	AppEngineService
+	gaekit.AppEngineService
 }
 
 // XUserCreationParams is parameter of Create
@@ -58,7 +59,7 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
 		if err = s.Get(xu); err == nil {
 			log.Infof(s.Context, "%v found!. duplicated.", xu)
-			return &DuplicatedObjectError{Type: "DuplicatedObjectError"}
+			return &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
 		}
 		if err != datastore.ErrNoSuchEntity {
 			log.Infof(s.Context, "%v error.", err)
