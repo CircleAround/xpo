@@ -13,12 +13,13 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(moment)
 
-core.initialize()
-
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  router,
-  components: { App },
-  template: '<App/>'
+// TODO: loading view...
+core.initialize().then(() => {
+  /* eslint-disable no-new */
+  new Vue({
+    el: '#app',
+    router,
+    components: { App },
+    template: '<App/>'
+  })
 })

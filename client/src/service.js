@@ -39,6 +39,9 @@ const UserService = {
   },
   postXUser(name, nickname) {
     return errorFilter(api.post('/users/me', { name, nickname }))
+  },
+  updateXUser(name, nickname) {
+    return errorFilter(api.put('/users/me', { name, nickname }))
   }
 }
 
@@ -54,7 +57,7 @@ const ReportService = {
   },
   updateReport(report, params) {
     return errorFilter(
-      api.put(`/reports/${params.user_id}/${params.id}`, report)
+      api.put(`/reports/${params.author_id}/${params.id}`, report)
     )
   }
 }

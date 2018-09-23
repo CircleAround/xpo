@@ -16,6 +16,9 @@
                 <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
                 <el-dropdown-menu slot="dropdown">
                   <el-dropdown-item >
+                    <router-link to='/users/me/edit'>EditProfile</router-link>
+                  </el-dropdown-item>
+                  <el-dropdown-item >
                     <router-link to='/about'>About</router-link>
                   </el-dropdown-item>
                   <el-dropdown-item divided><a v-bind:href="state.me.logout_url">Logout</a></el-dropdown-item>

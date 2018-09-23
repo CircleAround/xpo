@@ -43,11 +43,15 @@ func init() {
 			safeFilter(w, r, postMe(w, r))
 			return
 		}
+		if r.Method == "PUT" {
+			safeFilter(w, r, updateMe(w, r))
+			return
+		}
 
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
-	r.HandleFunc("/reports/{user_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/reports/{author_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -154,11 +158,41 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func updateMe(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	p := &XUserUpdatingParams{}
+	err := apikit.ParseJSONBody(r, p)
+	if err != nil {
+		log.Warningf(c, "err: %v\n", err.Error())
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
+		return nil
+	}
+
+	log.Infof(c, "params: %v\n", p)
+
+	s := NewXUserService(c)
+	xu, err := s.Update(u, p)
+
+	if err != nil {
+		return err
+	}
+
+	res := XUserResponse{
+		XUser:     *xu,
+		LoginURL:  LoginFullURL(r),
+		LogoutURL: LogoutFullURL(r),
+	}
+	apikit.ResponseJSON(w, res)
+	return nil
+}
+
 func getReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	s := NewReportService(c)
 	p := apikit.URLParams(r)
-	uid := p.Get("user_id")
+	uid := p.Get("author_id")
 	id, err := p.AsInt64("id")
 	if err != nil {
 		return err

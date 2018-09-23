@@ -20,7 +20,11 @@ type XUser struct {
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
 type _XUserNameUniqueIndex struct {
-	Value string `datastore:"-" goon:"id"`
+	value string `datastore:"-" goon:"id"`
+}
+
+func (i *_XUserNameUniqueIndex) Property() string {
+	return "name"
 }
 
 // XUserService is Service for XUser
@@ -28,11 +32,16 @@ type XUserService struct {
 	gaekit.AppEngineService
 }
 
-// XUserCreationParams is parameter of Create
-type XUserCreationParams struct {
+// XUserBasicParams is parameter's basic
+type XUserBasicParams struct {
 	Name     string `json:"name" validate:"required,max=15,username_format"`
 	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
 }
+
+// XUserCreationParams is parameter of Create
+type XUserCreationParams XUserBasicParams
+
+type XUserUpdatingParams XUserBasicParams
 
 // NewXUserService is function for construction
 func NewXUserService(c context.Context) *XUserService {
@@ -41,7 +50,7 @@ func NewXUserService(c context.Context) *XUserService {
 	return s
 }
 
-// Create is method for create XUser
+// Create is method for creation XUser
 func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Create: %v", params)
 	v := newValidator()
@@ -56,11 +65,17 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 		return nil, err
 	}
 
-	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+	if err = s.Get(xu); err == nil {
+		log.Infof(s.Context, "%v found!. duplicated.", xu)
+		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+	}
+
+	err = s.RunInTransaction(func() error {
+		// for idempotent. if already create success, return process.
 		if err = s.Get(xu); err == nil {
-			log.Infof(s.Context, "%v found!. duplicated.", xu)
-			return &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+			return nil
 		}
+
 		if err != datastore.ErrNoSuchEntity {
 			log.Infof(s.Context, "%v error.", err)
 			return err
@@ -68,22 +83,50 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 
 		log.Infof(s.Context, "%v not found.", xu)
 
-		i := &_XUserNameUniqueIndex{Value: xu.Name}
-		err = s.CreateUnique(i, "name")
+		i := &_XUserNameUniqueIndex{value: xu.Name}
+		err = s.CreateUnique(i)
 		if err != nil {
 			return err
 		}
-
-		log.Infof(s.Context, "keep name of %v.", xu.Name)
 
 		log.Infof(s.Context, "%v not found. create new one.", xu)
-		_, err := s.Goon.Put(xu)
+		return s.Put(xu)
+	})
+	return
+}
+
+// Update is method for updating XUser
+func (s *XUserService) Update(u *user.User, params *XUserUpdatingParams) (xu *XUser, err error) {
+	log.Infof(s.Context, "Update: %v", params)
+	v := newValidator()
+	err = v.Struct(params)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.RunInTransaction(func() error {
+		xu, err = s.GetByUser(u)
 		if err != nil {
 			return err
 		}
 
-		return nil
-	}, nil)
+		if xu.Name == params.Name {
+			if xu.Nickname == params.Nickname {
+				// Maybe already succeed.
+				return nil
+			}
+		} else {
+			err = s.updateUniqueIndex(*xu, params)
+			if err != nil {
+				return err
+			}
+
+			xu.Name = params.Name
+		}
+
+		xu.Nickname = params.Nickname
+		return s.Put(xu)
+	})
 	return
 }
 
@@ -92,6 +135,18 @@ func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID}
 	err = s.Get(xu)
 	return
+}
+
+// IsUsedName is method for checking UserName already taken.
+func (s *XUserService) IsUsedName(name string) (bool, error) {
+	i := _XUserNameUniqueIndex{value: name}
+	return s.Exists(&i)
+}
+
+func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserUpdatingParams) error {
+	i := &_XUserNameUniqueIndex{value: xu.Name}
+	ni := &_XUserNameUniqueIndex{value: params.Name}
+	return s.ChangeUniqueValueMustTr(i, ni)
 }
 
 func newValidator() *validatekit.Validate {

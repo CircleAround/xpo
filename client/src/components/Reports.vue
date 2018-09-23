@@ -11,7 +11,7 @@
             <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>
-                <router-link :to="{ name:'ReportEditForm', params: { user_id: item.author_id, id: item.id } }">Edit</router-link>
+                <router-link :to="{ name:'ReportEditForm', params: { author_id: item.author_id, id: item.id } }">Edit</router-link>
               </el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
