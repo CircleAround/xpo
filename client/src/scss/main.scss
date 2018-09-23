@@ -9,7 +9,8 @@
 
   ul,
   ol,
-  pre {
+  pre,
+  blockquote {
     background-color: #f9f9f9;
   }
 
@@ -19,7 +20,28 @@
     padding-bottom: 0.75em;
   }
 
-  pre {
+  pre,
+  blockquote {
     padding: 1em;
+  }
+
+  blockquote {
+    position: relative;
+    box-sizing: border-box;
+    font-style: italic;
+    padding-top: 1.5em;
+  }
+
+  blockquote:before {
+    display: inline-block;
+    position: absolute;
+    top: 0.1em;
+    left: 0.1em;
+    vertical-align: middle;
+    content: '“';
+    font-family: sans-serif;
+    color: #cfcfcf;
+    font-size: 4em;
+    line-height: 1;
   }
 }
