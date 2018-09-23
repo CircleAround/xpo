@@ -1,6 +1,8 @@
 package gaekit
 
 import (
+	"fmt"
+
 	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
@@ -29,25 +31,31 @@ func (s *AppEngineService) Get(obj interface{}) error {
 	return s.Goon.Get(obj)
 }
 
-// FindOrCreate is a method for find or create XUser
-func (s *AppEngineService) FindOrCreate(xu interface{}) (xret interface{}, err error) {
+// Exists is a method for check object exists on DB
+func (s *AppEngineService) Exists(obj interface{}) (bool, error) {
+	err := s.Get(obj)
+	if err == datastore.ErrNoSuchEntity {
+		return false, nil
+	}
+	return true, err
+}
+
+// FindOrCreate is a method for find or create Object
+func (s *AppEngineService) FindOrCreate(obj interface{}) (xret interface{}, err error) {
 	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
-		if err := s.Goon.Get(xu); err != nil {
+		if err := s.Goon.Get(obj); err != nil {
 			if err != datastore.ErrNoSuchEntity {
 				return err
 			}
 
-			log.Infof(s.Context, "%v not found. create new one.", xu)
-			_, ierr := s.Goon.Put(xu)
-			if ierr != nil {
-				return ierr
-			}
+			log.Infof(s.Context, "%v not found. create new one.", obj)
+			return s.Put(obj)
 		} else {
-			log.Infof(s.Context, "%v found!. get one.", xu)
+			log.Infof(s.Context, "%v found!. get one.", obj)
 		}
 		return nil
 	}, nil)
-	xret = xu
+	xret = obj
 	return
 }
 
@@ -57,12 +65,25 @@ func (s *AppEngineService) Put(obj interface{}) (err error) {
 	return
 }
 
+// Delete is a method for deleting obj
+func (s *AppEngineService) Delete(obj interface{}) (err error) {
+	return s.Goon.Delete(s.KeyOf(obj))
+}
+
+type UniqueIndex interface {
+	Property() string
+}
+
 // CreateUnique can create unique index.
 //
 // type UniqueIndexOfString struct {
-// 	Value string `datastore:"-" goon:"id"`
+// 	value string `datastore:"-" goon:"id"`
 // }
-func (s *AppEngineService) CreateUnique(i interface{}, property string) error {
+func (s *AppEngineService) CreateUnique(i UniqueIndex) error {
+	return s.CreateUniqueWithProperty(i, i.Property())
+}
+
+func (s *AppEngineService) CreateUniqueWithProperty(i interface{}, property string) error {
 	err := s.Get(i)
 	if err == nil {
 		log.Infof(s.Context, "%v is not unique. %v", property, i)
@@ -74,9 +95,26 @@ func (s *AppEngineService) CreateUnique(i interface{}, property string) error {
 	}
 
 	log.Infof(s.Context, "%v is free.", property)
+	return s.Put(i)
+}
 
-	_, err = s.Goon.Put(i)
+func (s *AppEngineService) ChangeUniqueValueMustTr(i UniqueIndex, ni UniqueIndex) error {
+	if i.Property() != ni.Property() {
+		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
+	}
+
+	err := s.CreateUnique(ni)
 	if err != nil {
+		return err
+	}
+
+	err = s.Get(i)
+	if err == nil {
+		err = s.Delete(i)
+		if err != nil {
+			return err
+		}
+	} else if err != datastore.ErrNoSuchEntity {
 		return err
 	}
 

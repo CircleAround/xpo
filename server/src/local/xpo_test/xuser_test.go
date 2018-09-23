@@ -18,14 +18,13 @@ func TestXUserScenario(t *testing.T) {
 	f := NewTestFactory(c)
 	s := xpo.NewXUserService(c)
 
+	d := f.BuildXUser()
+	var u user.User
+	u.Email = d.Email
+	u.ID = d.ID
+
 	{
 		t.Log("Scenario")
-
-		d := f.BuildXUser()
-
-		var u user.User
-		u.Email = d.Email
-		u.ID = d.ID
 
 		xu, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
@@ -39,45 +38,31 @@ func TestXUserScenario(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if ret.Email != d.Email {
-				t.Fatalf("It should get saved email!: %v", ret.Email)
-			}
-			if ret.Name != d.Name {
-				t.Fatalf("It should get saved Name!: %v", ret.Name)
-			}
-			if ret.Nickname != d.Nickname {
-				t.Fatalf("It should get saved Nickname!: %v", ret.Nickname)
-			}
+			checkXUser(t, s, f, u, *ret, d)
+		}
+	}
 
-			{
-				t.Logf("Duplicaed")
-				xu, err = s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
-				if err == nil {
-					t.Fatal("It should error on creating duplicated user")
-				}
+	{
+		t.Logf("Update")
+		ud := f.BuildXUser()
 
-				if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
-					t.Fatalf("It should be DuplicatedObjectError: %v", reflect.TypeOf(err))
-				}
-			}
+		ret, err := s.Update(&xpo.XUserUpdatingParams{
+			XUserBasicParams: xpo.XUserBasicParams{Name: ud.Name, Nickname: ud.Nickname},
+			ID:               u.ID,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 
-			{
-				t.Logf("Unique email")
+		ud.Email = u.Email // Email not changed
+		checkXUser(t, s, f, u, *ret, ud)
 
-				d2 := f.BuildXUser()
-				var u user.User
-				u.Email = d2.Email
-				u.ID = d2.ID
-
-				xu, err = s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
-				if err == nil {
-					t.Fatal("It should error on creating duplicated name user")
-				}
-
-				if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.ValueNotUniqueError{}) {
-					t.Fatalf("It should be ValueNotUniqueError: %v", reflect.TypeOf(err))
-				}
-			}
+		used, err := s.IsUsedName(d.Name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if used {
+			t.Fatalf("It should release before name!: %v", d.Name)
 		}
 	}
 }
@@ -129,6 +114,57 @@ func TestValidation(t *testing.T) {
 		{
 			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: "<nynickname"})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
+		}
+	}
+}
+
+func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, ret xpo.XUser, d xpo.XUser) {
+	if ret.Email != d.Email {
+		t.Fatalf("It should get saved email!: %v", ret.Email)
+	}
+	if ret.Name != d.Name {
+		t.Fatalf("It should get saved Name!: %v", ret.Name)
+	}
+	if ret.Nickname != d.Nickname {
+		t.Fatalf("It should get saved Nickname!: %v", ret.Nickname)
+	}
+
+	used, err := s.IsUsedName(d.Name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !used {
+		t.Fatalf("It should Name is Used!: %v", d.Name)
+	}
+
+	{
+		t.Logf("Duplicaed")
+		_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
+		if err == nil {
+			t.Fatal("It should error on creating duplicated user")
+		}
+
+		if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
+			t.Fatalf("It should be DuplicatedObjectError: %v", reflect.TypeOf(err))
+		}
+	}
+
+	{
+		t.Logf("Uniqueness")
+
+		d2 := f.BuildXUser()
+		var u user.User
+		u.Email = d2.Email
+		u.ID = d2.ID
+
+		// duplicated name
+		_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
+		if err == nil {
+			t.Fatal("It should error on creating duplicated name user")
+		}
+
+		if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.ValueNotUniqueError{}) {
+			t.Fatalf("It should be ValueNotUniqueError: %v", reflect.TypeOf(err))
 		}
 	}
 }
