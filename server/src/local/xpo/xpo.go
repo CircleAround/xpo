@@ -43,6 +43,10 @@ func init() {
 			safeFilter(w, r, postMe(w, r))
 			return
 		}
+		if r.Method == "PUT" {
+			safeFilter(w, r, updateMe(w, r))
+			return
+		}
 
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
@@ -140,6 +144,36 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 
 	s := NewXUserService(c)
 	xu, err := s.Create(u, p)
+
+	if err != nil {
+		return err
+	}
+
+	res := XUserResponse{
+		XUser:     *xu,
+		LoginURL:  LoginFullURL(r),
+		LogoutURL: LogoutFullURL(r),
+	}
+	apikit.ResponseJSON(w, res)
+	return nil
+}
+
+func updateMe(w http.ResponseWriter, r *http.Request) error {
+	c := appengine.NewContext(r)
+	u := user.Current(c)
+
+	p := &XUserUpdatingParams{}
+	err := apikit.ParseJSONBody(r, p)
+	if err != nil {
+		log.Warningf(c, "err: %v\n", err.Error())
+		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
+		return nil
+	}
+
+	log.Infof(c, "params: %v\n", p)
+
+	s := NewXUserService(c)
+	xu, err := s.Update(u, p)
 
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import Reports from '@/components/Reports'
 import ReportEditForm from '@/components/ReportEditForm'
 import ReportNewForm from '@/components/ReportNewForm'
 import SignupForm from '@/components/SignupForm'
+import ProfileEditForm from '@/components/ProfileEditForm'
 import About from '@/components/About'
 
 Vue.use(Router)
@@ -29,6 +30,11 @@ const routerConfig = {
       path: '/signup',
       name: 'SignupForm',
       component: SignupForm
+    },
+    {
+      path: '/users/me/edit',
+      name: 'ProfileEditForm',
+      component: ProfileEditForm
     },
     {
       path: '/about',

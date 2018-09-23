@@ -39,6 +39,9 @@ const UserService = {
   },
   postXUser(name, nickname) {
     return errorFilter(api.post('/users/me', { name, nickname }))
+  },
+  updateXUser(name, nickname) {
+    return errorFilter(api.put('/users/me', { name, nickname }))
   }
 }
 

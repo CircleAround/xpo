@@ -113,11 +113,13 @@ func (s *AppEngineService) ChangeUniqueValueMustTr(i UniqueIndex, ni UniqueIndex
 		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
 	}
 
+	log.Infof(s.Context, "CreateUnique")
 	err := s.CreateUnique(ni)
 	if err != nil {
 		return err
 	}
 
+	log.Infof(s.Context, "Get")
 	err = s.Get(i)
 	if err == nil {
 		err = s.Delete(i)
@@ -128,6 +130,7 @@ func (s *AppEngineService) ChangeUniqueValueMustTr(i UniqueIndex, ni UniqueIndex
 		return err
 	}
 
+	log.Infof(s.Context, "end ChangeUniqueValueMustTr")
 	return nil
 }
 

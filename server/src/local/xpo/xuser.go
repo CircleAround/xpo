@@ -41,10 +41,7 @@ type XUserBasicParams struct {
 // XUserCreationParams is parameter of Create
 type XUserCreationParams XUserBasicParams
 
-type XUserUpdatingParams struct {
-	ID string `json:"id" validate:"required"`
-	XUserBasicParams
-}
+type XUserUpdatingParams XUserBasicParams
 
 // NewXUserService is function for construction
 func NewXUserService(c context.Context) *XUserService {
@@ -99,7 +96,7 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(params *XUserUpdatingParams) (xu *XUser, err error) {
+func (s *XUserService) Update(u *user.User, params *XUserUpdatingParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Update: %v", params)
 	v := newValidator()
 	err = v.Struct(params)
@@ -108,8 +105,7 @@ func (s *XUserService) Update(params *XUserUpdatingParams) (xu *XUser, err error
 	}
 
 	err = s.RunInTransaction(func() error {
-		xu = &XUser{ID: params.ID}
-		err := s.Get(xu)
+		xu, err = s.GetByUser(u)
 		if err != nil {
 			return err
 		}
@@ -134,6 +130,14 @@ func (s *XUserService) Update(params *XUserUpdatingParams) (xu *XUser, err error
 	return
 }
 
+// GetByUser is method for getting XUser by user.User
+func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
+	xu = &XUser{ID: u.ID}
+	err = s.Get(xu)
+	return
+}
+
+// IsUsedName is method for checking UserName already taken.
 func (s *XUserService) IsUsedName(name string) (bool, error) {
 	i := _XUserNameUniqueIndex{value: name}
 	return s.Exists(&i)
@@ -143,13 +147,6 @@ func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserUpdatingParams) 
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
 	return s.ChangeUniqueValueMustTr(i, ni)
-}
-
-// GetByUser is method for getting XUser by user.User
-func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
-	xu = &XUser{ID: u.ID}
-	err = s.Get(xu)
-	return
 }
 
 func newValidator() *validatekit.Validate {

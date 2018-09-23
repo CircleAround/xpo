@@ -84,6 +84,10 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 			}
 			apikit.ResponseFailure(w, r, ve, http.StatusUnprocessableEntity)
 			return
+		
+		case apikit.IllegalAccessError:
+			apikit.ResponseFailure(w, r, err, http.StatusForbidden)
+			return
 
 		default:
 			log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))

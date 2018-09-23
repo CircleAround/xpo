@@ -46,12 +46,15 @@ func TestXUserScenario(t *testing.T) {
 		t.Logf("Update")
 		ud := f.BuildXUser()
 
-		ret, err := s.Update(&xpo.XUserUpdatingParams{
-			XUserBasicParams: xpo.XUserBasicParams{Name: ud.Name, Nickname: ud.Nickname},
-			ID:               u.ID,
+		ret, err := s.Update(&u, &xpo.XUserUpdatingParams{
+			Name:     ud.Name,
+			Nickname: ud.Nickname,
 		})
 		if err != nil {
 			t.Fatal(err)
+		}
+		if ret == nil {
+			t.Fatal("updated ret is nil")
 		}
 
 		ud.Email = u.Email // Email not changed
@@ -119,6 +122,8 @@ func TestValidation(t *testing.T) {
 }
 
 func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, ret xpo.XUser, d xpo.XUser) {
+	t.Logf("Update!")
+
 	if ret.Email != d.Email {
 		t.Fatalf("It should get saved email!: %v", ret.Email)
 	}
@@ -128,6 +133,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 	if ret.Nickname != d.Nickname {
 		t.Fatalf("It should get saved Nickname!: %v", ret.Nickname)
 	}
+	t.Logf("Update!!")
 
 	used, err := s.IsUsedName(d.Name)
 	if err != nil {
@@ -136,6 +142,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 	if !used {
 		t.Fatalf("It should Name is Used!: %v", d.Name)
 	}
+	t.Logf("Update!!!")
 
 	{
 		t.Logf("Duplicaed")

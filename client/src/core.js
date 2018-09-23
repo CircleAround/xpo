@@ -41,12 +41,12 @@ export default {
     posted: false
   },
   initialize() {
-    this.retriveMe()
     this.retriveReports().catch(function(error) {
       console.log(error)
     })
 
     this.initNewReport()
+    return this.retriveMe()
   },
   isLoggedIn() {
     if (!this.state) return false
@@ -76,6 +76,11 @@ export default {
   },
   postXUser(name, nickname) {
     return service.users.postXUser(name, nickname).then(response => {
+      this.state.me = response.data
+    })
+  },
+  updateXUser(name, nickname) {
+    return service.users.updateXUser(name, nickname).then(response => {
       this.state.me = response.data
     })
   },
