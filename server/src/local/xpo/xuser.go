@@ -28,10 +28,20 @@ type XUserService struct {
 	gaekit.AppEngineService
 }
 
-// XUserCreationParams is parameter of Create
-type XUserCreationParams struct {
+// XUserBasicParams is parameter's basic
+type XUserBasicParams struct {
 	Name     string `json:"name" validate:"required,max=15,username_format"`
 	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
+}
+
+
+// XUserCreationParams is parameter of Create
+type XUserCreationParams XUserBasicParams
+
+type XUserUpdatingParams struct{
+	AuthorID string `json:"author_id" validate:"required`
+	ID string `json:"id" validate:"required"`
+	XUserCreationParams
 }
 
 // NewXUserService is function for construction

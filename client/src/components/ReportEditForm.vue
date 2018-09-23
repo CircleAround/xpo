@@ -9,7 +9,7 @@ export default {
     initialize() {
       this.loading = true
       core
-        .findReport4Update(this.$route.params.user_id, this.$route.params.id)
+        .findReport4Update(this.$route.params.author_id, this.$route.params.id)
         .then(() => {
           this.updateMarkdown()
           this.loading = false

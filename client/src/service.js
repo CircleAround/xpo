@@ -54,7 +54,7 @@ const ReportService = {
   },
   updateReport(report, params) {
     return errorFilter(
-      api.put(`/reports/${params.user_id}/${params.id}`, report)
+      api.put(`/reports/${params.author_id}/${params.id}`, report)
     )
   }
 }

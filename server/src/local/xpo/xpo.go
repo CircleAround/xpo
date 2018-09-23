@@ -47,7 +47,7 @@ func init() {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
-	r.HandleFunc("/reports/{user_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/reports/{author_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -158,7 +158,7 @@ func getReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	s := NewReportService(c)
 	p := apikit.URLParams(r)
-	uid := p.Get("user_id")
+	uid := p.Get("author_id")
 	id, err := p.AsInt64("id")
 	if err != nil {
 		return err
