@@ -262,8 +262,10 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		LogoutURL string
+		Version   string
 	}{
 		LogoutURL: logoutURL,
+		Version:   os.Getenv("CURRENT_VERSION_ID"),
 	}
 
 	// view構築する

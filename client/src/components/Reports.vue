@@ -30,18 +30,6 @@ export default {
     return {
       list: core.state.list
     }
-  },
-  created() {
-    console.log('created')
-  },
-  mounted() {
-    console.log('mounted')
-  },
-  updated() {
-    console.log('updated')
-  },
-  methods: {
-    push() {}
   }
 }
 </script>
