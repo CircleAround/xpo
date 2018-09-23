@@ -26,21 +26,26 @@
   }
 
   blockquote {
+    margin-left: 0;
     position: relative;
-    box-sizing: border-box;
     font-style: italic;
     padding-top: 1.5em;
   }
 
+  blockquote blockquote {
+    margin-left: 1em;
+    padding-bottom: 0;
+  }
+
   blockquote:before {
+    content: '“';
     display: inline-block;
     position: absolute;
-    top: 0.1em;
-    left: 0.1em;
     vertical-align: middle;
-    content: '“';
     font-family: sans-serif;
     color: #cfcfcf;
+    top: 0.1em;
+    left: 0.1em;
     font-size: 4em;
     line-height: 1;
   }
