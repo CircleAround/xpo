@@ -40,9 +40,19 @@ func (s *AppEngineService) Exists(obj interface{}) (bool, error) {
 	return true, err
 }
 
+func (s *AppEngineService) RunInTransaction(process func() error) error {
+	return s.RunInTransactionWithOption(process, nil)
+}
+
+func (s *AppEngineService) RunInTransactionWithOption(process func() error, opts *datastore.TransactionOptions) error {
+	return datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+		return process()
+	}, opts)
+}
+
 // FindOrCreate is a method for find or create Object
 func (s *AppEngineService) FindOrCreate(obj interface{}) (xret interface{}, err error) {
-	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+	err = s.RunInTransaction(func() error {
 		if err := s.Goon.Get(obj); err != nil {
 			if err != datastore.ErrNoSuchEntity {
 				return err
@@ -54,7 +64,7 @@ func (s *AppEngineService) FindOrCreate(obj interface{}) (xret interface{}, err 
 			log.Infof(s.Context, "%v found!. get one.", obj)
 		}
 		return nil
-	}, nil)
+	})
 	xret = obj
 	return
 }

@@ -73,10 +73,10 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
 	}
 
-	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+	err = s.RunInTransaction(func() error {
 		// for idempotent. if already create success, return process.
 		if err = s.Get(xu); err == nil {
-			return nil 
+			return nil
 		}
 
 		if err != datastore.ErrNoSuchEntity {
@@ -94,7 +94,7 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 
 		log.Infof(s.Context, "%v not found. create new one.", xu)
 		return s.Put(xu)
-	}, nil)
+	})
 	return
 }
 
@@ -107,7 +107,7 @@ func (s *XUserService) Update(params *XUserUpdatingParams) (xu *XUser, err error
 		return nil, err
 	}
 
-	err = datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+	err = s.RunInTransaction(func() error {
 		xu = &XUser{ID: params.ID}
 		err := s.Get(xu)
 		if err != nil {
@@ -124,13 +124,13 @@ func (s *XUserService) Update(params *XUserUpdatingParams) (xu *XUser, err error
 			if err != nil {
 				return err
 			}
-	
+
 			xu.Name = params.Name
 		}
 
 		xu.Nickname = params.Nickname
 		return s.Put(xu)
-	}, nil)
+	})
 	return
 }
 
