@@ -27,45 +27,6 @@ import core from '../../core'
 import marked from 'marked'
 import Overlay from './Overlay'
 
-const creatingStrategy = {
-  initialize() {
-    core.initNewReport()
-    this.updateMarkdown()
-  },
-  postReport() {
-    return core.postReport().then(() => {
-      this.$message({
-        showClose: true,
-        message: '投稿しました！',
-        type: 'success',
-        center: true
-      })
-    })
-  }
-}
-
-const updatingStrategy = {
-  initialize() {
-    this.loading = true
-    core
-      .findReport4Update(this.$route.params.user_id, this.$route.params.id)
-      .then(() => {
-        this.updateMarkdown()
-        this.loading = false
-      })
-  },
-  postReport() {
-    return core.updateReport(this.$route.params).then(() => {
-      this.$message({
-        showClose: true,
-        message: '更新しました！',
-        type: 'success',
-        center: true
-      })
-    })
-  }
-}
-
 export default {
   name: 'BasicReportForm',
   components: { Overlay },
@@ -82,13 +43,17 @@ export default {
     this.initialize()
   },
   methods: {
-    initialize() {},
+    initialize() {
+      throw new Error('Unimplemented: initialize')
+    },
 
-    doPostReport() {},
+    doPostReport() {
+      throw new Error('Unimplemented: doPostReport')
+    },
 
     postReport() {
       this.errors = []
-      this.doPostReport.call(this).catch(error => {
+      this.doPostReport().catch(error => {
         core.eachResponseErrors(error, (msg, type, property) => {
           this.errors.push(msg)
         })

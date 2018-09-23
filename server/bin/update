@@ -1,4 +1,4 @@
 #!/bin/bash
-export GOPATH=$(dirname `pwd`)/gopath
+export GOPATH=$(dirname `pwd`)/server
 echo "GOPATH: ${GOPATH}"
-cd ../gopath/src/local; dep ensure -v -update
+cd $(dirname `pwd`)/server/src/local; dep ensure -v -update

@@ -1,2 +1,4 @@
 .DS_Store
 lib/secret.yaml
+vendor
+/pkg/

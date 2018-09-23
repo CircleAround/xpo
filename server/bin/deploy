@@ -1,4 +1,4 @@
 #!/bin/sh
-export GOPATH=$(dirname `pwd`)/gobuild
+export GOPATH=$(dirname `pwd`)/server
 echo "GOPATH: ${GOPATH}"
-gcloud app deploy app.production.yaml
+goapp deploy -version $(date "+%Y%m%dt%H%M%S") src/local/app/app.production.yaml

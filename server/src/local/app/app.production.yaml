@@ -1,5 +1,7 @@
 runtime: go
 api_version: go1.8
+application: x-po-201808
+module: default
 
 env_variables:
   APP_ENV: 'production'
@@ -13,3 +15,4 @@ skip_files:
   - ^(.*/)?testkit.go
   - ^(.*/)?testarator.go
   - ^(.*)/appengine/aetest/(.*)
+  - ^(.*)/pkg/(.*)

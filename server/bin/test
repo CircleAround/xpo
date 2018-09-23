@@ -1,4 +1,4 @@
 #!/bin/sh
-export GOPATH=$(dirname `pwd`)/gopath
+export GOPATH=$(dirname `pwd`)/server
 echo "GOPATH: ${GOPATH}"
-cd "${GOPATH}/src/local/xpo_test/"; goapp test
+cd $(dirname `pwd`)/server/src/local/xpo_test; goapp test
