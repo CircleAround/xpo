@@ -103,8 +103,8 @@ func TestValidation(t *testing.T) {
 
 		{
 			_, err := s.Create(u, xpo.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
-			if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
-				t.Fatalf("It should be gaekit.DuplicatedObjectError: %v, %v", reflect.TypeOf(err), err)
+			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
+				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
 		}
 	}
@@ -128,8 +128,8 @@ func TestValidation(t *testing.T) {
 
 		{
 			_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
-			if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
-				t.Fatalf("It should be gaekit.DuplicatedObjectError: %v, %v", reflect.TypeOf(err), err)
+			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
+				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
 		}
 

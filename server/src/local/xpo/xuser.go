@@ -153,22 +153,25 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 		return nil, err
 	}
 
-	good, err := checkBlockedWord(params.Name)
+	var prop string
+	ng, err := checkBlockedWord(func(word string) bool {
+		if params.Name == word {
+			prop = "name"
+			return true
+		}
+		if params.Nickname == word {
+			prop = "nickname"
+			return true
+		}
+		return false
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	if !good {
-		return nil, apikit.NewInvalidParameterError("name")
-	}
-
-	good, err = checkBlockedWord(params.Nickname)
-	if err != nil {
-		return nil, err
-	}
-
-	if !good {
-		return nil, apikit.NewInvalidParameterError("nickname")
+	if ng {
+		return nil, apikit.NewInvalidParameterError(prop)
 	}
 
 	return v, nil
@@ -187,7 +190,7 @@ func newValidator() *validatekit.Validate {
 	return v
 }
 
-func checkBlockedWord(word string) (bool, error) {
+func checkBlockedWord(callback func(line string) bool) (bool, error) {
 	f, err := assets.Assets.Open("/assets/reserved_username_list")
 	if err != nil {
 		return false, err
@@ -196,17 +199,22 @@ func checkBlockedWord(word string) (bool, error) {
 	defer f.Close()
 
 	reader := bufio.NewReaderSize(f, 128)
+	hit, err := FindLine(reader, callback)
+	return hit, err
+}
+
+func FindLine(reader *bufio.Reader, callback func(line string) bool) (bool, error) {
 	for {
 		line, _, err := reader.ReadLine()
 		if err != nil {
 			if err == io.EOF {
-				return true, nil
+				return false, nil
 			}
 			return false, err
 		}
 		// fmt.Println(string(line))
-		if word == string(line) {
-			return false, nil
+		if callback(string(line)) {
+			return true, nil
 		}
 	}
 }

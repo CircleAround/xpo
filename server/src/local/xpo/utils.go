@@ -64,7 +64,7 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 	c := appengine.NewContext(r)
 
 	if err != nil {
-		log.Warningf(c, "Handle Error: %v", err)
+		log.Infof(c, "Handle Error: %v", err)
 
 		switch err.(type) {
 		case *gaekit.ValueNotUniqueError:
