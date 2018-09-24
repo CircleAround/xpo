@@ -111,7 +111,7 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	s := NewXUserService(c)
-	xu, err := s.GetByUser(u)
+	xu, err := s.GetByUser(*u)
 	if err == nil {
 		res := XUserResponse{
 			XUser:     *xu,
@@ -134,7 +134,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserProfileParams{}
+	p := XUserProfileParams{}
 	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
@@ -145,7 +145,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewXUserService(c)
-	xu, err := s.Create(u, p)
+	xu, err := s.Create(*u, p)
 
 	if err != nil {
 		return err
@@ -164,7 +164,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserProfileParams{}
+	p := XUserProfileParams{}
 	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
@@ -175,7 +175,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewXUserService(c)
-	xu, err := s.Update(u, p)
+	xu, err := s.Update(*u, p)
 
 	if err != nil {
 		return err

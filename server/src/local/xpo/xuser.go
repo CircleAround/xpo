@@ -50,9 +50,9 @@ func NewXUserService(c context.Context) *XUserService {
 }
 
 // Create is method for creation XUser
-func (s *XUserService) Create(u *user.User, params *XUserProfileParams) (xu *XUser, err error) {
+func (s *XUserService) Create(u user.User, params XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Create: %v", params)
-	v, err := validate(*params)
+	v, err := validate(params)
 	if err != nil {
 		return nil, err
 	}
@@ -94,9 +94,9 @@ func (s *XUserService) Create(u *user.User, params *XUserProfileParams) (xu *XUs
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(u *user.User, params *XUserProfileParams) (xu *XUser, err error) {
+func (s *XUserService) Update(u user.User, params XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Update: %v", params)
-	_, err = validate(*params)
+	_, err = validate(params)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (s *XUserService) Update(u *user.User, params *XUserProfileParams) (xu *XUs
 }
 
 // GetByUser is method for getting XUser by user.User
-func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
+func (s *XUserService) GetByUser(u user.User) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID}
 	err = s.Get(xu)
 	return
@@ -168,7 +168,7 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 	return v, nil
 }
 
-func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserProfileParams) error {
+func (s *XUserService) updateUniqueIndex(xu XUser, params XUserProfileParams) error {
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
 	return s.ChangeUniqueValueMustTr(i, ni)
