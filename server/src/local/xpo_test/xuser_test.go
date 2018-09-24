@@ -34,7 +34,7 @@ func TestXUserScenario(t *testing.T) {
 		{
 			t.Logf("Standard")
 			ret := xpo.XUser{ID: xu.ID}
-			if err = s.Get(ret); err != nil {
+			if err = s.Get(&ret); err != nil {
 				t.Fatal(err)
 			}
 

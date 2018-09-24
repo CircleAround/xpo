@@ -9,6 +9,7 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
+	"local/apikit"
 	"local/gaekit"
 	"local/validatekit"
 	"local/xpo/assets"
@@ -66,6 +67,11 @@ func (s *XUserService) Create(u user.User, params XUserProfileParams) (xu *XUser
 	if err = s.Get(xu); err == nil {
 		log.Infof(s.Context, "%v found!. duplicated.", xu)
 		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+	}
+
+	if err != datastore.ErrNoSuchEntity {
+		log.Infof(s.Context, "%v error.", err)
+		return nil, err
 	}
 
 	err = s.RunInTransaction(func() error {
@@ -153,7 +159,7 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 	}
 
 	if !good {
-		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+		return nil, apikit.NewInvalidParameterError("name")
 	}
 
 	good, err = checkBlockedWord(params.Nickname)
@@ -162,7 +168,7 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 	}
 
 	if !good {
-		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+		return nil, apikit.NewInvalidParameterError("nickname")
 	}
 
 	return v, nil

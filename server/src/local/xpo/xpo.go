@@ -135,7 +135,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	p := XUserProfileParams{}
-	err := apikit.ParseJSONBody(r, p)
+	err := apikit.ParseJSONBody(r, &p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
@@ -165,7 +165,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	p := XUserProfileParams{}
-	err := apikit.ParseJSONBody(r, p)
+	err := apikit.ParseJSONBody(r, &p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)

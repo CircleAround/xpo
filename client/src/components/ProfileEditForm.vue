@@ -2,7 +2,7 @@
   <div>
     <el-form ref="form" class="profile_edit_form" :model="form" :rules="rules">
       <profile-form :errors="errors" :propErrors="propErrors"
-        :username="form.username" :nickname="form.nickname"
+        :name="form.name" :nickname="form.nickname"
         v-on:clicked-submit="updateXUser"
       >
       </profile-form>
@@ -18,27 +18,27 @@ export default {
   components: { ProfileForm },
   data() {
     return {
-      propErrors: [],
+      propErrors: {},
       errors: [],
       form: {
-        username: '',
+        name: '',
         nickname: ''
       },
       rules: {}
     }
   },
   mounted() {
-    this.form.username = core.state.me.name
+    this.form.name = core.state.me.name
     this.form.nickname = core.state.me.nickname
   },
   methods: {
     updateXUser(params) {
-      this.form.username = params.username
+      this.form.name = params.name
       this.form.nickname = params.nickname
       this.errors = []
       this.propErrors = {}
       core
-        .updateXUser(this.form.username, this.form.nickname)
+        .updateXUser(this.form.name, this.form.nickname)
         .then(() => {
           this.$message({
             showClose: true,
