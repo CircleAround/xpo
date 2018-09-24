@@ -1,17 +1,19 @@
 <template>
   <div>
-    <div class="errors" v-if="errors.length > 0">
-      <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
-        {{item}}
-      </div>
-    </div>
+    <el-row>
+      <el-col :sm="{span:6, offset: 4}" class="errors" v-if="errors.length > 0">
+        <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
+          {{item}}
+        </div>
+      </el-col>
+    </el-row>
     <div>
       <el-row>
         <el-col  :sm="{span:6, offset: 4}">
           <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>
         </el-col>
         <el-col  :sm="10">
-          <el-input placeholder="ユーザー名（半角英数小文字）" v-model="username" id="input-name"></el-input>
+          <el-input placeholder="ユーザー名（半角英数小文字）" v-model="name" id="input-name"></el-input>
           <div class="errors" v-if="propErrors.name">
             <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
           </div>
@@ -40,15 +42,15 @@
 export default {
   name: 'ProfileForm',
   props: {
-    propErrors: Array,
+    propErrors: Object,
     errors: Array,
-    username: String,
+    name: String,
     nickname: String
   },
   methods: {
     clickedSubmit: function() {
       this.$emit('clicked-submit', {
-        username: this.username,
+        name: this.name,
         nickname: this.nickname
       })
     }

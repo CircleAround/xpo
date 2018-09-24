@@ -14,6 +14,8 @@ import (
 	"local/apikit"
 )
 
+//go:generate go-assets-builder --output=assets/reserved_username_list.go -p=assets ../../../assets/reserved_username_list
+
 type XUserResponse struct {
 	XUser
 	LoginURL  string `json:"login_url"`
@@ -109,7 +111,7 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	s := NewXUserService(c)
-	xu, err := s.GetByUser(u)
+	xu, err := s.GetByUser(*u)
 	if err == nil {
 		res := XUserResponse{
 			XUser:     *xu,
@@ -132,8 +134,8 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserCreationParams{}
-	err := apikit.ParseJSONBody(r, p)
+	p := XUserProfileParams{}
+	err := apikit.ParseJSONBody(r, &p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
@@ -143,7 +145,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewXUserService(c)
-	xu, err := s.Create(u, p)
+	xu, err := s.Create(*u, p)
 
 	if err != nil {
 		return err
@@ -162,8 +164,8 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserUpdatingParams{}
-	err := apikit.ParseJSONBody(r, p)
+	p := XUserProfileParams{}
+	err := apikit.ParseJSONBody(r, &p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
 		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
@@ -173,7 +175,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	s := NewXUserService(c)
-	xu, err := s.Update(u, p)
+	xu, err := s.Update(*u, p)
 
 	if err != nil {
 		return err

@@ -64,6 +64,8 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 	c := appengine.NewContext(r)
 
 	if err != nil {
+		log.Infof(c, "Handle Error: %v", err)
+
 		switch err.(type) {
 		case *gaekit.ValueNotUniqueError:
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
@@ -77,6 +79,10 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
 			return
 
+		case *apikit.InvalidParameterError:
+			apikit.ResponseFailure(w, r, err, http.StatusUnprocessableEntity)
+			return
+
 		case validator.ValidationErrors:
 			ve := apikit.NewValidationError()
 			for _, err := range err.(validator.ValidationErrors) {
@@ -84,8 +90,8 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 			}
 			apikit.ResponseFailure(w, r, ve, http.StatusUnprocessableEntity)
 			return
-		
-		case apikit.IllegalAccessError:
+
+		case *apikit.IllegalAccessError:
 			apikit.ResponseFailure(w, r, err, http.StatusForbidden)
 			return
 

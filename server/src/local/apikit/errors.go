@@ -8,11 +8,34 @@ import (
 )
 
 type IllegalAccessError struct {
-	Message string
+	Type    string `json:"type"`
+	Message string `json:"message"`
 }
 
-func (err IllegalAccessError) Error() string {
+func (err *IllegalAccessError) Error() string {
 	return err.Message
+}
+
+func NewIllegalAccessError(msg string) *IllegalAccessError {
+	return &IllegalAccessError{Type: "IllegalAccessError", Message: msg}
+}
+
+type InvalidParameterError struct {
+	Type     string `json:"type"`
+	Property string `json:"property"`
+	Message  string `json:"message"`
+}
+
+func (err *InvalidParameterError) Error() string {
+	return err.Message
+}
+
+func NewInvalidParameterError(property string) *InvalidParameterError {
+	return &InvalidParameterError{
+		Type:     "InvalidParameterError",
+		Message:  fmt.Sprintf("%v is invalid", property),
+		Property: property,
+	}
 }
 
 const (

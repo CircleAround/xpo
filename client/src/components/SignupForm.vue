@@ -34,7 +34,7 @@ export default {
   },
   methods: {
     postXUser(params) {
-      this.form.name = params.username
+      this.form.name = params.name
       this.form.nickname = params.nickname
       this.errors = []
       this.propErrors = {}

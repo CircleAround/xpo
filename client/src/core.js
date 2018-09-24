@@ -160,11 +160,15 @@ export default {
       case 'ValueNotUniqueError':
         handler(`${e.property}は既に存在します`, e.type, e.property)
         break
+      case 'InvalidParameterError':
+        handler(`${e.property}は既に存在します`, e.type, e.property)
+        break
       case 'DuplicatedObjectError':
         handler(`既に存在します`, e.type, null)
         break
 
       default:
+        handler(`予期しないエラーです`, e.type || 'UnexpectedError', null)
         break
     }
   }

@@ -62,6 +62,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:446f04b6b59c2cfacf8e9784c431afda6708d72a7a09eaefb2ab96d2b9cf8536"
+  name = "github.com/jessevdk/go-assets"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "4f4301a06e153ff90e17793577ab6bf79f8dc5c5"
+
+[[projects]]
+  branch = "master"
   digest = "1:e97a6f4c77f71471b34dbc72bf9ffe4f87d083993afebd8e71e758a60b6104ff"
   name = "github.com/mjibson/goon"
   packages = ["."]
@@ -123,6 +131,7 @@
     "github.com/favclip/testerator",
     "github.com/gorilla/mux",
     "github.com/iancoleman/strcase",
+    "github.com/jessevdk/go-assets",
     "github.com/mjibson/goon",
     "github.com/thoas/go-funk",
     "golang.org/x/net/context",

@@ -1,13 +1,18 @@
 package xpo
 
 import (
+	"bufio"
+	"io"
+
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
+	"local/apikit"
 	"local/gaekit"
 	"local/validatekit"
+	"local/xpo/assets"
 )
 
 // XUser struct
@@ -32,16 +37,11 @@ type XUserService struct {
 	gaekit.AppEngineService
 }
 
-// XUserBasicParams is parameter's basic
-type XUserBasicParams struct {
+// XUserProfileParams is parameter's basic
+type XUserProfileParams struct {
 	Name     string `json:"name" validate:"required,max=15,username_format"`
 	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
 }
-
-// XUserCreationParams is parameter of Create
-type XUserCreationParams XUserBasicParams
-
-type XUserUpdatingParams XUserBasicParams
 
 // NewXUserService is function for construction
 func NewXUserService(c context.Context) *XUserService {
@@ -51,10 +51,9 @@ func NewXUserService(c context.Context) *XUserService {
 }
 
 // Create is method for creation XUser
-func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XUser, err error) {
+func (s *XUserService) Create(u user.User, params XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Create: %v", params)
-	v := newValidator()
-	err = v.Struct(params)
+	v, err := validate(params)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +67,11 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 	if err = s.Get(xu); err == nil {
 		log.Infof(s.Context, "%v found!. duplicated.", xu)
 		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+	}
+
+	if err != datastore.ErrNoSuchEntity {
+		log.Infof(s.Context, "%v error.", err)
+		return nil, err
 	}
 
 	err = s.RunInTransaction(func() error {
@@ -96,10 +100,9 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(u *user.User, params *XUserUpdatingParams) (xu *XUser, err error) {
+func (s *XUserService) Update(u user.User, params XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Update: %v", params)
-	v := newValidator()
-	err = v.Struct(params)
+	_, err = validate(params)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +134,7 @@ func (s *XUserService) Update(u *user.User, params *XUserUpdatingParams) (xu *XU
 }
 
 // GetByUser is method for getting XUser by user.User
-func (s *XUserService) GetByUser(u *user.User) (xu *XUser, err error) {
+func (s *XUserService) GetByUser(u user.User) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID}
 	err = s.Get(xu)
 	return
@@ -143,7 +146,38 @@ func (s *XUserService) IsUsedName(name string) (bool, error) {
 	return s.Exists(&i)
 }
 
-func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserUpdatingParams) error {
+func validate(params XUserProfileParams) (*validatekit.Validate, error) {
+	v := newValidator()
+	err := v.Struct(params)
+	if err != nil {
+		return nil, err
+	}
+
+	var prop string
+	ng, err := checkBlockedWord(func(word string) bool {
+		if params.Name == word {
+			prop = "name"
+			return true
+		}
+		if params.Nickname == word {
+			prop = "nickname"
+			return true
+		}
+		return false
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if ng {
+		return nil, apikit.NewInvalidParameterError(prop)
+	}
+
+	return v, nil
+}
+
+func (s *XUserService) updateUniqueIndex(xu XUser, params XUserProfileParams) error {
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
 	return s.ChangeUniqueValueMustTr(i, ni)
@@ -154,4 +188,33 @@ func newValidator() *validatekit.Validate {
 	v.RegisterRegexValidation("username_format", `^[0-9a-z_]+$`)
 	v.RegisterRegexValidation("usernickname_format", `^[0-9a-zA-Z_ぁ-んァ-ヶー一-龠]+$`)
 	return v
+}
+
+func checkBlockedWord(callback func(line string) bool) (bool, error) {
+	f, err := assets.Assets.Open("/assets/reserved_username_list")
+	if err != nil {
+		return false, err
+	}
+
+	defer f.Close()
+
+	reader := bufio.NewReaderSize(f, 128)
+	hit, err := FindLine(reader, callback)
+	return hit, err
+}
+
+func FindLine(reader *bufio.Reader, callback func(line string) bool) (bool, error) {
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				return false, nil
+			}
+			return false, err
+		}
+		// fmt.Println(string(line))
+		if callback(string(line)) {
+			return true, nil
+		}
+	}
 }
