@@ -1,6 +1,9 @@
 package xpo
 
 import (
+	"bufio"
+	"io"
+
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -8,6 +11,7 @@ import (
 
 	"local/gaekit"
 	"local/validatekit"
+	"local/xpo/assets"
 )
 
 // XUser struct
@@ -32,16 +36,11 @@ type XUserService struct {
 	gaekit.AppEngineService
 }
 
-// XUserBasicParams is parameter's basic
-type XUserBasicParams struct {
+// XUserProfileParams is parameter's basic
+type XUserProfileParams struct {
 	Name     string `json:"name" validate:"required,max=15,username_format"`
 	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
 }
-
-// XUserCreationParams is parameter of Create
-type XUserCreationParams XUserBasicParams
-
-type XUserUpdatingParams XUserBasicParams
 
 // NewXUserService is function for construction
 func NewXUserService(c context.Context) *XUserService {
@@ -51,10 +50,9 @@ func NewXUserService(c context.Context) *XUserService {
 }
 
 // Create is method for creation XUser
-func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XUser, err error) {
+func (s *XUserService) Create(u *user.User, params *XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Create: %v", params)
-	v := newValidator()
-	err = v.Struct(params)
+	v, err := validate(*params)
 	if err != nil {
 		return nil, err
 	}
@@ -96,10 +94,9 @@ func (s *XUserService) Create(u *user.User, params *XUserCreationParams) (xu *XU
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(u *user.User, params *XUserUpdatingParams) (xu *XUser, err error) {
+func (s *XUserService) Update(u *user.User, params *XUserProfileParams) (xu *XUser, err error) {
 	log.Infof(s.Context, "Update: %v", params)
-	v := newValidator()
-	err = v.Struct(params)
+	_, err = validate(*params)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +140,35 @@ func (s *XUserService) IsUsedName(name string) (bool, error) {
 	return s.Exists(&i)
 }
 
-func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserUpdatingParams) error {
+func validate(params XUserProfileParams) (*validatekit.Validate, error) {
+	v := newValidator()
+	err := v.Struct(params)
+	if err != nil {
+		return nil, err
+	}
+
+	good, err := checkBlockedWord(params.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	if !good {
+		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+	}
+
+	good, err = checkBlockedWord(params.Nickname)
+	if err != nil {
+		return nil, err
+	}
+
+	if !good {
+		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+	}
+
+	return v, nil
+}
+
+func (s *XUserService) updateUniqueIndex(xu XUser, params *XUserProfileParams) error {
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
 	return s.ChangeUniqueValueMustTr(i, ni)
@@ -154,4 +179,28 @@ func newValidator() *validatekit.Validate {
 	v.RegisterRegexValidation("username_format", `^[0-9a-z_]+$`)
 	v.RegisterRegexValidation("usernickname_format", `^[0-9a-zA-Z_ぁ-んァ-ヶー一-龠]+$`)
 	return v
+}
+
+func checkBlockedWord(word string) (bool, error) {
+	f, err := assets.Assets.Open("/assets/reserved_username_list")
+	if err != nil {
+		return false, err
+	}
+
+	defer f.Close()
+
+	reader := bufio.NewReaderSize(f, 128)
+	for {
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				return true, nil
+			}
+			return false, err
+		}
+		// fmt.Println(string(line))
+		if word == string(line) {
+			return false, nil
+		}
+	}
 }

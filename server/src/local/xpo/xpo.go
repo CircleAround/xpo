@@ -14,6 +14,8 @@ import (
 	"local/apikit"
 )
 
+//go:generate go-assets-builder --output=assets/reserved_username_list.go -p=assets ../../../assets/reserved_username_list
+
 type XUserResponse struct {
 	XUser
 	LoginURL  string `json:"login_url"`
@@ -132,7 +134,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserCreationParams{}
+	p := &XUserProfileParams{}
 	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())
@@ -162,7 +164,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	p := &XUserUpdatingParams{}
+	p := &XUserProfileParams{}
 	err := apikit.ParseJSONBody(r, p)
 	if err != nil {
 		log.Warningf(c, "err: %v\n", err.Error())

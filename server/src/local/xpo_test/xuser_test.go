@@ -26,7 +26,7 @@ func TestXUserScenario(t *testing.T) {
 	{
 		t.Log("Scenario")
 
-		xu, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
+		xu, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -46,7 +46,7 @@ func TestXUserScenario(t *testing.T) {
 		t.Logf("Update")
 		ud := f.BuildXUser()
 
-		ret, err := s.Update(&u, &xpo.XUserUpdatingParams{
+		ret, err := s.Update(&u, &xpo.XUserProfileParams{
 			Name:     ud.Name,
 			Nickname: ud.Nickname,
 		})
@@ -87,37 +87,52 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Name")
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Nickname: d.Nickname})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: "", Nickname: d.Nickname})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: "", Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: "a_&", Nickname: d.Nickname})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
+		}
+
+		{
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
+			if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
+				t.Fatalf("It should be gaekit.DuplicatedObjectError: %v, %v", reflect.TypeOf(err), err)
+			}
 		}
 	}
 
 	{
 		t.Logf("Nickname")
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: ""})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: ""})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: "<nynickname"})
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: "<nynickname"})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
 		}
+
+		{
+			_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
+			if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
+				t.Fatalf("It should be gaekit.DuplicatedObjectError: %v, %v", reflect.TypeOf(err), err)
+			}
+		}
+
 	}
 }
 
@@ -146,7 +161,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 
 	{
 		t.Logf("Duplicaed")
-		_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated user")
 		}
@@ -165,7 +180,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 		u.ID = d2.ID
 
 		// duplicated name
-		_, err := s.Create(&u, &xpo.XUserCreationParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(&u, &xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated name user")
 		}
