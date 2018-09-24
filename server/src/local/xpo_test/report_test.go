@@ -24,7 +24,12 @@ func TestReportScenario(t *testing.T) {
 
 	d := f.BuildReport()
 	tp := new(timekit.TestTimeProvider)
-	oneHourBefore := time.Now().Add(-1 * time.Hour)
+
+	tm, err := time.Parse("2006-01-02 15:04:05 MST", "2014-12-31 12:31:24 JST")
+	if err != nil {
+		t.Fatal(err)
+	}
+	oneHourBefore := tm.Add(-1 * time.Hour)
 
 	tp.StopAt(oneHourBefore)
 	s := xpo.NewReportServiceWithTimeProvider(c, tp)
@@ -38,10 +43,22 @@ func TestReportScenario(t *testing.T) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
-			t.Errorf("It should have specified Content: %v", r)
+			t.Errorf("It should have specified Content: %v", r.Content)
+		}
+		if r.Year != 2014 {
+			t.Errorf("It should have specified Year: %v", r.Year)
+		}
+		if r.Month != 12 {
+			t.Errorf("It should have specified Month: %v", r.Month)
+		}
+		if r.Day != 31 {
+			t.Errorf("It should have specified Day: %v", r.Day)
+		}
+		if r.YearDay != 365 {
+			t.Errorf("It should have specified YearDay: %v", r.YearDay)
 		}
 
-		now := tp.StopNow()
+		now := tp.StopAt(tm)
 		t.Logf("Update: %v", r)
 		{
 			before := *r
@@ -66,10 +83,10 @@ func TestReportScenario(t *testing.T) {
 					t.Errorf("It should change Content from %v to %v", before.Content, ud.Content)
 				}
 				if !r.UpdatedAt.Equal(now) {
-					t.Error("It should change UpdatedAt to current Time: %v, %v", r.UpdatedAt, now)
+					t.Errorf("It should change UpdatedAt to current Time: %v, %v", r.UpdatedAt, now)
 				}
 				if r.UpdatedAt == before.UpdatedAt {
-					t.Error("It should change UpdatedAt")
+					t.Errorf("It should change UpdatedAt")
 				}
 			}
 

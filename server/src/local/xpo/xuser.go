@@ -2,7 +2,6 @@ package xpo
 
 import (
 	"bufio"
-	"io"
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
@@ -11,6 +10,7 @@ import (
 
 	"local/apikit"
 	"local/gaekit"
+	"local/stdkit"
 	"local/validatekit"
 	"local/xpo/assets"
 )
@@ -199,22 +199,6 @@ func checkBlockedWord(callback func(line string) bool) (bool, error) {
 	defer f.Close()
 
 	reader := bufio.NewReaderSize(f, 128)
-	hit, err := FindLine(reader, callback)
+	hit, err := stdkit.FindLine(reader, callback)
 	return hit, err
-}
-
-func FindLine(reader *bufio.Reader, callback func(line string) bool) (bool, error) {
-	for {
-		line, _, err := reader.ReadLine()
-		if err != nil {
-			if err == io.EOF {
-				return false, nil
-			}
-			return false, err
-		}
-		// fmt.Println(string(line))
-		if callback(string(line)) {
-			return true, nil
-		}
-	}
 }

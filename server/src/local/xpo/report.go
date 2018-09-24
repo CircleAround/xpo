@@ -17,9 +17,10 @@ type Report struct {
 	AuthorID  string         `json:"author_id" validate:"required"`
 	Author    string         `json:"author" validate:"required"`
 	Content   string         `json:"content" validate:"required"`
-	Year      int16          `json:"year"`
-	Month     int8           `json:"month"`
-	Day       int8           `json:"day"`
+	Year      int            `json:"year"`
+	Month     int            `json:"month"`
+	Day       int            `json:"day"`
+	YearDay   int            `json:"yearday"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 }
@@ -84,6 +85,11 @@ func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *R
 	now := s.now()
 	report.CreatedAt = now
 	report.UpdatedAt = now
+
+	report.Year = now.Year()
+	report.Month = int(now.Month())
+	report.Day = now.Day()
+	report.YearDay = now.YearDay()
 
 	err = s.Put(report)
 	return
