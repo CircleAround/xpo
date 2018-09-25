@@ -53,7 +53,7 @@ func init() {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
-	r.HandleFunc("/reports/{author_id:[0-9]+}/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/reports/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -63,12 +63,12 @@ func init() {
 				return
 			}
 
-			safeFilter(w, r, searchReports(w, r))
+			safeFilter(w, r, searchReportsYmd(w, r))
 			return
 		}
 	})
 
-	r.HandleFunc("/reports/{author_id:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/reports/{authorId:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
@@ -209,7 +209,7 @@ func getReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	s := NewReportService(c)
 	p := apikit.URLParams(r)
-	uid := p.Get("author_id")
+	uid := p.Get("authorId")
 	id, err := p.AsInt64("id")
 	if err != nil {
 		return err
@@ -234,12 +234,12 @@ func getReports(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func searchReports(w http.ResponseWriter, r *http.Request) error {
+func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	s := NewReportService(c)
 
 	p := apikit.URLParams(r)
-	uid := p.Get("author_id")
+	uid := p.Get("authorId")
 	y, err := p.AsInt("year")
 	if err != nil {
 		return err

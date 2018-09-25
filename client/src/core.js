@@ -17,7 +17,7 @@ function enhanceReport(item) {
 
 class ReportListMap extends collection.ListMap {
   getKey(object) {
-    return `${object.author_id}/${object.id}`
+    return `${object.authorId}/${object.id}`
   }
 
   enhanceObject(object) {
@@ -41,10 +41,6 @@ export default {
     posted: false
   },
   initialize() {
-    this.retriveReports().catch(function(error) {
-      console.log(error)
-    })
-
     this.initNewReport()
     return this.retriveMe()
   },
@@ -85,11 +81,22 @@ export default {
     })
   },
   retriveReports() {
+    listMap.clear()
     return service.reports.retriveReports().then(response => {
       response.data.forEach(item => {
         listMap.push(item)
       })
     })
+  },
+  searchReportsYmd(authorId, year, month, day) {
+    listMap.clear()
+    return service.reports
+      .searchReportsYmd(authorId, year, month, day)
+      .then(response => {
+        response.data.forEach(item => {
+          listMap.push(item)
+        })
+      })
   },
   findReport(authorId, id) {
     return service.reports.findReport(authorId, id).then(response => {

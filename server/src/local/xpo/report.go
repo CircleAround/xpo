@@ -14,7 +14,7 @@ import (
 type Report struct {
 	ID        int64          `json:"id" datastore:"-" goon:"id"`
 	AuthorKey *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
-	AuthorID  string         `json:"author_id" validate:"required"`
+	AuthorID  string         `json:"authorId" validate:"required"`
 	Author    string         `json:"author" validate:"required"`
 	Content   string         `json:"content" validate:"required"`
 	Year      int            `json:"year"`
