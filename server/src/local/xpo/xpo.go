@@ -18,8 +18,8 @@ import (
 
 type XUserResponse struct {
 	XUser
-	LoginURL  string `json:"login_url"`
-	LogoutURL string `json:"logout_url"`
+	LoginURL  string `json:"loginUrl"`
+	LogoutURL string `json:"logoutUrl"`
 }
 
 func init() {

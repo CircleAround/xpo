@@ -9,12 +9,18 @@ class ListMap {
     return this._add(object, 'push')
   }
 
+  pushAll(objects) {
+    objects.forEach(object => {
+      this.push(object)
+    })
+  }
+
   unshift(object) {
     return this._add(object, 'unshift')
   }
 
   enhanceObject(object) {
-    // nop
+    // nop for override
     return object
   }
 
