@@ -58,6 +58,18 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 	return
 }
 
+func (s *ReportService) SearchBy(authorID string, year int, month int, day int) (reports []Report, err error) {
+	limit := 10
+	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit).
+		Filter("AuthorID=", authorID).
+		Filter("Year=", year).
+		Filter("Month=", month).
+		Filter("Day=", day)
+	reports = make([]Report, 0, limit)
+	_, err = s.Goon.GetAll(q, &reports)
+	return
+}
+
 func (s *ReportService) Find(uid string, id int64) (report *Report, err error) {
 	xu := XUser{ID: uid}
 	return s.FindByXUserAndID(xu, id)
