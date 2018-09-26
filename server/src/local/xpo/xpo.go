@@ -66,6 +66,7 @@ func init() {
 			safeFilter(w, r, searchReportsYmd(w, r))
 			return
 		}
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
 	r.HandleFunc("/reports/{authorId:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
@@ -125,20 +126,13 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	s := NewXUserService(c)
-	xu, err := s.GetByUser(*u)
+	xu, err := NewXUserService(c).GetByUser(*u)
 	if err == nil {
-		res := XUserResponse{
-			XUser:     *xu,
-			LoginURL:  LoginFullURL(r),
-			LogoutURL: LogoutFullURL(r),
-		}
-		apikit.ResponseJSON(w, res)
-		return nil
+		return NewResponder(w, r).RenderMeOrError(xu, err)
 	}
 
 	if err == datastore.ErrNoSuchEntity {
-		apikit.ResponseJSON(w, "BE_SIGN_UP")
+		apikit.RespondJSON(w, "BE_SIGN_UP")
 		return nil
 	}
 
@@ -150,29 +144,13 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	p := XUserProfileParams{}
-	err := apikit.ParseJSONBody(r, &p)
-	if err != nil {
-		log.Warningf(c, "err: %v\n", err.Error())
-		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return nil
+	if err := parseJSONBody(r, &p); err != nil {
+		return err
 	}
 
 	log.Infof(c, "params: %v\n", p)
 
-	s := NewXUserService(c)
-	xu, err := s.Create(*u, p)
-
-	if err != nil {
-		return err
-	}
-
-	res := XUserResponse{
-		XUser:     *xu,
-		LoginURL:  LoginFullURL(r),
-		LogoutURL: LogoutFullURL(r),
-	}
-	apikit.ResponseJSON(w, res)
-	return nil
+	return NewResponder(w, r).RenderMeOrError(NewXUserService(c).Create(*u, p))
 }
 
 func updateMe(w http.ResponseWriter, r *http.Request) error {
@@ -180,63 +158,34 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	u := user.Current(c)
 
 	p := XUserProfileParams{}
-	err := apikit.ParseJSONBody(r, &p)
-	if err != nil {
-		log.Warningf(c, "err: %v\n", err.Error())
-		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return nil
-	}
-
-	log.Infof(c, "params: %v\n", p)
-
-	s := NewXUserService(c)
-	xu, err := s.Update(*u, p)
-
-	if err != nil {
+	if err := parseJSONBody(r, &p); err != nil {
 		return err
 	}
 
-	res := XUserResponse{
-		XUser:     *xu,
-		LoginURL:  LoginFullURL(r),
-		LogoutURL: LogoutFullURL(r),
-	}
-	apikit.ResponseJSON(w, res)
-	return nil
+	log.Infof(c, "params: %v\n", p)
+	return NewResponder(w, r).RenderMeOrError(NewXUserService(c).Update(*u, p))
 }
 
 func getReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
-	s := NewReportService(c)
 	p := apikit.URLParams(r)
+
 	uid := p.Get("authorId")
 	id, err := p.AsInt64("id")
 	if err != nil {
 		return err
 	}
 
-	reports, err := s.Find(uid, id)
-	if err != nil {
-		return err
-	}
-	apikit.ResponseJSON(w, reports)
-	return nil
+	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Find(uid, id))
 }
 
 func getReports(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
-	s := NewReportService(c)
-	reports, err := s.RetriveAll()
-	if err != nil {
-		return err
-	}
-	apikit.ResponseJSON(w, reports)
-	return nil
+	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).RetriveAll())
 }
 
 func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
-	s := NewReportService(c)
 
 	p := apikit.URLParams(r)
 	uid := p.Get("authorId")
@@ -253,12 +202,7 @@ func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	reports, err := s.SearchBy(uid, y, m, d)
-	if err != nil {
-		return err
-	}
-	apikit.ResponseJSON(w, reports)
-	return nil
+	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).SearchBy(uid, y, m, d))
 }
 
 func postReport(w http.ResponseWriter, r *http.Request) error {
@@ -271,23 +215,12 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	p := &ReportCreationParams{}
-	err := apikit.ParseJSONBody(r, p)
-	if err != nil {
-		log.Warningf(c, "err: %v\n", err.Error())
-		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return nil
-	}
-
-	log.Infof(c, "params: %v\n", p)
-
-	s := NewReportService(c)
-	report, err := s.Create(*xu, *p)
-	if err != nil {
+	if err := parseJSONBody(r, &p); err != nil {
 		return err
 	}
 
-	apikit.ResponseJSON(w, report)
-	return nil
+	log.Infof(c, "params: %v\n", p)
+	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Create(*xu, *p))
 }
 
 func updateReport(w http.ResponseWriter, r *http.Request) error {
@@ -300,29 +233,21 @@ func updateReport(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	p := &ReportUpdatingParams{}
-	err := apikit.ParseJSONBody(r, p)
-	if err != nil {
-		log.Warningf(c, "err: %v\n", err.Error())
-		apikit.ResponseFailure(w, r, err, http.StatusBadRequest)
-		return nil
-	}
+	{
+		if err := parseJSONBody(r, &p); err != nil {
+			return err
+		}
 
-	id, err := apikit.URLParams(r).AsInt64("id")
-	if err != nil {
-		return err
+		id, err := apikit.URLParams(r).AsInt64("id")
+		if err != nil {
+			return err
+		}
+		p.ID = id
 	}
-	p.ID = id
 
 	log.Infof(c, "params: %v\n", p)
 
-	s := NewReportService(c)
-	report, err := s.Update(*xu, *p)
-	if err != nil {
-		return err
-	}
-
-	apikit.ResponseJSON(w, report)
-	return nil
+	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Update(*xu, *p))
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -369,4 +294,12 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, os.Getenv("ALLOW_ORIGIN"), http.StatusFound)
+}
+
+func parseJSONBody(r *http.Request, p interface{}) error {
+	err := apikit.ParseJSONBody(r, &p)
+	if err != nil {
+		return apikit.NewInvalidParameterErrorWithMessage("json", err.Error())
+	}
+	return nil
 }

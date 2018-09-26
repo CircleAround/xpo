@@ -4,29 +4,42 @@
       <div slot="header" class="clearfix card-header">
         <div class="author-name">{{item.author}}</div>
         <div class="card-header-optoins">
-          <div style="font-size: 90%" type="text">
-            {{item.created_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+          <div class="date">
+            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.created_at.format('YYYY'), month: item.created_at.format('M'), day: item.created_at.format('DD') } }">
+              <div class="month-day">
+                <div class="month">{{item.created_at.format('M')}}</div>
+                <div class="separator">/</div>
+                <div class="day">{{item.created_at.format('DD')}}</div>
+              </div>
+            </router-link>
           </div>
           <el-dropdown class="card-menu">
             <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>
-                <router-link :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">Edit</router-link>
-              </el-dropdown-item>
+            <el-dropdown-menu slot="dropdown" v-if="item.authorId == state.me.id">
+              <router-link :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">
+                <el-dropdown-item>Edit</el-dropdown-item>
+              </router-link>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
       </div>
       <div v-html="item.markdown()" class="markdown"></div>
+      <div>
+        <div class="updated-at">
+          {{item.updated_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+        </div>
+      </div>
     </el-card>
   </div>
 </template>
 
 <script>
+import core from '../../core'
 export default {
   name: 'ReportsPanel',
   data() {
     return {
+      state: core.state,
       list: []
     }
   },
@@ -47,7 +60,7 @@ export default {
 }
 
 .el-card__header {
-  padding: 12px 20px;
+  padding: 10px 20px;
 }
 
 .author-name {
@@ -61,7 +74,7 @@ export default {
 }
 
 .card-header-optoins {
-  flex-basis: 190px;
+  flex-basis: 90px;
 
   display: flex;
   align-items: center;
@@ -70,5 +83,26 @@ export default {
 
 .card-menu {
   flex-basis: 30px;
+}
+
+.date {
+  text-align: center;
+}
+
+.date a {
+  text-decoration: none;
+}
+
+.month-day {
+  display: flex;
+}
+
+.year {
+  font-size: 86%;
+}
+
+.updated-at {
+  text-align: right;
+  font-size: 90%;
 }
 </style>
