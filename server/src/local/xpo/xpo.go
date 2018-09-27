@@ -132,8 +132,7 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if err == datastore.ErrNoSuchEntity {
-		apikit.RespondJSON(w, "BE_SIGN_UP")
-		return nil
+		return apikit.RespondJSON(w, "BE_SIGN_UP")
 	}
 
 	return err

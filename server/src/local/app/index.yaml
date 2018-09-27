@@ -1,6 +1,6 @@
 indexes:
-- kind: Report
-  ancestor: yes
-  properties:
-  - name: CreatedAt
-    direction: desc
+  - kind: Report
+    ancestor: yes
+    properties:
+      - name: ReportedAt
+        direction: desc

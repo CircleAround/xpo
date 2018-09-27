@@ -117,7 +117,7 @@ export default {
   initNewReport() {
     this.state.newReport = {
       content: '',
-      'content-type': 'text/x-markdown'
+      content_type: 'text/x-markdown'
     }
   },
   eachResponseErrors(error, handler) {

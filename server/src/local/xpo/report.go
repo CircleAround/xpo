@@ -2,7 +2,7 @@ package xpo
 
 import (
 	"local/gaekit"
-	"local/timekit"
+	"local/the_time"
 	"local/validatekit"
 	"time"
 
@@ -12,26 +12,26 @@ import (
 
 // Report struct
 type Report struct {
-	ID        int64          `json:"id" datastore:"-" goon:"id"`
-	AuthorKey *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
-	AuthorID  string         `json:"authorId" validate:"required"`
-	Author    string         `json:"author" validate:"required"`
-	Content   string         `json:"content" validate:"required"`
-	Year      int            `json:"year"`
-	Month     int            `json:"month"`
-	Day       int            `json:"day"`
-	YearDay   int            `json:"yearday"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	ID          int64          `json:"id" datastore:"-" goon:"id"`
+	AuthorKey   *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
+	AuthorID    string         `json:"authorId" validate:"required"`
+	Author      string         `json:"author" validate:"required"`
+	Content     string         `json:"content" validate:"required"`
+	ContentType string         `json:"content_type" validate:"required"`
+	ReportedAt  time.Time      `json:"repoorted_at"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
 }
 
 type ReportService struct {
 	gaekit.AppEngineService
-	timeProvider timekit.TimeProvider
+	timeProvider the_time.Provider
 }
 
 type ReportCreationParams struct {
-	Content string `json:"content" validate:"required"`
+	Content     string    `json:"content" validate:"required"`
+	ContentType string    `json:"content_type" validate:"required"`
+	ReportedAt  time.Time `json:"reported_at"`
 }
 
 type ReportUpdatingParams struct {
@@ -40,10 +40,10 @@ type ReportUpdatingParams struct {
 }
 
 func NewReportService(c context.Context) *ReportService {
-	return NewReportServiceWithTimeProvider(c, new(timekit.RealTimeProvider))
+	return NewReportServiceWithTheTime(c, the_time.Real())
 }
 
-func NewReportServiceWithTimeProvider(c context.Context, tp timekit.TimeProvider) *ReportService {
+func NewReportServiceWithTheTime(c context.Context, tp the_time.Provider) *ReportService {
 	s := new(ReportService)
 	s.InitAppEngineService(c)
 	s.timeProvider = tp
@@ -60,11 +60,18 @@ func (s *ReportService) RetriveAll() (reports []Report, err error) {
 
 func (s *ReportService) SearchBy(authorID string, year int, month int, day int) (reports []Report, err error) {
 	limit := 10
-	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit).
-		Filter("AuthorID=", authorID).
-		Filter("Year=", year).
-		Filter("Month=", month).
-		Filter("Day=", day)
+
+	loc, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		return
+	}
+	from := time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
+	to := from.AddDate(0, 0, 1)
+
+	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit).
+		Filter("ReportedAt>=", from).
+		Filter("ReportedAt<", to).
+		Filter("AuthorID=", authorID)
 	reports = make([]Report, 0, limit)
 	_, err = s.Goon.GetAll(q, &reports)
 	return
@@ -90,18 +97,19 @@ func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *R
 
 	report = &Report{}
 	report.Content = params.Content
+	report.ContentType = params.ContentType
 	report.Author = xu.Name
 	report.AuthorID = xu.ID
 	report.AuthorKey = s.KeyOf(xu)
 
 	now := s.now()
+	if params.ReportedAt.IsZero() {
+		report.ReportedAt = now
+	} else {
+		report.ReportedAt = params.ReportedAt
+	}
 	report.CreatedAt = now
 	report.UpdatedAt = now
-
-	report.Year = now.Year()
-	report.Month = int(now.Month())
-	report.Day = now.Day()
-	report.YearDay = now.YearDay()
 
 	err = s.Put(report)
 	return
@@ -119,8 +127,11 @@ func (s *ReportService) Update(xu XUser, params ReportUpdatingParams) (report *R
 	}
 
 	report.Content = params.Content
+	report.ContentType = params.ContentType
 	report.Author = xu.Name
-
+	if !params.ReportedAt.IsZero() {
+		report.ReportedAt = params.ReportedAt
+	}
 	report.UpdatedAt = s.now()
 
 	err = s.Put(report)

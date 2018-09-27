@@ -50,8 +50,9 @@ func (f *TestFactory) BuildXUser() xpo.XUser {
 func (f *TestFactory) BuildReport() xpo.Report {
 	f.ReportCounter++
 	return xpo.Report{
-		Content: fmt.Sprintf("This is Content %v", f.ReportCounter),
-		ID:      f.ReportCounter,
+		Content:     fmt.Sprintf("This is Content %v", f.ReportCounter),
+		ContentType: "text/x-markdown",
+		ID:          f.ReportCounter,
 	}
 }
 
