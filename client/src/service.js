@@ -49,6 +49,11 @@ const ReportService = {
   retriveReports() {
     return errorFilter(api.get('/reports'))
   },
+  searchReportsYmd(authorId, year, month, day) {
+    return errorFilter(
+      api.get(`/reports/${authorId}/_/${year}/${month}/${day}`)
+    )
+  },
   findReport(authorId, id) {
     return errorFilter(api.get(`/reports/${authorId}/${id}`))
   },
@@ -57,7 +62,7 @@ const ReportService = {
   },
   updateReport(report, params) {
     return errorFilter(
-      api.put(`/reports/${params.author_id}/${params.id}`, report)
+      api.put(`/reports/${params.authorId}/${params.id}`, report)
     )
   }
 }

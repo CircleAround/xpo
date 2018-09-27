@@ -2,7 +2,7 @@ package xpo_test
 
 import (
 	"local/testkit"
-	"local/timekit"
+	"local/the_time"
 	"local/xpo"
 	"testing"
 	"time"
@@ -23,14 +23,19 @@ func TestReportScenario(t *testing.T) {
 	}
 
 	d := f.BuildReport()
-	tp := new(timekit.TestTimeProvider)
-	oneHourBefore := time.Now().Add(-1 * time.Hour)
+	tp := the_time.Machine()
 
-	tp.StopAt(oneHourBefore)
-	s := xpo.NewReportServiceWithTimeProvider(c, tp)
+	tm, err := time.Parse("2006-01-02 15:04:05 MST", "2014-12-31 12:31:24 JST")
+	if err != nil {
+		t.Fatal(err)
+	}
+	oneHourBefore := tm.Add(-1 * time.Hour)
+
+	tp.TravelTo(oneHourBefore)
+	s := xpo.NewReportServiceWithTheTime(c, tp)
 	{
 		t.Log("Create")
-		r, err := s.Create(xu, xpo.ReportCreationParams{Content: d.Content})
+		r, err := s.Create(xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -38,16 +43,28 @@ func TestReportScenario(t *testing.T) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
-			t.Errorf("It should have specified Content: %v", r)
+			t.Errorf("It should have specified Content: %v", r.Content)
+		}
+		if r.ContentType != d.ContentType {
+			t.Errorf("It should have specified ContentType: %v", r.ContentType)
+		}
+		if !r.CreatedAt.Equal(oneHourBefore) {
+			t.Errorf("It should have specified CreateddAt: %v", r.CreatedAt)
+		}
+		if !r.UpdatedAt.Equal(oneHourBefore) {
+			t.Errorf("It should have specified UpdatedAt: %v", r.UpdatedAt)
+		}
+		if !r.ReportedAt.Equal(oneHourBefore) {
+			t.Errorf("It should have specified ReportedAt: %v", r.ReportedAt)
 		}
 
-		now := tp.StopNow()
+		now := tp.TravelTo(tm)
 		t.Logf("Update: %v", r)
 		{
 			before := *r
 			ud := f.BuildReport()
 			p := xpo.ReportUpdatingParams{
-				ReportCreationParams: xpo.ReportCreationParams{ud.Content},
+				ReportCreationParams: xpo.ReportCreationParams{Content: ud.Content, ContentType: ud.ContentType},
 				ID:                   r.ID,
 			}
 
@@ -66,10 +83,10 @@ func TestReportScenario(t *testing.T) {
 					t.Errorf("It should change Content from %v to %v", before.Content, ud.Content)
 				}
 				if !r.UpdatedAt.Equal(now) {
-					t.Error("It should change UpdatedAt to current Time: %v, %v", r.UpdatedAt, now)
+					t.Errorf("It should change UpdatedAt to current Time: %v, %v", r.UpdatedAt, now)
 				}
-				if r.UpdatedAt == before.UpdatedAt {
-					t.Error("It should change UpdatedAt")
+				if r.UpdatedAt.Equal(before.UpdatedAt) {
+					t.Errorf("It should change UpdatedAt")
 				}
 			}
 
@@ -99,6 +116,45 @@ func TestReportScenario(t *testing.T) {
 			if hit.ID != r.ID {
 				t.Error("It should be equal ID")
 			}
+		}
+	}
+
+	now := tp.TravelTo(tm)
+	{
+		t.Log("Create with ReportedAt")
+		r, err := s.Create(xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if *r.AuthorKey != *s.KeyOf(xu) {
+			t.Errorf("It should have author's key: %v", r)
+		}
+		if r.Content != d.Content {
+			t.Errorf("It should have specified Content: %v", r.Content)
+		}
+		if r.ContentType != d.ContentType {
+			t.Errorf("It should have specified ContentType: %v", r.ContentType)
+		}
+		if !r.CreatedAt.Equal(now) {
+			t.Errorf("It should have specified CreateddAt: %v", r.CreatedAt)
+		}
+		if !r.UpdatedAt.Equal(now) {
+			t.Errorf("It should have specified UpdatedAt: %v", r.UpdatedAt)
+		}
+		if !r.ReportedAt.Equal(oneHourBefore) {
+			t.Errorf("It should have specified ReportedAt: %v", r.ReportedAt)
+		}
+	}
+
+	{
+		t.Log("Search By")
+		rs, err := s.SearchBy(xu.ID, now.Year(), int(now.Month()), now.Day())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(rs) != 2 {
+			t.Errorf("It should have 2 results: %v", rs)
 		}
 	}
 }

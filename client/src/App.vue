@@ -15,20 +15,26 @@
               <el-dropdown>
                 <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item >
-                    <router-link to='/users/me/edit'>EditProfile</router-link>
-                  </el-dropdown-item>
-                  <el-dropdown-item >
-                    <router-link to='/about'>About</router-link>
-                  </el-dropdown-item>
-                  <el-dropdown-item divided><a v-bind:href="state.me.logout_url">Logout</a></el-dropdown-item>
+                  <router-link to='/users/me/edit'>
+                    <el-dropdown-item >
+                      EditProfile
+                    </el-dropdown-item>
+                  </router-link>
+                  <router-link to='/about'>
+                    <el-dropdown-item >
+                      About
+                    </el-dropdown-item>
+                  </router-link>
+                  <a v-bind:href="state.me.logoutUrl">
+                    <el-dropdown-item divided>Logout</el-dropdown-item>
+                  </a>
                 </el-dropdown-menu>
               </el-dropdown>
             </li>
           </template>
           <template v-else>
             <li>
-              <a v-bind:href="state.me.login_url">Googleアカウントでログイン</a>して投稿する
+              <a v-bind:href="state.me.loginUrl">Googleアカウントでログイン</a>して投稿する
               <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
             </li>
           </template>
@@ -77,11 +83,11 @@ export default {
   max-width: 960px;
 }
 
-.el-dropdown-menu__item a {
+.el-dropdown-menu a {
   text-decoration: none;
 }
 
-.el-dropdown-menu__item a:visited {
+.el-dropdown-menu a:visited {
   text-decoration: none;
 }
 
@@ -100,6 +106,8 @@ export default {
 }
 
 .user_name {
+  word-break: break-all;
+
   display: flex;
   align-items: center;
   padding: 0 5px;

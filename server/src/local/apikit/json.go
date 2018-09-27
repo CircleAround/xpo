@@ -28,33 +28,59 @@ func ParseJSONBody(r *http.Request, jsonBody interface{}) error {
 	return nil
 }
 
-func ResponseJSON(w http.ResponseWriter, obj interface{}) {
+func RespondJSON(w http.ResponseWriter, obj interface{}) error {
 	w.WriteHeader(http.StatusOK)
-	writeJSON(w, obj)
+	return writeJSON(w, obj)
 }
 
-func ResponseOk(w http.ResponseWriter) {
-	ResponseJSON(w, NewSuccess())
+func RespondOk(w http.ResponseWriter) error {
+	return RespondJSON(w, NewSuccess())
 }
 
-func ResponseFailure(w http.ResponseWriter, r *http.Request, err interface{}, code int) {
-	DoResponseFailure(w, r, NewFailure(err), code)
+func RespondFailure(w http.ResponseWriter, err interface{}, code int) error {
+	return DoRespondFailure(w, NewFailure(err), code)
 }
 
-func DoResponseFailure(w http.ResponseWriter, r *http.Request, failure Failure, code int) {
+func DoRespondFailure(w http.ResponseWriter, failure Failure, code int) error {
 	w.WriteHeader(code)
-
-	writeJSON(w, failure)
+	return writeJSON(w, failure)
 }
 
-func writeJSON(w http.ResponseWriter, obj interface{}) {
+func writeJSON(w http.ResponseWriter, obj interface{}) error {
 	w.Header().Set("Content-Type", "application/json")
 	res, err := json.Marshal(obj)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
-	w.Write(res)
+	_, err = w.Write(res)
+	return err
+}
+
+type JSONRenderer struct {
+	writer http.ResponseWriter
+}
+
+func NewJSONRenderer(w http.ResponseWriter) JSONRenderer {
+	return JSONRenderer{writer: w}
+}
+
+func (r *JSONRenderer) NG(err interface{}, code int) error {
+	return RespondFailure(r.writer, err, code)
+}
+
+func (r *JSONRenderer) OK(err interface{}, code int) error {
+	return RespondOk(r.writer)
+}
+
+func (r *JSONRenderer) Render(obj interface{}) error {
+	return RespondJSON(r.writer, obj)
+}
+
+func (r *JSONRenderer) RenderOrError(obj interface{}, err error) error {
+	if err != nil {
+		return err
+	}
+	return RespondJSON(r.writer, obj)
 }

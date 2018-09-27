@@ -16,8 +16,13 @@ export default {
     }
   },
   created() {
-    console.log('created')
-    core.retriveReports()
+    const params = this.$route.params
+    core.searchReportsYmd(
+      params.authorId,
+      params.year,
+      params.month,
+      params.day
+    )
   }
 }
 </script>

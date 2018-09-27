@@ -38,6 +38,15 @@ func NewInvalidParameterError(property string) *InvalidParameterError {
 	}
 }
 
+func NewInvalidParameterErrorWithMessage(property string, msg string) *InvalidParameterError {
+	return &InvalidParameterError{
+		Type:     "InvalidParameterError",
+		Message:  msg,
+		Property: property,
+	}
+}
+
+
 const (
 	// Required is specify required error
 	Required string = "required"

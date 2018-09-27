@@ -17,7 +17,7 @@ function enhanceReport(item) {
 
 class ReportListMap extends collection.ListMap {
   getKey(object) {
-    return `${object.author_id}/${object.id}`
+    return `${object.authorId}/${object.id}`
   }
 
   enhanceObject(object) {
@@ -33,18 +33,14 @@ export default {
       id: null,
       email: null,
       name: null,
-      login_url: null,
-      logout_url: null
+      loginUrl: null,
+      logoutUrl: null
     },
     list: listMap.array,
     newReport: { content: null },
     posted: false
   },
   initialize() {
-    this.retriveReports().catch(function(error) {
-      console.log(error)
-    })
-
     this.initNewReport()
     return this.retriveMe()
   },
@@ -52,75 +48,76 @@ export default {
     if (!this.state) return false
     return this.state.me.id != null
   },
-  retriveMe() {
-    return service.users
-      .retriveMe()
-      .then(response => {
-        if (response.data === 'BE_SIGN_UP') {
-          router.push('/signup')
-        } else {
-          this.state.me = response.data
-        }
-      })
-      .catch(error => {
-        if (!error.response) {
-          throw error
-        }
+  retriveMe: async function() {
+    try {
+      const response = await service.users.retriveMe()
+      if (response.data === 'BE_SIGN_UP') {
+        router.push('/signup')
+      } else {
+        this.state.me = response.data
+      }
+    } catch (error) {
+      if (!error.response) {
+        throw error
+      }
 
-        if (error.response.status !== 401) {
-          throw error
-        }
+      if (error.response.status !== 401) {
+        throw error
+      }
 
-        this.state.me.login_url = error.response.data.error
-      })
+      this.state.me.loginUrl = error.response.data.error
+    }
   },
-  postXUser(name, nickname) {
-    return service.users.postXUser(name, nickname).then(response => {
-      this.state.me = response.data
-    })
+  postXUser: async function(name, nickname) {
+    const response = await service.users.postXUser(name, nickname)
+    this.state.me = response.data
   },
-  updateXUser(name, nickname) {
-    return service.users.updateXUser(name, nickname).then(response => {
-      this.state.me = response.data
-    })
+  updateXUser: async function(name, nickname) {
+    const response = await service.users.updateXUser(name, nickname)
+    this.state.me = response.data
   },
-  retriveReports() {
-    return service.reports.retriveReports().then(response => {
-      response.data.forEach(item => {
-        listMap.push(item)
-      })
-    })
+  retriveReports: async function() {
+    listMap.clear()
+    const response = await service.reports.retriveReports()
+    listMap.pushAll(response.data)
   },
-  findReport(authorId, id) {
-    return service.reports.findReport(authorId, id).then(response => {
-      return listMap.push(response.data)
-    })
+  searchReportsYmd: async function(authorId, year, month, day) {
+    listMap.clear()
+    const response = await service.reports.searchReportsYmd(
+      authorId,
+      year,
+      month,
+      day
+    )
+    listMap.pushAll(response.data)
   },
-  findReport4Update(authorId, id) {
-    return this.findReport(authorId, id).then(newObject => {
-      Object.assign(this.state.newReport, newObject)
-    })
+  findReport: async function(authorId, id) {
+    const response = await service.reports.findReport(authorId, id)
+    return listMap.push(response.data)
   },
-  postReport() {
-    return service.reports.postReport(this.state.newReport).then(response => {
-      listMap.unshift(response.data)
-      this.initNewReport()
-      router.push('/')
-    })
+  findReport4Update: async function(authorId, id) {
+    const newObject = await this.findReport(authorId, id)
+    Object.assign(this.state.newReport, newObject)
   },
-  updateReport(params) {
-    return service.reports
-      .updateReport(this.state.newReport, params)
-      .then(response => {
-        listMap.updateItem(response.data)
-        this.initNewReport()
-        router.push('/')
-      })
+  postReport: async function() {
+    const response = await service.reports.postReport(this.state.newReport)
+    listMap.unshift(response.data)
+    this.initNewReport()
+    router.push('/')
+  },
+  updateReport: async function(params) {
+    const response = await service.reports.updateReport(
+      this.state.newReport,
+      params
+    )
+    listMap.updateItem(response.data)
+    this.initNewReport()
+    router.push('/')
   },
   initNewReport() {
     this.state.newReport = {
       content: '',
-      'content-type': 'text/x-markdown'
+      content_type: 'text/x-markdown'
     }
   },
   eachResponseErrors(error, handler) {

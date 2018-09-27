@@ -36,4 +36,5 @@ func NewFailure(data interface{}) Failure {
 type Params interface {
 	Get(key string) string
 	AsInt64(key string) (int64, error)
+	AsInt(key string) (int, error)
 }
