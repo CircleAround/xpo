@@ -11,6 +11,12 @@ import (
 	"google.golang.org/appengine/user"
 )
 
+type XUserResponse struct {
+	XUser
+	LoginURL  string `json:"loginUrl"`
+	LogoutURL string `json:"logoutUrl"`
+}
+
 type Responder struct {
 	w  http.ResponseWriter
 	r  *http.Request

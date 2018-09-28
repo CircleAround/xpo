@@ -16,12 +16,6 @@ import (
 
 //go:generate go-assets-builder --output=assets/reserved_username_list.go -p=assets ../../../assets/reserved_username_list
 
-type XUserResponse struct {
-	XUser
-	LoginURL  string `json:"loginUrl"`
-	LogoutURL string `json:"logoutUrl"`
-}
-
 func init() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", handleRoot)
