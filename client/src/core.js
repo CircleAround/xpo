@@ -1,12 +1,20 @@
 import moment from 'moment-timezone'
 import marked from 'marked'
+import jstimezonedetect from 'jstimezonedetect'
 import router from './router'
 import service from './service'
 import collection from './lib/collection'
 
-moment.tz.setDefault('Asia/Tokyo')
+var tz = jstimezonedetect.determine()
+moment.tz.setDefault(tz.name())
 
 function enhanceReport(item) {
+  if (item.markdown) {
+    // already enhanced guard
+    return item
+  }
+
+  item.reported_at = moment(item.reported_at)
   item.created_at = moment(item.created_at)
   item.updated_at = moment(item.updated_at)
   item.markdown = function() {
@@ -26,6 +34,7 @@ class ReportListMap extends collection.ListMap {
 }
 
 const listMap = new ReportListMap()
+const subListMap = new ReportListMap()
 
 export default {
   state: {
@@ -37,6 +46,7 @@ export default {
       logoutUrl: null
     },
     list: listMap.array,
+    subList: subListMap.array,
     newReport: { content: null },
     posted: false
   },
@@ -82,14 +92,14 @@ export default {
     listMap.pushAll(response.data)
   },
   searchReportsYmd: async function(authorId, year, month, day) {
-    listMap.clear()
+    subListMap.clear()
     const response = await service.reports.searchReportsYmd(
       authorId,
       year,
       month,
       day
     )
-    listMap.pushAll(response.data)
+    subListMap.pushAll(response.data)
   },
   findReport: async function(authorId, id) {
     const response = await service.reports.findReport(authorId, id)
@@ -119,6 +129,9 @@ export default {
       content: '',
       content_type: 'text/x-markdown'
     }
+  },
+  forceUpdateMainList() {
+    listMap.forceUpdate()
   },
   eachResponseErrors(error, handler) {
     const e = error.response.data.error
