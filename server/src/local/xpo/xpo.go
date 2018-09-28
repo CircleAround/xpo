@@ -126,7 +126,7 @@ func getMe(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 
-	xu, err := NewXUserService(c).GetByUser(*u)
+	xu, err := NewXUserService().GetByUser(c, *u)
 	if err == nil {
 		return NewResponder(w, r).RenderMeOrError(xu, err)
 	}
@@ -149,7 +149,7 @@ func postMe(w http.ResponseWriter, r *http.Request) error {
 
 	log.Infof(c, "params: %v\n", p)
 
-	return NewResponder(w, r).RenderMeOrError(NewXUserService(c).Create(*u, p))
+	return NewResponder(w, r).RenderMeOrError(NewXUserService().Create(c, *u, p))
 }
 
 func updateMe(w http.ResponseWriter, r *http.Request) error {
@@ -162,7 +162,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	log.Infof(c, "params: %v\n", p)
-	return NewResponder(w, r).RenderMeOrError(NewXUserService(c).Update(*u, p))
+	return NewResponder(w, r).RenderMeOrError(NewXUserService().Update(c, *u, p))
 }
 
 func getReport(w http.ResponseWriter, r *http.Request) error {
@@ -175,12 +175,12 @@ func getReport(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Find(uid, id))
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().Find(c, uid, id))
 }
 
 func getReports(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
-	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).RetriveAll())
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().RetriveAll(c))
 }
 
 func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
@@ -201,7 +201,7 @@ func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).SearchBy(uid, y, m, d))
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().SearchBy(c,uid, y, m, d))
 }
 
 func postReport(w http.ResponseWriter, r *http.Request) error {
@@ -219,7 +219,7 @@ func postReport(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	log.Infof(c, "params: %v\n", p)
-	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Create(*xu, *p))
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().Create(c, *xu, *p))
 }
 
 func updateReport(w http.ResponseWriter, r *http.Request) error {
@@ -246,7 +246,7 @@ func updateReport(w http.ResponseWriter, r *http.Request) error {
 
 	log.Infof(c, "params: %v\n", p)
 
-	return NewResponder(w, r).RenderObjectOrError(NewReportService(c).Update(*xu, *p))
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().Update(c, *xu, *p))
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
