@@ -4,3 +4,8 @@ indexes:
     properties:
       - name: ReportedAt
         direction: desc
+  - kind: Report
+    properties:
+      - name: AuthorID
+      - name: ReportedAt
+        direction: desc
