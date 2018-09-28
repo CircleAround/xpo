@@ -15,9 +15,13 @@ export default {
       list: core.state.list
     }
   },
-  created() {
-    console.log('created')
-    core.retriveReports()
+  mounted() {
+    console.log('mounted')
+    if (core.state.list.length === 0) {
+      core.retriveReports()
+    } else {
+      core.forceUpdateMainList() // for update report list
+    }
   }
 }
 </script>

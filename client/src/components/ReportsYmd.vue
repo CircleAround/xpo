@@ -12,7 +12,7 @@ export default {
   components: { ReportsPanel },
   data() {
     return {
-      list: core.state.list
+      list: core.state.subList
     }
   },
   created() {

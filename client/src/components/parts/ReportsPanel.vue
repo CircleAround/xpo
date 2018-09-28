@@ -50,6 +50,9 @@ export default {
     reports(val) {
       this.list = val
     }
+  },
+  created() {
+    console.log('created')
   }
 }
 </script>

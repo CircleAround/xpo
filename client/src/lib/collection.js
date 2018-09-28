@@ -15,8 +15,28 @@ class ListMap {
     })
   }
 
+  pop() {
+    return this._removeMap(this.array.pop())
+  }
+
+  shift() {
+    return this._removeMap(this.array.shift())
+  }
+
   unshift(object) {
     return this._add(object, 'unshift')
+  }
+
+  replaceAt(index, object) {
+    const ret = this._removeMap(this.array[index])
+    this.array.splice(index, 1, object)
+    this._addMap(object)
+    return ret
+  }
+
+  // forceUpdate for send update event on vue.js
+  forceUpdate() {
+    this.array.push(this.array.pop())
   }
 
   enhanceObject(object) {
@@ -26,6 +46,10 @@ class ListMap {
 
   getKey(object) {
     throw new Error('Unimplemented method: getKey')
+  }
+
+  at(index) {
+    return this.array[index]
   }
 
   find(key) {
@@ -50,6 +74,16 @@ class ListMap {
     this.map.clear()
   }
 
+  reset(objects) {
+    this.clear()
+    this.pushAll(objects)
+  }
+
+  injectTo(list) {
+    list.splice(0)
+    this.pushAll(list)
+  }
+
   _addMap(object) {
     const obj = this.enhanceObject(object)
     this.map.set(this.getKey(object), obj)
@@ -70,6 +104,11 @@ class ListMap {
   _assignItem(src, dst) {
     Object.assign(dst, this.enhanceObject(src))
     return dst
+  }
+
+  _removeMap(object) {
+    this.map.delete(this.getKey(object))
+    return object
   }
 }
 
