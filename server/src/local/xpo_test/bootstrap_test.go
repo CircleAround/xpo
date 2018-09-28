@@ -18,22 +18,21 @@ type TestFactory struct {
 
 var singleton *TestFactory
 
-func NewTestFactory(c context.Context) *TestFactory {
+func NewTestFactory() *TestFactory {
 	if singleton != nil {
 		return singleton
 	}
 
 	f := new(TestFactory)
-	f.InitAppEngineService(c)
 	f.XUserCounter = 0
 
 	singleton = f
 	return f
 }
 
-func (f *TestFactory) CreateXUser() (xpo.XUser, error) {
+func (f *TestFactory) CreateXUser(c context.Context) (xpo.XUser, error) {
 	xu := f.BuildXUser()
-	err := f.Put(&xu)
+	err := f.Put(c, &xu)
 	return xu, err
 }
 

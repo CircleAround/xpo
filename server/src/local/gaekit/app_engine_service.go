@@ -11,57 +11,53 @@ import (
 
 // AppEngineService is Basi Service of AppEngine
 type AppEngineService struct {
-	Goon    *goon.Goon
-	Context context.Context
 }
 
-// InitAppEngineService is initialzer for Extended Services
-func (s *AppEngineService) InitAppEngineService(c context.Context) {
-	s.Context = c
-	s.Goon = goon.FromContext(c)
+func (s *AppEngineService) Goon(c context.Context) *goon.Goon {
+	return goon.FromContext(c)
 }
 
 // KeyOf is a method for getting key from obj
-func (s *AppEngineService) KeyOf(obj interface{}) *datastore.Key {
-	return s.Goon.Key(obj)
+func (s *AppEngineService) KeyOf(c context.Context, obj interface{}) *datastore.Key {
+	return s.Goon(c).Key(obj)
 }
 
 // Get is a method for retriving object
-func (s *AppEngineService) Get(obj interface{}) error {
-	return s.Goon.Get(obj)
+func (s *AppEngineService) Get(c context.Context,obj interface{}) error {
+	return s.Goon(c).Get(obj)
 }
 
 // Exists is a method for check object exists on DB
-func (s *AppEngineService) Exists(obj interface{}) (bool, error) {
-	err := s.Get(obj)
+func (s *AppEngineService) Exists(c context.Context, obj interface{}) (bool, error) {
+	err := s.Get(c, obj)
 	if err == datastore.ErrNoSuchEntity {
 		return false, nil
 	}
 	return true, err
 }
 
-func (s *AppEngineService) RunInTransaction(process func() error) error {
-	return s.RunInTransactionWithOption(process, nil)
+func (s *AppEngineService) RunInTransaction(c context.Context, process func() error) error {
+	return s.RunInTransactionWithOption(c, process, nil)
 }
 
-func (s *AppEngineService) RunInTransactionWithOption(process func() error, opts *datastore.TransactionOptions) error {
-	return datastore.RunInTransaction(s.Context, func(ctx context.Context) error {
+func (s *AppEngineService) RunInTransactionWithOption(c context.Context, process func() error, opts *datastore.TransactionOptions) error {
+	return datastore.RunInTransaction(c, func(ctx context.Context) error {
 		return process()
 	}, opts)
 }
 
 // FindOrCreate is a method for find or create Object
-func (s *AppEngineService) FindOrCreate(obj interface{}) (xret interface{}, err error) {
-	err = s.RunInTransaction(func() error {
-		if err := s.Goon.Get(obj); err != nil {
+func (s *AppEngineService) FindOrCreate(c context.Context, obj interface{}) (xret interface{}, err error) {
+	err = s.RunInTransaction(c, func() error {
+		if err := s.Get(c, obj); err != nil {
 			if err != datastore.ErrNoSuchEntity {
 				return err
 			}
 
-			log.Infof(s.Context, "%v not found. create new one.", obj)
-			return s.Put(obj)
+			log.Infof(c, "%v not found. create new one.", obj)
+			return s.Put(c, obj)
 		} else {
-			log.Infof(s.Context, "%v found!. get one.", obj)
+			log.Infof(c, "%v found!. get one.", obj)
 		}
 		return nil
 	})
@@ -70,14 +66,14 @@ func (s *AppEngineService) FindOrCreate(obj interface{}) (xret interface{}, err 
 }
 
 // Put is a method for saving obj
-func (s *AppEngineService) Put(obj interface{}) (err error) {
-	_, err = s.Goon.Put(obj)
+func (s *AppEngineService) Put(c context.Context, obj interface{}) (err error) {
+	_, err = s.Goon(c).Put(obj)
 	return
 }
 
 // Delete is a method for deleting obj
-func (s *AppEngineService) Delete(obj interface{}) (err error) {
-	return s.Goon.Delete(s.KeyOf(obj))
+func (s *AppEngineService) Delete(c context.Context, obj interface{}) (err error) {
+	return s.Goon(c).Delete(s.KeyOf(c, obj))
 }
 
 type UniqueIndex interface {
@@ -89,14 +85,14 @@ type UniqueIndex interface {
 // type UniqueIndexOfString struct {
 // 	value string `datastore:"-" goon:"id"`
 // }
-func (s *AppEngineService) CreateUnique(i UniqueIndex) error {
-	return s.CreateUniqueWithProperty(i, i.Property())
+func (s *AppEngineService) CreateUnique(c context.Context, i UniqueIndex) error {
+	return s.CreateUniqueWithProperty(c, i, i.Property())
 }
 
-func (s *AppEngineService) CreateUniqueWithProperty(i interface{}, property string) error {
-	err := s.Get(i)
+func (s *AppEngineService) CreateUniqueWithProperty(c context.Context, i interface{}, property string) error {
+	err := s.Get(c, i)
 	if err == nil {
-		log.Infof(s.Context, "%v is not unique. %v", property, i)
+		log.Infof(c, "%v is not unique. %v", property, i)
 		return &ValueNotUniqueError{Type: "ValueNotUniqueError", Property: property}
 	}
 
@@ -104,25 +100,25 @@ func (s *AppEngineService) CreateUniqueWithProperty(i interface{}, property stri
 		return err
 	}
 
-	log.Infof(s.Context, "%v is free.", property)
-	return s.Put(i)
+	log.Infof(c, "%v is free.", property)
+	return s.Put(c, i)
 }
 
-func (s *AppEngineService) ChangeUniqueValueMustTr(i UniqueIndex, ni UniqueIndex) error {
+func (s *AppEngineService) ChangeUniqueValueMustTr(c context.Context, i UniqueIndex, ni UniqueIndex) error {
 	if i.Property() != ni.Property() {
 		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
 	}
 
-	log.Infof(s.Context, "CreateUnique")
-	err := s.CreateUnique(ni)
+	log.Infof(c, "CreateUnique")
+	err := s.CreateUnique(c, ni)
 	if err != nil {
 		return err
 	}
 
-	log.Infof(s.Context, "Get")
-	err = s.Get(i)
+	log.Infof(c, "Get")
+	err = s.Get(c, i)
 	if err == nil {
-		err = s.Delete(i)
+		err = s.Delete(c, i)
 		if err != nil {
 			return err
 		}
@@ -130,7 +126,7 @@ func (s *AppEngineService) ChangeUniqueValueMustTr(i UniqueIndex, ni UniqueIndex
 		return err
 	}
 
-	log.Infof(s.Context, "end ChangeUniqueValueMustTr")
+	log.Infof(c, "end ChangeUniqueValueMustTr")
 	return nil
 }
 

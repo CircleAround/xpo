@@ -15,9 +15,9 @@ func TestReportScenario(t *testing.T) {
 	defer done()
 
 	t.Log("ReportScenario")
-	f := NewTestFactory(c)
+	f := NewTestFactory()
 
-	xu, err := f.CreateXUser()
+	xu, err := f.CreateXUser(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,14 +32,14 @@ func TestReportScenario(t *testing.T) {
 	oneHourBefore := tm.Add(-1 * time.Hour)
 
 	tp.TravelTo(oneHourBefore)
-	s := xpo.NewReportServiceWithTheTime(c, tp)
+	s := xpo.NewReportServiceWithTheTime(tp)
 	{
 		t.Log("Create")
-		r, err := s.Create(xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
+		r, err := s.Create(c, xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if *r.AuthorKey != *s.KeyOf(xu) {
+		if *r.AuthorKey != *s.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
@@ -69,7 +69,7 @@ func TestReportScenario(t *testing.T) {
 			}
 
 			{
-				r, err := s.Update(xu, p)
+				r, err := s.Update(c, xu, p)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -92,7 +92,7 @@ func TestReportScenario(t *testing.T) {
 
 			{
 				other := f.BuildXUser()
-				_, err := s.Update(other, p)
+				_, err := s.Update(c, other, p)
 				if err == nil {
 					t.Error("It should block update by other user, must throw error")
 				}
@@ -105,12 +105,12 @@ func TestReportScenario(t *testing.T) {
 
 		{
 			t.Logf("Find: %v", r)
-			hit, err := s.Find(xu.ID, r.ID)
+			hit, err := s.Find(c, xu.ID, r.ID)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if *hit.AuthorKey != *s.KeyOf(xu) {
+			if *hit.AuthorKey != *s.KeyOf(c, xu) {
 				t.Error("It should be equal AuthorKey and Key of xu")
 			}
 			if hit.ID != r.ID {
@@ -122,11 +122,11 @@ func TestReportScenario(t *testing.T) {
 	now := tp.TravelTo(tm)
 	{
 		t.Log("Create with ReportedAt")
-		r, err := s.Create(xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if *r.AuthorKey != *s.KeyOf(xu) {
+		if *r.AuthorKey != *s.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
@@ -148,7 +148,7 @@ func TestReportScenario(t *testing.T) {
 
 	{
 		t.Log("Search By")
-		rs, err := s.SearchBy(xu.ID, now.Year(), int(now.Month()), now.Day())
+		rs, err := s.SearchBy(c, xu.ID, now.Year(), int(now.Month()), now.Day())
 		if err != nil {
 			t.Fatal(err)
 		}

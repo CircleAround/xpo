@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"golang.org/x/net/context"
 	"google.golang.org/appengine/user"
 )
 
@@ -15,8 +16,8 @@ func TestXUserScenario(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory(c)
-	s := xpo.NewXUserService(c)
+	f := NewTestFactory()
+	s := xpo.NewXUserService()
 
 	d := f.BuildXUser()
 	var u user.User
@@ -26,7 +27,7 @@ func TestXUserScenario(t *testing.T) {
 	{
 		t.Log("Scenario")
 
-		xu, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		xu, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -34,11 +35,11 @@ func TestXUserScenario(t *testing.T) {
 		{
 			t.Logf("Standard")
 			ret := xpo.XUser{ID: xu.ID}
-			if err = s.Get(&ret); err != nil {
+			if err = s.Get(c, &ret); err != nil {
 				t.Fatal(err)
 			}
 
-			checkXUser(t, s, f, u, ret, d)
+			checkXUser(t, c, s, f, u, ret, d)
 		}
 	}
 
@@ -46,7 +47,7 @@ func TestXUserScenario(t *testing.T) {
 		t.Logf("Update")
 		ud := f.BuildXUser()
 
-		ret, err := s.Update(u, xpo.XUserProfileParams{
+		ret, err := s.Update(c, u, xpo.XUserProfileParams{
 			Name:     ud.Name,
 			Nickname: ud.Nickname,
 		})
@@ -58,9 +59,9 @@ func TestXUserScenario(t *testing.T) {
 		}
 
 		ud.Email = u.Email // Email not changed
-		checkXUser(t, s, f, u, *ret, ud)
+		checkXUser(t, c, s, f, u, *ret, ud)
 
-		used, err := s.IsUsedName(d.Name)
+		used, err := s.IsUsedName(c, d.Name)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -74,8 +75,8 @@ func TestValidation(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory(c)
-	s := xpo.NewXUserService(c)
+	f := NewTestFactory()
+	s := xpo.NewXUserService()
 	t.Logf("Validation")
 
 	d := f.BuildXUser()
@@ -87,22 +88,22 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Name")
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Nickname: d.Nickname})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: "", Nickname: d.Nickname})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: "", Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
 			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
 				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
@@ -112,22 +113,22 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Nickname")
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: ""})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: ""})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: "<nynickname"})
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: "<nynickname"})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
 		}
 
 		{
-			_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
+			_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
 			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
 				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
@@ -136,7 +137,7 @@ func TestValidation(t *testing.T) {
 	}
 }
 
-func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, ret xpo.XUser, d xpo.XUser) {
+func checkXUser(t *testing.T, c context.Context, s *xpo.XUserService, f *TestFactory, u user.User, ret xpo.XUser, d xpo.XUser) {
 	t.Logf("Update!")
 
 	if ret.Email != d.Email {
@@ -150,7 +151,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 	}
 	t.Logf("Update!!")
 
-	used, err := s.IsUsedName(d.Name)
+	used, err := s.IsUsedName(c, d.Name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +162,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 
 	{
 		t.Logf("Duplicaed")
-		_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated user")
 		}
@@ -180,7 +181,7 @@ func checkXUser(t *testing.T, s *xpo.XUserService, f *TestFactory, u user.User, 
 		u.ID = d2.ID
 
 		// duplicated name
-		_, err := s.Create(u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(c, u, xpo.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated name user")
 		}

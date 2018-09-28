@@ -39,26 +39,25 @@ type ReportUpdatingParams struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
-func NewReportService(c context.Context) *ReportService {
-	return NewReportServiceWithTheTime(c, the_time.Real())
+func NewReportService() *ReportService {
+	return NewReportServiceWithTheTime(the_time.Real())
 }
 
-func NewReportServiceWithTheTime(c context.Context, tp the_time.Provider) *ReportService {
+func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 	s := new(ReportService)
-	s.InitAppEngineService(c)
 	s.timeProvider = tp
 	return s
 }
 
-func (s *ReportService) RetriveAll() (reports []Report, err error) {
+func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err error) {
 	limit := 10
 	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit)
 	reports = make([]Report, 0, limit)
-	_, err = s.Goon.GetAll(q, &reports)
+	_, err = s.Goon(c).GetAll(q, &reports)
 	return
 }
 
-func (s *ReportService) SearchBy(authorID string, year int, month int, day int) (reports []Report, err error) {
+func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []Report, err error) {
 	limit := 10
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
@@ -73,23 +72,23 @@ func (s *ReportService) SearchBy(authorID string, year int, month int, day int) 
 		Filter("ReportedAt<", to).
 		Filter("AuthorID=", authorID)
 	reports = make([]Report, 0, limit)
-	_, err = s.Goon.GetAll(q, &reports)
+	_, err = s.Goon(c).GetAll(q, &reports)
 	return
 }
 
-func (s *ReportService) Find(uid string, id int64) (report *Report, err error) {
+func (s *ReportService) Find(c context.Context, uid string, id int64) (report *Report, err error) {
 	xu := XUser{ID: uid}
-	return s.FindByXUserAndID(xu, id)
+	return s.FindByXUserAndID(c, xu, id)
 }
 
-func (s *ReportService) FindByXUserAndID(xu XUser, id int64) (report *Report, err error) {
-	ak := s.KeyOf(xu)
+func (s *ReportService) FindByXUserAndID(c context.Context, xu XUser, id int64) (report *Report, err error) {
+	ak := s.KeyOf(c, xu)
 	report = &Report{AuthorKey: ak, ID: id}
-	err = s.Get(report)
+	err = s.Get(c, report)
 	return
 }
 
-func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *Report, err error) {
+func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreationParams) (report *Report, err error) {
 	err = validatekit.NewValidate().Struct(params)
 	if err != nil {
 		return
@@ -100,7 +99,7 @@ func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *R
 	report.ContentType = params.ContentType
 	report.Author = xu.Name
 	report.AuthorID = xu.ID
-	report.AuthorKey = s.KeyOf(xu)
+	report.AuthorKey = s.KeyOf(c, xu)
 
 	now := s.now()
 	if params.ReportedAt.IsZero() {
@@ -111,17 +110,17 @@ func (s *ReportService) Create(xu XUser, params ReportCreationParams) (report *R
 	report.CreatedAt = now
 	report.UpdatedAt = now
 
-	err = s.Put(report)
+	err = s.Put(c, report)
 	return
 }
 
-func (s *ReportService) Update(xu XUser, params ReportUpdatingParams) (report *Report, err error) {
+func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatingParams) (report *Report, err error) {
 	err = validatekit.NewValidate().Struct(params)
 	if err != nil {
 		return
 	}
 
-	report, err = s.FindByXUserAndID(xu, params.ID)
+	report, err = s.FindByXUserAndID(c, xu, params.ID)
 	if err != nil {
 		return
 	}
@@ -134,7 +133,7 @@ func (s *ReportService) Update(xu XUser, params ReportUpdatingParams) (report *R
 	}
 	report.UpdatedAt = s.now()
 
-	err = s.Put(report)
+	err = s.Put(c, report)
 	return
 }
 

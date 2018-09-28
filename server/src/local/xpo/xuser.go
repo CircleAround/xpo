@@ -44,15 +44,14 @@ type XUserProfileParams struct {
 }
 
 // NewXUserService is function for construction
-func NewXUserService(c context.Context) *XUserService {
+func NewXUserService() *XUserService {
 	s := new(XUserService)
-	s.InitAppEngineService(c)
 	return s
 }
 
 // Create is method for creation XUser
-func (s *XUserService) Create(u user.User, params XUserProfileParams) (xu *XUser, err error) {
-	log.Infof(s.Context, "Create: %v", params)
+func (s *XUserService) Create(c context.Context, u user.User, params XUserProfileParams) (xu *XUser, err error) {
+	log.Infof(c, "Create: %v", params)
 	v, err := validate(params)
 	if err != nil {
 		return nil, err
@@ -64,51 +63,51 @@ func (s *XUserService) Create(u user.User, params XUserProfileParams) (xu *XUser
 		return nil, err
 	}
 
-	if err = s.Get(xu); err == nil {
-		log.Infof(s.Context, "%v found!. duplicated.", xu)
+	if err = s.Get(c, xu); err == nil {
+		log.Infof(c, "%v found!. duplicated.", xu)
 		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
 	}
 
 	if err != datastore.ErrNoSuchEntity {
-		log.Infof(s.Context, "%v error.", err)
+		log.Infof(c, "%v error.", err)
 		return nil, err
 	}
 
-	err = s.RunInTransaction(func() error {
+	err = s.RunInTransaction(c, func() error {
 		// for idempotent. if already create success, return process.
-		if err = s.Get(xu); err == nil {
+		if err = s.Get(c, xu); err == nil {
 			return nil
 		}
 
 		if err != datastore.ErrNoSuchEntity {
-			log.Infof(s.Context, "%v error.", err)
+			log.Infof(c, "%v error.", err)
 			return err
 		}
 
-		log.Infof(s.Context, "%v not found.", xu)
+		log.Infof(c, "%v not found.", xu)
 
 		i := &_XUserNameUniqueIndex{value: xu.Name}
-		err = s.CreateUnique(i)
+		err = s.CreateUnique(c, i)
 		if err != nil {
 			return err
 		}
 
-		log.Infof(s.Context, "%v not found. create new one.", xu)
-		return s.Put(xu)
+		log.Infof(c, "%v not found. create new one.", xu)
+		return s.Put(c, xu)
 	})
 	return
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(u user.User, params XUserProfileParams) (xu *XUser, err error) {
-	log.Infof(s.Context, "Update: %v", params)
+func (s *XUserService) Update(c context.Context, u user.User, params XUserProfileParams) (xu *XUser, err error) {
+	log.Infof(c, "Update: %v", params)
 	_, err = validate(params)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.RunInTransaction(func() error {
-		xu, err = s.GetByUser(u)
+	err = s.RunInTransaction(c, func() error {
+		xu, err = s.GetByUser(c, u)
 		if err != nil {
 			return err
 		}
@@ -119,7 +118,7 @@ func (s *XUserService) Update(u user.User, params XUserProfileParams) (xu *XUser
 				return nil
 			}
 		} else {
-			err = s.updateUniqueIndex(*xu, params)
+			err = s.updateUniqueIndex(c, *xu, params)
 			if err != nil {
 				return err
 			}
@@ -128,22 +127,22 @@ func (s *XUserService) Update(u user.User, params XUserProfileParams) (xu *XUser
 		}
 
 		xu.Nickname = params.Nickname
-		return s.Put(xu)
+		return s.Put(c, xu)
 	})
 	return
 }
 
 // GetByUser is method for getting XUser by user.User
-func (s *XUserService) GetByUser(u user.User) (xu *XUser, err error) {
+func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *XUser, err error) {
 	xu = &XUser{ID: u.ID}
-	err = s.Get(xu)
+	err = s.Get(c, xu)
 	return
 }
 
 // IsUsedName is method for checking UserName already taken.
-func (s *XUserService) IsUsedName(name string) (bool, error) {
+func (s *XUserService) IsUsedName(c context.Context, name string) (bool, error) {
 	i := _XUserNameUniqueIndex{value: name}
-	return s.Exists(&i)
+	return s.Exists(c, &i)
 }
 
 func validate(params XUserProfileParams) (*validatekit.Validate, error) {
@@ -177,10 +176,10 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 	return v, nil
 }
 
-func (s *XUserService) updateUniqueIndex(xu XUser, params XUserProfileParams) error {
+func (s *XUserService) updateUniqueIndex(c context.Context, xu XUser, params XUserProfileParams) error {
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
-	return s.ChangeUniqueValueMustTr(i, ni)
+	return s.ChangeUniqueValueMustTr(c, i, ni)
 }
 
 func newValidator() *validatekit.Validate {
