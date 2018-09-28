@@ -36,19 +36,22 @@ func (s *AppEngineService) Exists(c context.Context, obj interface{}) (bool, err
 	return true, err
 }
 
-func (s *AppEngineService) RunInTransaction(c context.Context, process func() error) error {
+func (s *AppEngineService) RunInTransaction(c context.Context, process func(context.Context) error) error {
 	return s.RunInTransactionWithOption(c, process, nil)
 }
 
-func (s *AppEngineService) RunInTransactionWithOption(c context.Context, process func() error, opts *datastore.TransactionOptions) error {
-	return datastore.RunInTransaction(c, func(ctx context.Context) error {
-		return process()
-	}, opts)
+func (s *AppEngineService) RunInXGTransaction(c context.Context, process func(context.Context) error) error {
+  opt := &datastore.TransactionOptions{XG: true}
+	return s.RunInTransactionWithOption(c, process, opt)
+}
+
+func (s *AppEngineService) RunInTransactionWithOption(c context.Context, process func(context.Context) error, opts *datastore.TransactionOptions) error {
+	return datastore.RunInTransaction(c, process, opts)
 }
 
 // FindOrCreate is a method for find or create Object
-func (s *AppEngineService) FindOrCreate(c context.Context, obj interface{}) (xret interface{}, err error) {
-	err = s.RunInTransaction(c, func() error {
+func (s *AppEngineService) FindOrCreate(ctx context.Context, obj interface{}) (xret interface{}, err error) {
+	err = s.RunInTransaction(ctx, func(c context.Context) error {
 		if err := s.Get(c, obj); err != nil {
 			if err != datastore.ErrNoSuchEntity {
 				return err

@@ -73,27 +73,27 @@ func (s *XUserService) Create(c context.Context, u user.User, params XUserProfil
 		return nil, err
 	}
 
-	err = s.RunInTransaction(c, func() error {
+	err = s.RunInXGTransaction(c, func(ctx context.Context) error {
 		// for idempotent. if already create success, return process.
-		if err = s.Get(c, xu); err == nil {
+		if err = s.Get(ctx, xu); err == nil {
 			return nil
 		}
 
 		if err != datastore.ErrNoSuchEntity {
-			log.Infof(c, "%v error.", err)
+			log.Infof(ctx, "%v error.", err)
 			return err
 		}
 
-		log.Infof(c, "%v not found.", xu)
+		log.Infof(ctx, "%v not found.", xu)
 
 		i := &_XUserNameUniqueIndex{value: xu.Name}
-		err = s.CreateUnique(c, i)
+		err = s.CreateUnique(ctx, i)
 		if err != nil {
 			return err
 		}
 
-		log.Infof(c, "%v not found. create new one.", xu)
-		return s.Put(c, xu)
+		log.Infof(ctx, "%v not found. create new one.", xu)
+		return s.Put(ctx, xu)
 	})
 	return
 }
@@ -106,8 +106,8 @@ func (s *XUserService) Update(c context.Context, u user.User, params XUserProfil
 		return nil, err
 	}
 
-	err = s.RunInTransaction(c, func() error {
-		xu, err = s.GetByUser(c, u)
+	err = s.RunInXGTransaction(c, func(ctx context.Context) error {
+		xu, err = s.GetByUser(ctx, u)
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func (s *XUserService) Update(c context.Context, u user.User, params XUserProfil
 				return nil
 			}
 		} else {
-			err = s.updateUniqueIndex(c, *xu, params)
+			err = s.updateUniqueIndex(ctx, *xu, params)
 			if err != nil {
 				return err
 			}
@@ -127,7 +127,7 @@ func (s *XUserService) Update(c context.Context, u user.User, params XUserProfil
 		}
 
 		xu.Nickname = params.Nickname
-		return s.Put(c, xu)
+		return s.Put(ctx, xu)
 	})
 	return
 }
