@@ -17,7 +17,7 @@ import (
 
 //go:generate go-assets-builder --output=assets/reserved_username_list.go -p=assets ../../../assets/reserved_username_list
 
-func XOriginable(next http.Handler) http.Handler {
+func CrossOriginable(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
@@ -44,7 +44,7 @@ func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.Res
 
 func init() {
 	r := chi.NewRouter()
-	r.Use(XOriginable)
+	r.Use(CrossOriginable)
 
 	r.Get("/", handleRoot)
 	r.Get("/loggedin", handleLoggedIn)
