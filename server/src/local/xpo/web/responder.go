@@ -1,8 +1,9 @@
-package xpo
+package web
 
 import (
 	"local/apikit"
 	"local/gaekit"
+	"local/xpo/app"
 	"net/http"
 
 	"github.com/mjibson/goon"
@@ -12,7 +13,7 @@ import (
 )
 
 type XUserResponse struct {
-	*XUser
+	*app.XUser
 	LoginURL  string `json:"loginUrl"`
 	LogoutURL string `json:"logoutUrl"`
 }
@@ -27,7 +28,7 @@ func NewResponder(w http.ResponseWriter, r *http.Request) *Responder {
 	return &Responder{w: w, r: r, jr: apikit.NewJSONRenderer(w)}
 }
 
-func (r *Responder) RenderMeOrError(xu *XUser, err error) error {
+func (r *Responder) RenderMeOrError(xu *app.XUser, err error) error {
 	res := XUserResponse{
 		XUser:     xu,
 		LoginURL:  gaekit.LoginFullURL(r.r, "/loggedin"),
@@ -53,12 +54,12 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
+func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &XUser{ID: u.ID}
+	xu := &app.XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
 		log.Warningf(c, "Oops! has not user!")
 		url, _ := user.LoginURL(c, "/loggedin")
@@ -68,12 +69,12 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *XUser {
 	return xu
 }
 
-func xUserOrResponse(w http.ResponseWriter, r *http.Request) *XUser {
+func xUserOrResponse(w http.ResponseWriter, r *http.Request) *app.XUser {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &XUser{ID: u.ID}
+	xu := &app.XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
 		log.Warningf(c, "Oops! has not user!")
 		responseUnauthorized(w, r)

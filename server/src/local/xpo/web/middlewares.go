@@ -1,19 +1,42 @@
-package xpo
+package web
 
 import (
+	"local/apikit"
+	"local/gaekit"
 	"net/http"
 	"os"
 	"reflect"
 
+	"github.com/iancoleman/strcase"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
-
-	"github.com/iancoleman/strcase"
 	validator "gopkg.in/go-playground/validator.v9"
-
-	"local/apikit"
-	"local/gaekit"
 )
+
+func CrossOriginable(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		allowClient(w)
+		if r.Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func AuthorizedCheckable(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !responseIfUnauthorized(w, r) {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		safeFilter(w, r, handler(w, r))
+	}
+}
 
 func allowOrigin(w http.ResponseWriter, origin string) {
 	w.Header().Set("Access-Control-Allow-Origin", origin)

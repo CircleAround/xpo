@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"local/gaekit"
 	"local/testkit"
-	"local/xpo"
+	"local/xpo/app"
 	"testing"
 
 	"golang.org/x/net/context"
@@ -30,15 +30,15 @@ func NewTestFactory() *TestFactory {
 	return f
 }
 
-func (f *TestFactory) CreateXUser(c context.Context) (xpo.XUser, error) {
+func (f *TestFactory) CreateXUser(c context.Context) (app.XUser, error) {
 	xu := f.BuildXUser()
 	err := f.Put(c, &xu)
 	return xu, err
 }
 
-func (f *TestFactory) BuildXUser() xpo.XUser {
+func (f *TestFactory) BuildXUser() app.XUser {
 	f.XUserCounter++
-	return xpo.XUser{
+	return app.XUser{
 		Email:    fmt.Sprintf("test%v,@example.com", f.XUserCounter),
 		ID:       fmt.Sprintf("%v", f.XUserCounter),
 		Name:     fmt.Sprintf("name%v", f.XUserCounter),
@@ -46,9 +46,9 @@ func (f *TestFactory) BuildXUser() xpo.XUser {
 	}
 }
 
-func (f *TestFactory) BuildReport() xpo.Report {
+func (f *TestFactory) BuildReport() app.Report {
 	f.ReportCounter++
-	return xpo.Report{
+	return app.Report{
 		Content:     fmt.Sprintf("This is Content %v", f.ReportCounter),
 		ContentType: "text/x-markdown",
 		ID:          f.ReportCounter,

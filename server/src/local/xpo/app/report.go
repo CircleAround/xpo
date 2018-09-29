@@ -1,4 +1,4 @@
-package xpo
+package app
 
 import (
 	"local/gaekit"
