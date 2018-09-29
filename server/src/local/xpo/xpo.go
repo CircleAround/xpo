@@ -5,112 +5,75 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
 	"local/apikit"
+	"local/apikit/exchi"
 )
 
 //go:generate go-assets-builder --output=assets/reserved_username_list.go -p=assets ../../../assets/reserved_username_list
 
-func init() {
-	r := mux.NewRouter()
-	r.HandleFunc("/", handleRoot)
-	r.HandleFunc("/loggedin", handleLoggedIn)
-
-	r.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
+func XOriginable(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		allowClient(w)
 		if r.Method == "OPTIONS" {
 			return
 		}
+		next.ServeHTTP(w, r)
+	})
+}
 
+func AuthorizedCheckable(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !responseIfUnauthorized(w, r) {
 			return
 		}
+		next.ServeHTTP(w, r)
+	})
+}
 
-		if r.Method == "GET" {
-			safeFilter(w, r, getMe(w, r))
-			return
-		}
-		if r.Method == "POST" {
-			safeFilter(w, r, postMe(w, r))
-			return
-		}
-		if r.Method == "PUT" {
-			safeFilter(w, r, updateMe(w, r))
-			return
-		}
+func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		safeFilter(w, r, handler(w, r))
+	}
+}
 
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+func init() {
+	r := chi.NewRouter()
+	r.Use(XOriginable)
+
+	r.Get("/", handleRoot)
+	r.Get("/loggedin", handleLoggedIn)
+
+	r.Route("/users/me", func(r chi.Router) {
+		r.Use(AuthorizedCheckable)
+
+		r.Get("/", Catch(getMe))
+		r.Post("/", Catch(postMe))
+		r.Put("/", Catch(updateMe))
 	})
 
-	r.HandleFunc("/reports/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		allowClient(w)
-		if r.Method == "OPTIONS" {
-			return
-		}
-		if r.Method == "GET" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
+	r.Route("/reports", func(r chi.Router) {
+		r.With(AuthorizedCheckable).Get(
+			"/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
+			Catch(searchReportsYmd),
+		)
 
-			safeFilter(w, r, searchReportsYmd(w, r))
-			return
-		}
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	})
+		r.Route("/{authorId:[0-9]+}/{id:[0-9]+}", func(r chi.Router) {
+			r.Use(AuthorizedCheckable)
 
-	r.HandleFunc("/reports/{authorId:[0-9]+}/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		allowClient(w)
-		if r.Method == "OPTIONS" {
-			return
-		}
+			r.Get("/", Catch(getReport))
+			r.Put("/", Catch(updateReport))
+		})
 
-		if r.Method == "GET" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
-
-			safeFilter(w, r, getReport(w, r))
-			return
-		}
-
-		if r.Method == "PUT" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
-
-			safeFilter(w, r, updateReport(w, r))
-			return
-		}
-
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	})
-
-	r.HandleFunc("/reports", func(w http.ResponseWriter, r *http.Request) {
-		allowClient(w)
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		if r.Method == "GET" {
-			safeFilter(w, r, getReports(w, r))
-			return
-		}
-
-		if r.Method == "POST" {
-			if !responseIfUnauthorized(w, r) {
-				return
-			}
-
-			safeFilter(w, r, postReport(w, r))
-			return
-		}
-
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		r.Route("/", func(r chi.Router) {
+			r.Get("/", Catch(getReports))
+			r.With(AuthorizedCheckable).Post("/", Catch(postReport))
+		})
 	})
 
 	http.Handle("/", r)
@@ -161,7 +124,7 @@ func updateMe(w http.ResponseWriter, r *http.Request) error {
 
 func getReport(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
-	p := apikit.URLParams(r)
+	p := exchi.URLParams(r)
 
 	uid := p.Get("authorId")
 	id, err := p.AsInt64("id")
@@ -180,7 +143,7 @@ func getReports(w http.ResponseWriter, r *http.Request) error {
 func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	c := appengine.NewContext(r)
 
-	p := apikit.URLParams(r)
+	p := exchi.URLParams(r)
 	uid := p.Get("authorId")
 	y, err := p.AsInt("year")
 	if err != nil {
@@ -195,7 +158,7 @@ func searchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	return NewResponder(w, r).RenderObjectOrError(NewReportService().SearchBy(c,uid, y, m, d))
+	return NewResponder(w, r).RenderObjectOrError(NewReportService().SearchBy(c, uid, y, m, d))
 }
 
 func postReport(w http.ResponseWriter, r *http.Request) error {
@@ -231,7 +194,7 @@ func updateReport(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 
-		id, err := apikit.URLParams(r).AsInt64("id")
+		id, err := exchi.URLParams(r).AsInt64("id")
 		if err != nil {
 			return err
 		}

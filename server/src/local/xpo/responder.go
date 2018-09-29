@@ -12,7 +12,7 @@ import (
 )
 
 type XUserResponse struct {
-	XUser
+	*XUser
 	LoginURL  string `json:"loginUrl"`
 	LogoutURL string `json:"logoutUrl"`
 }
@@ -29,7 +29,7 @@ func NewResponder(w http.ResponseWriter, r *http.Request) *Responder {
 
 func (r *Responder) RenderMeOrError(xu *XUser, err error) error {
 	res := XUserResponse{
-		XUser:     *xu,
+		XUser:     xu,
 		LoginURL:  gaekit.LoginFullURL(r.r, "/loggedin"),
 		LogoutURL: gaekit.LogoutFullURL(r.r),
 	}

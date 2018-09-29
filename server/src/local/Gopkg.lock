@@ -10,6 +10,14 @@
   revision = "04c1c0fc2a5a12ba14068ee37e764af81a4ac575"
 
 [[projects]]
+  digest = "1:b9914f85d95a0968bafd1be1908ba29e2eafafd88d6fd13696be42bf5368c380"
+  name = "github.com/go-chi/chi"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "b5294d10673813fac8558e7f47242bc9e61b4c25"
+  version = "v3.3.3"
+
+[[projects]]
   digest = "1:e1ff887e232b2d8f4f7c7db15a5fac7be418025afc4dda53c59c765dbb5aa6b4"
   name = "github.com/go-playground/locales"
   packages = [
@@ -90,7 +98,7 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "2f5d2388922f370f4355f327fcf4cfe9f5583908"
+  revision = "4dfa2610cdf3b287375bbba5b8f2a14d3b01d8de"
 
 [[projects]]
   branch = "master"
@@ -129,6 +137,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/favclip/testerator",
+    "github.com/go-chi/chi",
     "github.com/gorilla/mux",
     "github.com/iancoleman/strcase",
     "github.com/jessevdk/go-assets",
