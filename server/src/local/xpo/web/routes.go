@@ -7,7 +7,10 @@ import (
 )
 
 func Routes() {
+	http.Handle("/", Router())
+}
 
+func Router() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(CrossOriginable)
 
@@ -40,6 +43,5 @@ func Routes() {
 			r.With(GAuth).Post("/", Catch(Auth(PostReport)))
 		})
 	})
-
-	http.Handle("/", r)
+	return r
 }
