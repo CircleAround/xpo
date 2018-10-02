@@ -5,6 +5,8 @@ import (
 	"local/xpo/app"
 	"net/http"
 
+	"golang.org/x/net/context"
+
 	"google.golang.org/appengine/log"
 )
 
@@ -47,15 +49,7 @@ func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchBy(c, uid, y, m, d))
 }
 
-func PostReport(w http.ResponseWriter, r *http.Request) error {
-	c := Context(r)
-
-	xu := xUserOrResponse(w, r)
-	if xu == nil {
-		log.Warningf(c, "xu==nil. response 401")
-		return nil
-	}
-
+func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
 	p := &app.ReportCreationParams{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err
@@ -65,15 +59,7 @@ func PostReport(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().Create(c, *xu, *p))
 }
 
-func UpdateReport(w http.ResponseWriter, r *http.Request) error {
-	c := Context(r)
-
-	xu := xUserOrResponse(w, r)
-	if xu == nil {
-		log.Warningf(c, "xu==nil. response 401")
-		return nil
-	}
-
+func UpdateReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
 	p := &app.ReportUpdatingParams{}
 	{
 		if err := parseJSONBody(r, &p); err != nil {

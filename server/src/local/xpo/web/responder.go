@@ -68,20 +68,6 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
 	return xu
 }
 
-func xUserOrResponse(w http.ResponseWriter, r *http.Request) *app.XUser {
-	c := Context(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	xu := &app.XUser{ID: u.ID}
-	if err := g.Get(xu); err != nil {
-		log.Warningf(c, "Oops! has not user!")
-		responseUnauthorized(w, r)
-		return nil
-	}
-	return xu
-}
-
 func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 	code := http.StatusUnauthorized
 	apikit.RespondFailure(w, gaekit.LoginFullURL(r, "/loggedin"), code)

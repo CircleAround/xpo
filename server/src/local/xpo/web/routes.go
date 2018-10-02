@@ -29,15 +29,15 @@ func Routes() {
 		)
 
 		r.Route("/{authorId:[0-9]+}/{id:[0-9]+}", func(r chi.Router) {
-			r.Use(AuthorizedCheckable)
-
 			r.Get("/", Catch(GetReport))
-			r.Put("/", Catch(UpdateReport))
+
+			r.With(AuthorizedCheckable).Put("/", Catch(Auth(UpdateReport)))
 		})
 
 		r.Route("/", func(r chi.Router) {
 			r.Get("/", Catch(GetReports))
-			r.With(AuthorizedCheckable).Post("/", Catch(PostReport))
+
+			r.With(AuthorizedCheckable).Post("/", Catch(Auth(PostReport)))
 		})
 	})
 
