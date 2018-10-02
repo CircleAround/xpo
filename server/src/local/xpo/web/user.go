@@ -5,14 +5,13 @@ import (
 	"local/xpo/app"
 	"net/http"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 )
 
 func GetMe(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 
 	xu, err := Services.XUser().GetByUser(c, *u)
@@ -28,7 +27,7 @@ func GetMe(w http.ResponseWriter, r *http.Request) error {
 }
 
 func PostMe(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 
 	p := app.XUserProfileParams{}
@@ -42,7 +41,7 @@ func PostMe(w http.ResponseWriter, r *http.Request) error {
 }
 
 func UpdateMe(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 
 	p := app.XUserProfileParams{}

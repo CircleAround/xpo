@@ -5,12 +5,11 @@ import (
 	"local/xpo/app"
 	"net/http"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 )
 
 func GetReport(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	p := exchi.URLParams(r)
 
 	uid := p.Get("authorId")
@@ -23,12 +22,12 @@ func GetReport(w http.ResponseWriter, r *http.Request) error {
 }
 
 func GetReports(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().RetriveAll(c))
 }
 
 func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 
 	p := exchi.URLParams(r)
 	uid := p.Get("authorId")
@@ -49,7 +48,7 @@ func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 }
 
 func PostReport(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 
 	xu := xUserOrResponse(w, r)
 	if xu == nil {
@@ -67,7 +66,7 @@ func PostReport(w http.ResponseWriter, r *http.Request) error {
 }
 
 func UpdateReport(w http.ResponseWriter, r *http.Request) error {
-	c := appengine.NewContext(r)
+	c := Context(r)
 
 	xu := xUserOrResponse(w, r)
 	if xu == nil {

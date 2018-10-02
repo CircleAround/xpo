@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/user"
 )
 
@@ -21,7 +20,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := appengine.NewContext(r)
+	c := Context(r)
 	logoutURL, _ := user.LogoutURL(c, "/")
 
 	data := struct {

@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/iancoleman/strcase"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -51,7 +50,7 @@ func allowClient(w http.ResponseWriter) {
 }
 
 func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
-	c := appengine.NewContext(r)
+	c := Context(r)
 
 	if err != nil {
 		log.Infof(c, "Handle Error: %v", err)

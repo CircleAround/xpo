@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/mjibson/goon"
-	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 )
@@ -42,7 +41,7 @@ func (r *Responder) RenderObjectOrError(obj interface{}, err error) error {
 }
 
 func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 	// ログインしてなければリダイレクト
 	if u != nil {
@@ -55,7 +54,7 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
@@ -70,7 +69,7 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
 }
 
 func xUserOrResponse(w http.ResponseWriter, r *http.Request) *app.XUser {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
@@ -89,7 +88,7 @@ func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
 }
 
 func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {
-	c := appengine.NewContext(r)
+	c := Context(r)
 	u := user.Current(c)
 
 	log.Infof(c, "user: %v", u)
