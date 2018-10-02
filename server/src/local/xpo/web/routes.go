@@ -15,7 +15,7 @@ func Routes() {
 	r.Get("/loggedin", handleLoggedIn)
 
 	r.Route("/users/me", func(r chi.Router) {
-		r.Use(AuthorizedCheckable)
+		r.Use(GAuth)
 
 		r.Get("/", Catch(GetMe))
 		r.Post("/", Catch(PostMe))
@@ -23,7 +23,7 @@ func Routes() {
 	})
 
 	r.Route("/reports", func(r chi.Router) {
-		r.With(AuthorizedCheckable).Get(
+		r.With(GAuth).Get(
 			"/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
 			Catch(SearchReportsYmd),
 		)
@@ -31,13 +31,13 @@ func Routes() {
 		r.Route("/{authorId:[0-9]+}/{id:[0-9]+}", func(r chi.Router) {
 			r.Get("/", Catch(GetReport))
 
-			r.With(AuthorizedCheckable).Put("/", Catch(Auth(UpdateReport)))
+			r.With(GAuth).Put("/", Catch(Auth(UpdateReport)))
 		})
 
 		r.Route("/", func(r chi.Router) {
 			r.Get("/", Catch(GetReports))
 
-			r.With(AuthorizedCheckable).Post("/", Catch(Auth(PostReport)))
+			r.With(GAuth).Post("/", Catch(Auth(PostReport)))
 		})
 	})
 

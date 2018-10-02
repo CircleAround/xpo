@@ -15,7 +15,7 @@ func CrossOriginable(next http.Handler) http.Handler {
 	})
 }
 
-func AuthorizedCheckable(next http.Handler) http.Handler {
+func GAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !responseIfUnauthorized(w, r) {
 			return
