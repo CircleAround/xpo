@@ -1,35 +1,51 @@
-package xpo
+package web
 
 import (
-	"net/http"
-	"os"
-	"reflect"
-
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
-
-	"github.com/iancoleman/strcase"
-	validator "gopkg.in/go-playground/validator.v9"
-
 	"local/apikit"
 	"local/gaekit"
+	"local/xpo/app"
+	"net/http"
+	"reflect"
+
+	"google.golang.org/appengine/datastore"
+
+	"github.com/iancoleman/strcase"
+	"golang.org/x/net/context"
+	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/user"
+	validator "gopkg.in/go-playground/validator.v9"
 )
 
-func allowOrigin(w http.ResponseWriter, origin string) {
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+type HandlerFunc func(http.ResponseWriter, *http.Request) error
+
+func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XUser) error) HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		c := Context(r)
+		u := user.Current(c)
+
+		xu, err := Services.XUser().GetByUser(c, *u)
+		if err == datastore.ErrNoSuchEntity {
+			apikit.RespondJSON(w, "BE_SIGN_UP")
+			return nil
+		}
+
+		return next(c, w, r, xu)
+	}
 }
 
-func allowClient(w http.ResponseWriter) {
-	allowOrigin(w, os.Getenv("ALLOW_ORIGIN"))
+func Handler(next HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		safeFilter(w, r, next(w, r))
+	}
 }
 
 func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
-	c := appengine.NewContext(r)
+	if err == apikit.UnauthorizedError {
+		responseUnauthorized(w, r)
+		return
+	}
 
+	c := Context(r)
 	if err != nil {
 		log.Infof(c, "Handle Error: %v", err)
 

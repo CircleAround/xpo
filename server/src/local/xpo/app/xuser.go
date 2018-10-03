@@ -1,4 +1,4 @@
-package xpo
+package app
 
 import (
 	"bufio"
@@ -99,22 +99,17 @@ func (s *XUserService) Create(c context.Context, u user.User, params XUserProfil
 }
 
 // Update is method for updating XUser
-func (s *XUserService) Update(c context.Context, u user.User, params XUserProfileParams) (xu *XUser, err error) {
+func (s *XUserService) Update(c context.Context, xu *XUser, params XUserProfileParams) (*XUser, error) {
 	log.Infof(c, "Update: %v", params)
-	_, err = validate(params)
+	_, err := validate(params)
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.RunInXGTransaction(c, func(ctx context.Context) error {
-		xu, err = s.GetByUser(ctx, u)
-		if err != nil {
-			return err
-		}
-
 		if xu.Name == params.Name {
 			if xu.Nickname == params.Nickname {
-				// Maybe already succeed.
+				// Maybe already succeed. return nil for idempotent.
 				return nil
 			}
 		} else {
@@ -129,7 +124,7 @@ func (s *XUserService) Update(c context.Context, u user.User, params XUserProfil
 		xu.Nickname = params.Nickname
 		return s.Put(ctx, xu)
 	})
-	return
+	return xu, err
 }
 
 // GetByUser is method for getting XUser by user.User

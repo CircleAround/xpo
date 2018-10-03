@@ -1,11 +1,14 @@
 package apikit
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	funk "github.com/thoas/go-funk"
 )
+
+var UnauthorizedError = errors.New("Unautholized")
 
 type IllegalAccessError struct {
 	Type    string `json:"type"`
@@ -45,7 +48,6 @@ func NewInvalidParameterErrorWithMessage(property string, msg string) *InvalidPa
 		Property: property,
 	}
 }
-
 
 const (
 	// Required is specify required error

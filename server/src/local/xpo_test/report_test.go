@@ -3,7 +3,7 @@ package xpo_test
 import (
 	"local/testkit"
 	"local/the_time"
-	"local/xpo"
+	"local/xpo/app"
 	"testing"
 	"time"
 
@@ -32,10 +32,10 @@ func TestReportScenario(t *testing.T) {
 	oneHourBefore := tm.Add(-1 * time.Hour)
 
 	tp.TravelTo(oneHourBefore)
-	s := xpo.NewReportServiceWithTheTime(tp)
+	s := app.NewReportServiceWithTheTime(tp)
 	{
 		t.Log("Create")
-		r, err := s.Create(c, xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
+		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -63,8 +63,8 @@ func TestReportScenario(t *testing.T) {
 		{
 			before := *r
 			ud := f.BuildReport()
-			p := xpo.ReportUpdatingParams{
-				ReportCreationParams: xpo.ReportCreationParams{Content: ud.Content, ContentType: ud.ContentType},
+			p := app.ReportUpdatingParams{
+				ReportCreationParams: app.ReportCreationParams{Content: ud.Content, ContentType: ud.ContentType},
 				ID:                   r.ID,
 			}
 
@@ -122,7 +122,7 @@ func TestReportScenario(t *testing.T) {
 	now := tp.TravelTo(tm)
 	{
 		t.Log("Create with ReportedAt")
-		r, err := s.Create(c, xu, xpo.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
 		if err != nil {
 			t.Fatal(err)
 		}

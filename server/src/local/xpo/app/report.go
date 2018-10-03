@@ -1,4 +1,4 @@
-package xpo
+package app
 
 import (
 	"local/gaekit"
@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 )
 
 // Report struct
@@ -18,7 +19,7 @@ type Report struct {
 	Author      string         `json:"author" validate:"required"`
 	Content     string         `json:"content" validate:"required"`
 	ContentType string         `json:"content_type" validate:"required"`
-	ReportedAt  time.Time      `json:"repoorted_at"`
+	ReportedAt  time.Time      `json:"reported_at"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 }
@@ -129,6 +130,7 @@ func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatin
 	report.ContentType = params.ContentType
 	report.Author = xu.Name
 	if !params.ReportedAt.IsZero() {
+		log.Infof(c, "update ReportedAt: %v", params.ReportedAt)
 		report.ReportedAt = params.ReportedAt
 	}
 	report.UpdatedAt = s.now()

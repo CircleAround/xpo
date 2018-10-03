@@ -9,7 +9,12 @@ import (
 
 // ParseJSONBody is parse from requested body formatted JSON
 func ParseJSONBody(r *http.Request, jsonBody interface{}) error {
-	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
+	cl := r.Header.Get("Content-Length")
+	if cl == "" {
+		return NewInvalidParameterErrorWithMessage("Content-Length", "Content-Length not found")
+	}
+
+	length, err := strconv.Atoi(cl)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-package apikit
+package exgorilla
 
 import (
 	"net/http"

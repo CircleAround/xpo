@@ -1,11 +1,17 @@
 package testkit
 
 import (
-	"context"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"runtime"
+	"strconv"
 	"testing"
+
+	"context"
 
 	"github.com/favclip/testerator"
 	"google.golang.org/appengine/aetest"
@@ -49,4 +55,22 @@ func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
 	}
 
 	return i, c, done
+}
+
+func UnmarshalJSONBody(rr *httptest.ResponseRecorder, data interface{}) error {
+	return json.Unmarshal(([]byte)(rr.Body.String()), data)
+}
+
+func NewRequestWithBody(i aetest.Instance, method string, path string, data interface{}) (*http.Request, error) {
+	res, err := json.Marshal(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := i.NewRequest(method, path, bytes.NewBuffer(res))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Length", strconv.Itoa(len(res)))
+	return req, nil
 }
