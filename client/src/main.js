@@ -13,6 +13,13 @@ Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(moment)
 
+// @see https://jp.vuejs.org/v2/guide/custom-directive.html
+Vue.directive('focus', {
+  inserted: function(el) {
+    el.focus()
+  }
+})
+
 // TODO: loading view...
 core.initialize().then(() => {
   /* eslint-disable no-new */
