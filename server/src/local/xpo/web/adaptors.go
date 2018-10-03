@@ -16,7 +16,9 @@ import (
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
-func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XUser) error) func(http.ResponseWriter, *http.Request) error {
+type HandlerFunc func(http.ResponseWriter, *http.Request) error
+
+func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XUser) error) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		c := Context(r)
 		u := user.Current(c)
@@ -31,9 +33,9 @@ func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XU
 	}
 }
 
-func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.ResponseWriter, *http.Request) {
+func Handler(next HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		safeFilter(w, r, handler(w, r))
+		safeFilter(w, r, next(w, r))
 	}
 }
 

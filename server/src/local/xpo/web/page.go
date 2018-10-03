@@ -2,11 +2,12 @@ package web
 
 import (
 	"html/template"
-	"local/apikit"
 	"local/xpo/app"
 	"net/http"
 	"os"
 
+	"github.com/mjibson/goon"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 )
 
@@ -56,10 +57,30 @@ func handleLoggedIn(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, os.Getenv("ALLOW_ORIGIN"), http.StatusFound)
 }
 
-func parseJSONBody(r *http.Request, p interface{}) error {
-	err := apikit.ParseJSONBody(r, &p)
-	if err != nil {
-		return apikit.NewInvalidParameterErrorWithMessage("json", err.Error())
+func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
+	c := Context(r)
+	u := user.Current(c)
+	// ログインしてなければリダイレクト
+	if u != nil {
+		return true
 	}
-	return nil
+
+	url, _ := user.LoginURL(c, loggedInPath)
+	http.Redirect(w, r, url, http.StatusFound)
+	return false
+}
+
+func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
+	c := Context(r)
+	u := user.Current(c)
+	g := goon.NewGoon(r)
+
+	xu := &app.XUser{ID: u.ID}
+	if err := g.Get(xu); err != nil {
+		log.Warningf(c, "Oops! has not user!")
+		url, _ := user.LoginURL(c, loggedInPath)
+		http.Redirect(w, r, url, http.StatusFound)
+		return nil
+	}
+	return xu
 }
