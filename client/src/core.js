@@ -52,8 +52,7 @@ export default {
   },
   initialize() {
     this.initNewReport()
-    this.retriveReports()
-    return this.retriveMe()
+    return Promise.all([this.retriveMe(), this.retriveReports()])
   },
   isLoggedIn() {
     if (!this.state) return false
