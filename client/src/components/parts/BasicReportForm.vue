@@ -3,7 +3,7 @@
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
-        <textarea v-model="state.newReport.content" class="textcontent" @keyup='updateMarkdown()'></textarea>
+        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()'></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
@@ -13,7 +13,7 @@
       </div>
       <div class="actions">
         <overlay :visible="loading"></overlay>
-        <el-button type="success" icon="el-icon-check" circle @click='postReport()'></el-button>
+        <el-button type="success" icon="el-icon-check" circle @click='postReport()' title="Mac: Command + Enter, Win: Control + Enter"></el-button>
       </div>
     </div>
     <div v-if="!state.me.id">
