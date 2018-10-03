@@ -124,7 +124,7 @@ func (s *XUserService) Update(c context.Context, xu *XUser, params XUserProfileP
 		xu.Nickname = params.Nickname
 		return s.Put(ctx, xu)
 	})
-	return xu, nil
+	return xu, err
 }
 
 // GetByUser is method for getting XUser by user.User
