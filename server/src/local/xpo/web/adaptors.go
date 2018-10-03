@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"reflect"
 
+	"google.golang.org/appengine/datastore"
+
 	"github.com/iancoleman/strcase"
-	"github.com/mjibson/goon"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
@@ -18,28 +19,16 @@ import (
 func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XUser) error) func(http.ResponseWriter, *http.Request) error {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		c := Context(r)
-		xu := xUserOrResponse(w, r)
-		if xu == nil {
-			log.Warningf(c, "xu==nil. response 401")
+		u := user.Current(c)
+
+		xu, err := Services.XUser().GetByUser(c, *u)
+		if err == datastore.ErrNoSuchEntity {
+			apikit.RespondJSON(w, "BE_SIGN_UP")
 			return nil
 		}
 
 		return next(c, w, r, xu)
 	}
-}
-
-func xUserOrResponse(w http.ResponseWriter, r *http.Request) *app.XUser {
-	c := Context(r)
-	u := user.Current(c)
-	g := goon.NewGoon(r)
-
-	xu := &app.XUser{ID: u.ID}
-	if err := g.Get(xu); err != nil {
-		log.Warningf(c, "Oops! has not user!")
-		responseUnauthorized(w, r)
-		return nil
-	}
-	return xu
 }
 
 func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.ResponseWriter, *http.Request) {
@@ -49,8 +38,12 @@ func Catch(handler func(http.ResponseWriter, *http.Request) error) func(http.Res
 }
 
 func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
-	c := Context(r)
+	if err == apikit.UnauthorizedError {
+		responseUnauthorized(w, r)
+		return
+	}
 
+	c := Context(r)
 	if err != nil {
 		log.Infof(c, "Handle Error: %v", err)
 

@@ -20,9 +20,10 @@ func Router() *chi.Mux {
 	r.Route("/users/me", func(r chi.Router) {
 		r.Use(GAuth)
 
-		r.Get("/", Catch(GetMe))
 		r.Post("/", Catch(PostMe))
-		r.Put("/", Catch(UpdateMe))
+
+		r.Get("/", Catch(Auth(GetMe)))
+		r.Put("/", Catch(Auth(UpdateMe)))
 	})
 
 	r.Route("/reports", func(r chi.Router) {

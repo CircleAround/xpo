@@ -45,9 +45,11 @@ func TestXUserScenario(t *testing.T) {
 
 	{
 		t.Logf("Update")
+		od := app.XUser{}
+		od = d
 		ud := f.BuildXUser()
 
-		ret, err := s.Update(c, u, app.XUserProfileParams{
+		ret, err := s.Update(c, &od, app.XUserProfileParams{
 			Name:     ud.Name,
 			Nickname: ud.Nickname,
 		})

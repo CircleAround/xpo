@@ -3,6 +3,8 @@ package web
 import (
 	"net/http"
 	"os"
+
+	"google.golang.org/appengine/user"
 )
 
 func CrossOriginable(next http.Handler) http.Handler {
@@ -17,7 +19,10 @@ func CrossOriginable(next http.Handler) http.Handler {
 
 func GAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !responseIfUnauthorized(w, r) {
+		c := Context(r)
+		u := user.Current(c)
+		if u == nil {
+			responseUnauthorized(w, r)
 			return
 		}
 		next.ServeHTTP(w, r)

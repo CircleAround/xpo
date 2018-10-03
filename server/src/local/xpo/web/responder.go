@@ -69,21 +69,5 @@ func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
 }
 
 func responseUnauthorized(w http.ResponseWriter, r *http.Request) {
-	code := http.StatusUnauthorized
-	apikit.RespondFailure(w, gaekit.LoginFullURL(r, "/loggedin"), code)
-}
-
-func responseIfUnauthorized(w http.ResponseWriter, r *http.Request) bool {
-	c := Context(r)
-	u := user.Current(c)
-
-	log.Infof(c, "user: %v", u)
-
-	if u != nil {
-		return true
-	}
-
-	// ログインしてなければリダイレクト
-	responseUnauthorized(w, r)
-	return false
+	apikit.RespondFailure(w, gaekit.LoginFullURL(r, "/loggedin"), http.StatusUnauthorized)
 }
