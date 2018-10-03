@@ -52,6 +52,7 @@ export default {
   },
   initialize() {
     this.initNewReport()
+    this.retriveReports()
     return this.retriveMe()
   },
   isLoggedIn() {
