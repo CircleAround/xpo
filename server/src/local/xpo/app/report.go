@@ -17,7 +17,7 @@ type Report struct {
 	AuthorKey   *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
 	AuthorID    string         `json:"authorId" validate:"required"`
 	Author      string         `json:"author" validate:"required"`
-	Content     string         `json:"content" validate:"required",max=20000`
+	Content     string         `json:"content" validate:"required,max=20000"`
 	ContentType string         `json:"content_type" validate:"required"`
 	ReportedAt  time.Time      `json:"reported_at"`
 	CreatedAt   time.Time      `json:"created_at"`
