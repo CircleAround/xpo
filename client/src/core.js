@@ -140,14 +140,17 @@ export default {
       required: property => {
         return `${property}は必須です`
       },
-      toolong: property => {
-        return `${property}は長すぎます`
+      min: property => {
+        return `${property}は短すぎます。`
+      },
+      max: property => {
+        return `${property}は長すぎます。`
       },
       username_format: property => {
-        return `${property}に利用できる文字は半角英数小文字です`
+        return `${property}は先頭英数小文字かつ半角英数小文字とアンダースコア（ \_ ）です`
       },
       usernickname_format: property => {
-        return `ニックネームに利用できる文字に一致しませんでした`
+        return `ニックネームには <>/:"'と空白を含めてはいけません`
       },
       nothing: property => {
         return `${property}が何らかのエラーです`

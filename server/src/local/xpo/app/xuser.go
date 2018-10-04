@@ -18,9 +18,9 @@ import (
 // XUser struct
 type XUser struct {
 	ID       string `datastore:"-" goon:"id" json:"id"`
-	Name     string `json:"name" validate:"required,max=15,username_format"`
+	Name     string `json:"name" validate:"required,min=3,max=15,username_format"`
 	Email    string `json:"email" validate:"required"`
-	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
+	Nickname string `json:"nickname" validate:"required,min=3,max=24,usernickname_format"`
 }
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
@@ -39,8 +39,8 @@ type XUserService struct {
 
 // XUserProfileParams is parameter's basic
 type XUserProfileParams struct {
-	Name     string `json:"name" validate:"required,max=15,username_format"`
-	Nickname string `json:"nickname" validate:"required,max=128,usernickname_format"`
+	Name     string `json:"name" validate:"required,min=3,max=15,username_format"`
+	Nickname string `json:"nickname" validate:"required,min=3,max=24,usernickname_format"`
 }
 
 // NewXUserService is function for construction
@@ -179,8 +179,8 @@ func (s *XUserService) updateUniqueIndex(c context.Context, xu XUser, params XUs
 
 func newValidator() *validatekit.Validate {
 	v := validatekit.NewValidate()
-	v.RegisterRegexValidation("username_format", `^[0-9a-z_]+$`)
-	v.RegisterRegexValidation("usernickname_format", `^[0-9a-zA-Z_ぁ-んァ-ヶー一-龠]+$`)
+	v.RegisterRegexValidation("username_format", `^[a-z][0-9a-z_]+$`)
+	v.RegisterRegexValidation("usernickname_format", `^[^<>/:"'\s]+$`)
 	return v
 }
 
