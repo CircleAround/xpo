@@ -3,7 +3,7 @@
     <div>
       <p>
         ご覧いただきありがとうございます。このサービスは
-        <a href="https://twitter.com/ms2sato" target="_blank">ms2sato</a>
+        <a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>
         の過去体験を再現したいが為に作成している公開分報用のITエンジニア向けWEBサービスです。
         ここではこのサービスを作成している動機とか経緯みたいなものを書いています。昔話や不満なので実用的な情報はありませんのでご承知ください。
       <p>
@@ -36,18 +36,29 @@
       <p>
         ちなみにこのサービスは初めてgolangやvue-cliを学びつつ、奇しくも原体験たるAppEngine を利用して作成しています。
         もし知見のある方からアドバイスいただけたら嬉しいです。
-        <a href="https://github.com/CircleAround/xpo" target="_blank">こちら</a>
+        <a :href="consts.REPOSITORY_URL" target="_blank">こちら</a>
         でソースコードも公開しています（今の所煮るなり焼くなり好きにしろライセンスですが、どこかで何か決めます）。
       </p>
 
       <p>
         最後に、このサービスはまだ実験中です。まだまだ安定する予定も先になりますし、データの保証もできません。
         もしもそれでも私と一緒に試してみたいと思う方がいらっしゃったら是非ログインしてみてください。
-        ご意見ご要望不満など一切は<a href="https://twitter.com/ms2sato" target="_blank">ms2sato</a>までいただければ幸いです。
+        ご意見ご要望不満など一切は<a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>までいただければ幸いです。
+        Pull Requestもいただけたらうれしいです。
       </p>
       <p style="text-align:right">
-        2018/10/4 佐藤 正志（<a href="https://twitter.com/ms2sato" target="_blank">ms2sato</a>）
+        2018/10/4 佐藤 正志 ms2sato（<a :href="consts.GITHUB_URL" target="_blank">github</a> <a :href="consts.TWITTER_URL" target="_blank">twitter</a>）
       </p>
     </div>
   </div>
 </template>
+
+<script>
+import consts from '../consts'
+export default {
+  name: 'About',
+  data() {
+    return { consts }
+  }
+}
+</script>
