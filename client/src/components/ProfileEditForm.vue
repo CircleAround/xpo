@@ -21,15 +21,11 @@ export default {
       propErrors: {},
       errors: [],
       form: {
-        name: '',
-        nickname: ''
+        name: core.state.me.name,
+        nickname: core.state.me.nickname
       },
       rules: {}
     }
-  },
-  mounted() {
-    this.form.name = core.state.me.name
-    this.form.nickname = core.state.me.nickname
   },
   methods: {
     updateXUser(params) {

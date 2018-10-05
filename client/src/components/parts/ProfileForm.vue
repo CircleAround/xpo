@@ -13,7 +13,7 @@
           <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>
         </el-col>
         <el-col  :sm="10">
-          <el-input placeholder="ユーザー名（半角英数小文字）" v-model="name" id="input-name" minlength="3" maxlength="15"></el-input>
+          <el-input placeholder="ユーザー名（半角英数小文字）" v-model="uname" id="input-name" minlength="3" maxlength="15"></el-input>
           <div class="errors" v-if="propErrors.name">
             <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
           </div>
@@ -24,7 +24,7 @@
           <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>
         </el-col>
         <el-col  :sm="10">
-          <el-input placeholder="ニックネーム" v-model="nickname" id="input-nickname" minlength="3" maxlength="24"></el-input>
+          <el-input placeholder="ニックネーム" v-model="nname" id="input-nickname" minlength="3" maxlength="24"></el-input>
           <div class="errors" v-if="propErrors.nickname">
             <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
           </div>
@@ -47,11 +47,17 @@ export default {
     name: String,
     nickname: String
   },
+  data() {
+    return {
+      uname: this.name,
+      nname: this.nickname
+    }
+  },
   methods: {
     clickedSubmit: function() {
       this.$emit('clicked-submit', {
-        name: this.name,
-        nickname: this.nickname
+        name: this.uname,
+        nickname: this.nname
       })
     }
   }
