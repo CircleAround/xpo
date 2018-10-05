@@ -1,0 +1,4 @@
+#!/bin/bash
+export GOPATH=$(dirname `pwd`)/server
+echo "GOPATH: ${GOPATH}"
+cd $(dirname `pwd`)/server/src/local; dep ensure
