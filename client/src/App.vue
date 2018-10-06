@@ -6,7 +6,8 @@
         <ul class="topmenu">
           <template v-if="isLoggedIn">
             <li class="user_name">
-              {{state.me.nickname}}[{{state.me.name}}]
+              <div class="nickname">{{state.me.nickname}}</div>
+              <div class="name">{{state.me.name}}</div>
             </li>
             <li>
               <router-link to='/reports/new'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
@@ -91,26 +92,47 @@ export default {
   text-decoration: none;
 }
 
-.site_title {
-  display: inline-block;
-}
-
-.site_title a {
-  text-decoration: none;
-}
-
-.topmenu {
-  list-style: none;
+.el-header {
   display: flex;
-  float: right;
+  justify-content: space-between;
+
+  .site_title {
+    display: inline-block;
+  }
+
+  .site_title a {
+    text-decoration: none;
+  }
+
+  .topmenu {
+    list-style: none;
+    display: flex;
+    padding:0;
+    justify-content: flex-end;
+  }
+
+  .user_name {
+    word-break: break-all;
+    padding: 0 5px;
+    font-weight: bold;
+    text-align: right;
+
+    width: 200px;
+
+    .nickname, .name {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      word-break: break-all;
+      font-size: 90%;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .user_name {
+      width: 143px;
+    }
+  }
 }
 
-.user_name {
-  word-break: break-all;
-
-  display: flex;
-  align-items: center;
-  padding: 0 5px;
-  font-weight: bold;
-}
 </style>

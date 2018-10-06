@@ -147,7 +147,7 @@ export default {
         return `${property}は長すぎます。`
       },
       username_format: property => {
-        return `${property}は先頭英数小文字かつ半角英数小文字とアンダースコア（ \_ ）です`
+        return `${property}は先頭英数小文字かつ半角英数小文字とアンダースコアです`
       },
       usernickname_format: property => {
         return `ニックネームには <>/:"'と空白を含めてはいけません`
