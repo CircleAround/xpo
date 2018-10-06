@@ -45,8 +45,10 @@
         <router-view/>
       </el-main>
       <el-footer>
-        利用規約とか気になる人はまだ使っちゃダメです！まだそんなに責任持てるレベルまで仕上げていません。
-        データの永続性とか保証しません。
+        このサービスはまだ実験的に作成しています。利用規約など気になる人はまだ使っちゃダメです！
+        データの永続性なども保証していません。
+        サービス提供者の<a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>は一切の責任を負えませんので承知の上でご利用ください。
+        ソースコードは<a :href="consts.REPOSITORY_URL" target="_blank">公開</a>されていますので、気になる方はご確認の上でご利用ください。
       </el-footer>
     </el-container>
   </div>
@@ -54,11 +56,13 @@
 
 <script>
 import core from './core'
+import consts from './consts'
 export default {
   name: 'App',
   data() {
     return {
-      state: core.state
+      state: core.state,
+      consts: consts
     }
   },
   computed: {
@@ -127,10 +131,20 @@ export default {
       font-size: 90%;
     }
   }
+}
 
-  @media screen and (max-width: 480px) {
+@media screen and (max-width: 480px) {
+  .el-main {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .el-header {
+    padding-left: 2px;
+    padding-right: 2px;
+
     .user_name {
-      width: 143px;
+        width: 100px;
     }
   }
 }
