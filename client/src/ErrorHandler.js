@@ -4,7 +4,6 @@ class ErrorHandler {
   }
 
   eachInResponse(error, handler) {
-    const i18n = this.i18n
     const e = error.response.data.error
 
     if (e.type === 'validation') {
@@ -21,14 +20,14 @@ class ErrorHandler {
     this.handle(handler, e) || this.handleUnexpected(handler, e)
   }
 
-  validation_message(reason, property) {
-    return this.i18n.t(this.reason2ValidationMessageKey(reason, property), {
+  validationMessage(reason, property) {
+    return this.i18n.t(this.validationMessageKeyByReason(reason, property), {
       property: property
     })
   }
 
   handle(handler, e) {
-    const key = this.type2MessageKey(e.type, e.property)
+    const key = this.messageKeyByType(e.type, e.property)
     const msg = this.i18n.t(key, {
       property: e.property
     })
@@ -42,8 +41,8 @@ class ErrorHandler {
 
   handleValidation(handler, type, reason, property) {
     handler(
-      this.validation_message(reason, property) ||
-        this.validation_message('nothing'),
+      this.validationMessage(reason, property) ||
+        this.validationMessage('nothing'),
       type,
       property
     )
@@ -57,11 +56,11 @@ class ErrorHandler {
     )
   }
 
-  reason2ValidationMessageKey(reason, property) {
+  validationMessageKeyByReason(reason, property) {
     return `error.messages.validation.${reason}`
   }
 
-  type2MessageKey(type, property) {
+  messageKeyByType(type, property) {
     return `error.messages.${e.type}`
   }
 }

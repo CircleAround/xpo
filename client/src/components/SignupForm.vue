@@ -21,7 +21,7 @@ import core from '../core'
 import ErrorHandler from '../ErrorHandler'
 
 class FormErrorHandler extends ErrorHandler {
-  type2MessageKey(type, property) {
+  messageKeyByType(type, property) {
     if (type === 'duplicatedObject') {
       return `error.messages.duplicatedUser`
     }

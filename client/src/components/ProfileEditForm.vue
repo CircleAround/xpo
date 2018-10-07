@@ -15,8 +15,8 @@ import ProfileForm from './parts/ProfileForm'
 import core from '../core'
 import ErrorHandler from '../ErrorHandler'
 
-class FormErrorHandler extends ErrorHandler{
-  type2MessageKey(type, property) {
+class FormErrorHandler extends ErrorHandler {
+  messageKeyByType(type, property) {
     if (type === 'valueNotUnique') {
       return `error.messages.duplicatedUserName`
     }
@@ -56,17 +56,20 @@ export default {
           this.$router.push('/')
         })
         .catch(error => {
-          new FormErrorHandler(this.$i18n).eachInResponse(error, (msg, type, property) => {
-            if (!property) {
-              return this.errors.push(msg)
-            }
+          new FormErrorHandler(this.$i18n).eachInResponse(
+            error,
+            (msg, type, property) => {
+              if (!property) {
+                return this.errors.push(msg)
+              }
 
-            if (!this.propErrors[property]) {
-              this.$set(this.propErrors, property, [])
-            }
+              if (!this.propErrors[property]) {
+                this.$set(this.propErrors, property, [])
+              }
 
-            this.propErrors[property].push(msg)
-          })
+              this.propErrors[property].push(msg)
+            }
+          )
         })
     }
   }
