@@ -13,6 +13,17 @@
 <script>
 import ProfileForm from './parts/ProfileForm'
 import core from '../core'
+import ErrorHandler from '../ErrorHandler'
+
+class FormErrorHandler extends ErrorHandler{
+  type2MessageKey(type, property) {
+    if (type === 'valueNotUnique') {
+      return `error.messages.duplicatedUserName`
+    }
+    return `error.messages.${e.type}`
+  }
+}
+
 export default {
   name: 'profile_edit_form',
   components: { ProfileForm },
@@ -45,16 +56,7 @@ export default {
           this.$router.push('/')
         })
         .catch(error => {
-          core.eachResponseErrors(error, (msg, type, property) => {
-            if (type === 'ValueNotUniqueError') {
-              if (!this.propErrors[property]) {
-                this.$set(this.propErrors, property, [])
-              }
-              return this.propErrors[property].push(
-                '既に取得されてしまったユーザー名です。別の名前にしましょう。'
-              )
-            }
-
+          new FormErrorHandler(this.$i18n).eachInResponse(error, (msg, type, property) => {
             if (!property) {
               return this.errors.push(msg)
             }

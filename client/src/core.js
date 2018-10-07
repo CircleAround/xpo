@@ -132,57 +132,5 @@ export default {
   },
   forceUpdateMainList() {
     listMap.forceUpdate()
-  },
-  eachResponseErrors(error, handler) {
-    const e = error.response.data.error
-
-    const i18n = {
-      required: property => {
-        return `${property}は必須です`
-      },
-      min: property => {
-        return `${property}は短すぎます。`
-      },
-      max: property => {
-        return `${property}は長すぎます。`
-      },
-      username_format: property => {
-        return `${property}は先頭英数小文字かつ半角英数小文字とアンダースコアです`
-      },
-      usernickname_format: property => {
-        return `ニックネームには <>/:"'と空白を含めてはいけません`
-      },
-      nothing: property => {
-        return `${property}が何らかのエラーです`
-      }
-    }
-
-    switch (e.type) {
-      case 'ValidationError':
-        const items = e.items
-        Object.keys(items).forEach(property => {
-          const item = items[property]
-          item.reasons.forEach(reason => {
-            if (i18n[reason]) {
-              return handler(i18n[reason](property), e.type, property)
-            }
-            handler(i18n['nothing'](property), e.type, property)
-          })
-        })
-        break
-      case 'ValueNotUniqueError':
-        handler(`${e.property}は既に存在します`, e.type, e.property)
-        break
-      case 'InvalidParameterError':
-        handler(`${e.property}は既に存在します`, e.type, e.property)
-        break
-      case 'DuplicatedObjectError':
-        handler(`既に存在します`, e.type, null)
-        break
-
-      default:
-        handler(`予期しないエラーです`, e.type || 'UnexpectedError', null)
-        break
-    }
   }
 }

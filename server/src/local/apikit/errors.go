@@ -35,7 +35,7 @@ func (err *InvalidParameterError) Error() string {
 
 func NewInvalidParameterError(property string) *InvalidParameterError {
 	return &InvalidParameterError{
-		Type:     "InvalidParameterError",
+		Type:     "invalidParameter",
 		Message:  fmt.Sprintf("%v is invalid", property),
 		Property: property,
 	}
@@ -43,7 +43,7 @@ func NewInvalidParameterError(property string) *InvalidParameterError {
 
 func NewInvalidParameterErrorWithMessage(property string, msg string) *InvalidParameterError {
 	return &InvalidParameterError{
-		Type:     "InvalidParameterError",
+		Type:     "invalidParameter",
 		Message:  msg,
 		Property: property,
 	}
@@ -96,7 +96,7 @@ func (err *ValidationError) PushOne(property string, reasons string) {
 // NewValidationError if a function for creates ValidatioNError
 func NewValidationError() *ValidationError {
 	err := new(ValidationError)
-	err.Type = "ValidationError"
+	err.Type = "validation"
 	err.Items = map[string]*ValidationErrorItem{}
 	return err
 }

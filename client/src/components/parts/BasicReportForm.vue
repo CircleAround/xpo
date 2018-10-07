@@ -41,6 +41,7 @@
 import core from '../../core'
 import marked from 'marked'
 import Overlay from './Overlay'
+import ErrorHandler from '../../ErrorHandler'
 
 export default {
   name: 'BasicReportForm',
@@ -70,9 +71,12 @@ export default {
       this.errors = []
       this.doPostReport()
         .catch(error => {
-          core.eachResponseErrors(error, (msg, type, property) => {
-            this.errors.push(msg)
-          })
+          new ErrorHandler(this.$i18n).eachInResponse(
+            error,
+            (msg, type, property) => {
+              this.errors.push(msg)
+            }
+          )
         })
         .finally(() => {
           this.loading = false
