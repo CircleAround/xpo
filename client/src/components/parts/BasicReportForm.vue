@@ -85,10 +85,17 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/scss/mixin.scss';
 .editor {
   display: flex;
   position: relative;
+
+  textarea {
+    @include placeholder() {
+      color: #aaa;
+    }
+  }
 }
 
 .textcontent {
