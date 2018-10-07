@@ -3,7 +3,25 @@
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
-        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()'></textarea>
+        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' placeholder="# Markdown で書けます
+`Markdown` のサンプル
+
+## 中タイトル
+### 小タイトル
+
+- 順序関係ないリスト 1
+- 順序関係ないリスト 2
+- 順序関係ないリスト 3
+
+
+1. 順序関係あるリスト 1
+1. 順序関係あるリスト 2
+1. 順序関係あるリスト 3
+
+```
+ソースコードとか
+```
+"></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
@@ -13,6 +31,14 @@
       </div>
       <div class="actions">
         <overlay :visible="loading"></overlay>
+        <el-popover
+          placement="top-start"
+          title="Help"
+          width="200"
+          trigger="click"
+          content="テキストエリアにマークダウンで記述できます。変更の反映はショートカットキーでもできます。 Mac: Command + Enter, Win: Control + Enter">
+          <el-button icon="el-icon-question" circle slot="reference"></el-button>
+        </el-popover>
         <el-button type="success" icon="el-icon-check" circle @click='postReport()' title="Mac: Command + Enter, Win: Control + Enter"></el-button>
       </div>
     </div>
@@ -58,7 +84,7 @@ export default {
         core.eachResponseErrors(error, (msg, type, property) => {
           this.errors.push(msg)
         })
-      }).finally(()=>{
+      }).finally(() => {
         this.loading = false
       })
     },
