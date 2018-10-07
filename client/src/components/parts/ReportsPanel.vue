@@ -2,7 +2,10 @@
   <div class='reports'>
     <el-card class="box-card" v-for='(item, key , index) in list' v-bind:key="index">
       <div slot="header" class="clearfix card-header">
-        <div class="author-name">{{item.author}}</div>
+        <div class="user_name">
+          <div class="nickname">{{item.authorNickname}}</div>
+          <div class="name">{{item.author}}</div>
+        </div>
         <div class="card-header-optoins">
           <div class="date">
             <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">

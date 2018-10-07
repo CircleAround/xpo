@@ -13,15 +13,16 @@ import (
 
 // Report struct
 type Report struct {
-	ID          int64          `json:"id" datastore:"-" goon:"id"`
-	AuthorKey   *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
-	AuthorID    string         `json:"authorId" validate:"required"`
-	Author      string         `json:"author" validate:"required"`
-	Content     string         `json:"content" validate:"required,max=20000"`
-	ContentType string         `json:"content_type" validate:"required"`
-	ReportedAt  time.Time      `json:"reportedAt"`
-	CreatedAt   time.Time      `json:"createdAt"`
-	UpdatedAt   time.Time      `json:"updatedAt"`
+	ID             int64          `json:"id" datastore:"-" goon:"id"`
+	AuthorKey      *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
+	AuthorID       string         `json:"authorId" validate:"required"`
+	Author         string         `json:"author" validate:"required"`
+	AuthorNickname string         `json:"authorNickname" validate:"required"`
+	Content        string         `json:"content" validate:"required,max=20000"`
+	ContentType    string         `json:"contentType" validate:"required"`
+	ReportedAt     time.Time      `json:"reportedAt"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	UpdatedAt      time.Time      `json:"updatedAt"`
 }
 
 type ReportService struct {
@@ -31,7 +32,7 @@ type ReportService struct {
 
 type ReportCreationParams struct {
 	Content     string    `json:"content" validate:"required"`
-	ContentType string    `json:"content_type" validate:"required"`
+	ContentType string    `json:"contentType" validate:"required"`
 	ReportedAt  time.Time `json:"reportedAt"`
 }
 
@@ -90,7 +91,8 @@ func (s *ReportService) FindByXUserAndID(c context.Context, xu XUser, id int64) 
 }
 
 func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreationParams) (report *Report, err error) {
-	err = validatekit.NewValidate().Struct(params)
+	v := validatekit.NewValidate()
+	err = v.Struct(params)
 	if err != nil {
 		return
 	}
@@ -101,6 +103,7 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	report.Author = xu.Name
 	report.AuthorID = xu.ID
 	report.AuthorKey = s.KeyOf(c, xu)
+	report.AuthorNickname = xu.Nickname
 
 	now := s.now()
 	if params.ReportedAt.IsZero() {
@@ -111,12 +114,17 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	report.CreatedAt = now
 	report.UpdatedAt = now
 
+	err = v.Struct(report)
+	if err != nil {
+		return
+	}
 	err = s.Put(c, report)
 	return
 }
 
 func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatingParams) (report *Report, err error) {
-	err = validatekit.NewValidate().Struct(params)
+	v := validatekit.NewValidate()
+	err = v.Struct(params)
 	if err != nil {
 		return
 	}
@@ -129,12 +137,18 @@ func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatin
 	report.Content = params.Content
 	report.ContentType = params.ContentType
 	report.Author = xu.Name
+	report.AuthorNickname = xu.Nickname
+
 	if !params.ReportedAt.IsZero() {
 		log.Infof(c, "update ReportedAt: %v", params.ReportedAt)
 		report.ReportedAt = params.ReportedAt
 	}
 	report.UpdatedAt = s.now()
 
+	err = v.Struct(report)
+	if err != nil {
+		return
+	}
 	err = s.Put(c, report)
 	return
 }

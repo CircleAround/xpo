@@ -127,7 +127,7 @@ export default {
   initNewReport() {
     this.state.newReport = {
       content: '',
-      content_type: 'text/x-markdown'
+      contentType: 'text/x-markdown'
     }
   },
   forceUpdateMainList() {
