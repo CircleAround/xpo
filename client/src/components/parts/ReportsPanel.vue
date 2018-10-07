@@ -5,11 +5,11 @@
         <div class="author-name">{{item.author}}</div>
         <div class="card-header-optoins">
           <div class="date">
-            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.createdAt.format('YYYY'), month: item.createdAt.format('M'), day: item.createdAt.format('DD') } }">
+            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
               <div class="month-day">
-                <div class="month">{{item.createdAt.format('M')}}</div>
+                <div class="month">{{item.reportedAt.format('M')}}</div>
                 <div class="separator">/</div>
-                <div class="day">{{item.createdAt.format('DD')}}</div>
+                <div class="day">{{item.reportedAt.format('DD')}}</div>
               </div>
             </router-link>
           </div>
