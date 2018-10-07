@@ -19,9 +19,9 @@ type Report struct {
 	Author      string         `json:"author" validate:"required"`
 	Content     string         `json:"content" validate:"required,max=20000"`
 	ContentType string         `json:"content_type" validate:"required"`
-	ReportedAt  time.Time      `json:"reported_at"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	ReportedAt  time.Time      `json:"reportedAt"`
+	CreatedAt   time.Time      `json:"createdAt"`
+	UpdatedAt   time.Time      `json:"updatedAt"`
 }
 
 type ReportService struct {
@@ -32,7 +32,7 @@ type ReportService struct {
 type ReportCreationParams struct {
 	Content     string    `json:"content" validate:"required"`
 	ContentType string    `json:"content_type" validate:"required"`
-	ReportedAt  time.Time `json:"reported_at"`
+	ReportedAt  time.Time `json:"reportedAt"`
 }
 
 type ReportUpdatingParams struct {

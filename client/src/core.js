@@ -14,9 +14,9 @@ function enhanceReport(item) {
     return item
   }
 
-  item.reported_at = moment(item.reported_at)
-  item.created_at = moment(item.created_at)
-  item.updated_at = moment(item.updated_at)
+  item.reportedAt = moment(item.reportedAt)
+  item.createdAt = moment(item.createdAt)
+  item.updatedAt = moment(item.updatedAt)
   item.markdown = function() {
     return marked(this.content)
   }
