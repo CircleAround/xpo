@@ -118,7 +118,6 @@ export default {
   .user_name {
     word-break: break-all;
     padding: 0 5px;
-    font-weight: bold;
     text-align: right;
 
     width: 200px;
@@ -129,6 +128,10 @@ export default {
       white-space: nowrap;
       word-break: break-all;
       font-size: 90%;
+    }
+
+    .nickname {
+      font-weight: bold;
     }
   }
 }

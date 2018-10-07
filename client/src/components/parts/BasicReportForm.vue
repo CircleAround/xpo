@@ -52,11 +52,14 @@ export default {
     },
 
     postReport() {
+      this.loading = true
       this.errors = []
       this.doPostReport().catch(error => {
         core.eachResponseErrors(error, (msg, type, property) => {
           this.errors.push(msg)
         })
+      }).finally(()=>{
+        this.loading = false
       })
     },
     updateMarkdown() {
