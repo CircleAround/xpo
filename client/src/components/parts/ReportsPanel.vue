@@ -2,14 +2,17 @@
   <div class='reports'>
     <el-card class="box-card" v-for='(item, key , index) in list' v-bind:key="index">
       <div slot="header" class="clearfix card-header">
-        <div class="author-name">{{item.author}}</div>
+        <div class="user_name">
+          <div class="nickname">{{item.authorNickname}}</div>
+          <div class="name">{{item.author}}</div>
+        </div>
         <div class="card-header-optoins">
           <div class="date">
-            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.created_at.format('YYYY'), month: item.created_at.format('M'), day: item.created_at.format('DD') } }">
+            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
               <div class="month-day">
-                <div class="month">{{item.created_at.format('M')}}</div>
+                <div class="month">{{item.reportedAt.format('M')}}</div>
                 <div class="separator">/</div>
-                <div class="day">{{item.created_at.format('DD')}}</div>
+                <div class="day">{{item.reportedAt.format('DD')}}</div>
               </div>
             </router-link>
           </div>
@@ -26,7 +29,7 @@
       <div v-html="item.markdown()" class="markdown"></div>
       <div>
         <div class="updated-at">
-          {{item.updated_at.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+          {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
         </div>
       </div>
     </el-card>

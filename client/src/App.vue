@@ -116,23 +116,25 @@ export default {
   }
 
   .user_name {
-    word-break: break-all;
-    padding: 0 5px;
     text-align: right;
-
     width: 200px;
+  }
+}
 
-    .nickname, .name {
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      word-break: break-all;
-      font-size: 90%;
-    }
+.user_name {
+  word-break: break-all;
+  padding: 0 5px;
 
-    .nickname {
-      font-weight: bold;
-    }
+  .nickname, .name {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    word-break: break-all;
+    font-size: 90%;
+  }
+
+  .nickname {
+    font-weight: bold;
   }
 }
 
