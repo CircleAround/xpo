@@ -27,7 +27,7 @@ func Router() *chi.Mux {
 	})
 
 	r.Route("/reports", func(r chi.Router) {
-		r.With(GAuth).Get(
+		r.Get(
 			"/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
 			Handler(SearchReportsYmd),
 		)
