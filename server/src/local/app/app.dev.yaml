@@ -1,0 +1,9 @@
+runtime: go
+api_version: go1.9
+version: alpha-1
+
+env_variables:
+  APP_ENV: 'development'
+
+includes:
+  - lib/common.yaml

@@ -1,0 +1,2 @@
+#!/bin/bash
+appcfg.py  -v vacuum_indexes src/local/app/

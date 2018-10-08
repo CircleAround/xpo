@@ -1,9 +1,18 @@
 runtime: go
 api_version: go1.9
-version: alpha-1
+application: x-po-201808
+module: default
 
 env_variables:
-  APP_ENV: 'development'
+  APP_ENV: 'production'
 
 includes:
   - lib/common.yaml
+  - lib/secret.yaml
+
+skip_files:
+  - ^(.*/)?test.go$
+  - ^(.*/)?testkit.go
+  - ^(.*/)?testarator.go
+  - ^(.*)/appengine/aetest/(.*)
+  - ^(.*)/pkg/(.*)
