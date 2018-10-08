@@ -24,10 +24,10 @@ func (p *cparams) Get(key string) string {
 }
 
 func (p *cparams) AsInt(key string) (int, error) {
-	ret, err := strconv.ParseInt(p.Get(key), 0, 0)
+	ret, err := strconv.ParseInt(p.Get(key), 10, 0)
 	return int(ret), err
 }
 
 func (p *cparams) AsInt64(key string) (int64, error) {
-	return strconv.ParseInt(p.Get(key), 0, 64)
+	return strconv.ParseInt(p.Get(key), 10, 64)
 }
