@@ -33,7 +33,7 @@
     </div>
     <el-row class="actions">
       <el-col :sm="{offset:4, span: 16}">
-        <el-button type="primary" icon="el-icon-check" @click='clickedSubmit'></el-button>
+        <el-button type="primary" icon="el-icon-check" class="button-submit" @click='clickedSubmit'></el-button>
       </el-col>
     </el-row>
   </div>

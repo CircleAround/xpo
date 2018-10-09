@@ -14,6 +14,7 @@ const api = axios.create({
 function errorFilter(promise) {
   return promise.catch(error => {
     try {
+      console.error(error)
       console.error('error', error)
 
       if (!error.response) {
@@ -27,7 +28,8 @@ function errorFilter(promise) {
 
       throw error
     } catch (ex) {
-      console.error(ex)
+      console.error(error.message)
+      console.error('error', error)
       throw ex
     }
   })

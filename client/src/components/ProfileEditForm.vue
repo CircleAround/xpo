@@ -20,7 +20,7 @@ class FormErrorHandler extends ErrorHandler {
     if (type === 'valueNotUnique') {
       return `error.messages.duplicatedUserName`
     }
-    return `error.messages.${e.type}`
+    return `error.messages.${type}`
   }
 }
 

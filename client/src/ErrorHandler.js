@@ -61,7 +61,7 @@ class ErrorHandler {
   }
 
   messageKeyByType(type, property) {
-    return `error.messages.${e.type}`
+    return `error.messages.${type}`
   }
 }
 
