@@ -1,36 +1,5 @@
-import moment from 'moment-timezone'
-import marked from 'marked'
-import jstimezonedetect from 'jstimezonedetect'
 import router from './router'
-import collection from './lib/collection'
-
-var tz = jstimezonedetect.determine()
-moment.tz.setDefault(tz.name())
-
-function enhanceReport(item) {
-  if (item.markdown) {
-    // already enhanced guard
-    return item
-  }
-
-  item.reportedAt = moment(item.reportedAt)
-  item.createdAt = moment(item.createdAt)
-  item.updatedAt = moment(item.updatedAt)
-  item.markdown = function() {
-    return marked(this.content)
-  }
-  return item
-}
-
-class ReportListMap extends collection.ListMap {
-  getKey(object) {
-    return `${object.authorId}/${object.id}`
-  }
-
-  enhanceObject(object) {
-    return enhanceReport(object)
-  }
-}
+import ReportListMap from './app/ReportListMap'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
