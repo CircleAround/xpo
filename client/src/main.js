@@ -9,7 +9,7 @@ import App from './App'
 import router from './router'
 import core, { setServices } from './core'
 import messages from './i18n'
-import DefaultServiceFactory from './DefaultServicesFactory'
+import DefaultServiceFactory from './app/DefaultServicesFactory'
 
 Vue.use(VueI18n)
 

@@ -41,7 +41,7 @@
 import core from '../../core'
 import marked from 'marked'
 import Overlay from './Overlay'
-import ErrorHandler from '../../ErrorHandler'
+import ErrorHandler from '../../app/ErrorHandler'
 
 export default {
   name: 'BasicReportForm',

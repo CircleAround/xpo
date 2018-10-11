@@ -18,7 +18,7 @@
 <script>
 import ProfileForm from './parts/ProfileForm'
 import core from '../core'
-import ErrorHandler from '../ErrorHandler'
+import ErrorHandler from '../app/ErrorHandler'
 
 class FormErrorHandler extends ErrorHandler {
   messageKeyByType(type, property) {
