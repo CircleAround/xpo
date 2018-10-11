@@ -2,7 +2,6 @@ import moment from 'moment-timezone'
 import marked from 'marked'
 import jstimezonedetect from 'jstimezonedetect'
 import router from './router'
-import service from './service'
 import collection from './lib/collection'
 
 var tz = jstimezonedetect.determine()
@@ -36,7 +35,12 @@ class ReportListMap extends collection.ListMap {
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
 
-export default {
+var service
+export function setServices(s) {
+  service = s
+}
+
+const core = {
   state: {
     me: {
       id: null,
@@ -134,3 +138,5 @@ export default {
     listMap.forceUpdate()
   }
 }
+
+export default core

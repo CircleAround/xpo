@@ -7,8 +7,9 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import router from './router'
-import core from './core'
+import core, { setServices } from './core'
 import messages from './i18n'
+import DefaultServiceFactory from './DefaultServicesFactory'
 
 Vue.use(VueI18n)
 
@@ -30,6 +31,8 @@ var i18n = new VueI18n({
   fallbackLocale: 'ja',
   messages: messages
 })
+
+setServices(new DefaultServiceFactory().create())
 
 // TODO: loading view...
 core.initialize().then(() => {
