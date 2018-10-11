@@ -67,7 +67,7 @@ export default {
         })
         .catch(error => {
           new FormErrorHandler(this.$i18n).eachInResponse(
-            error,
+            error.response.data,
             (msg, type, property) => {
               if (type === 'duplicatedUser') {
                 this.$message({

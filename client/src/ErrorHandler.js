@@ -3,8 +3,8 @@ class ErrorHandler {
     this.i18n = i18n
   }
 
-  eachInResponse(error, handler) {
-    const e = error.response.data.error
+  eachInResponse(data, handler) {
+    const e = data.error
 
     if (e.type === 'validation') {
       const items = e.items

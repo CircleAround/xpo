@@ -72,7 +72,7 @@ export default {
       this.doPostReport()
         .catch(error => {
           new ErrorHandler(this.$i18n).eachInResponse(
-            error,
+            error.response.data,
             (msg, type, property) => {
               this.errors.push(msg)
             }
