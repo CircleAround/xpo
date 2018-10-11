@@ -1,6 +1,7 @@
 package exgorilla
 
 import (
+	"local/apikit"
 	"net/http"
 	"strconv"
 
@@ -11,7 +12,7 @@ type gparams struct {
 	vars map[string]string
 }
 
-func URLParams(r *http.Request) Params {
+func URLParams(r *http.Request) apikit.Params {
 	p := new(gparams)
 	p.vars = mux.Vars(r)
 	return p
@@ -22,10 +23,10 @@ func (p *gparams) Get(key string) string {
 }
 
 func (p *gparams) AsInt(key string) (int, error) {
-	ret, err := strconv.ParseInt(p.vars[key], 0, 0)
+	ret, err := strconv.ParseInt(p.vars[key], 10, 0)
 	return int(ret), err
 }
 
 func (p *gparams) AsInt64(key string) (int64, error) {
-	return strconv.ParseInt(p.vars[key], 0, 64)
+	return strconv.ParseInt(p.vars[key], 10, 64)
 }

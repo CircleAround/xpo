@@ -18,7 +18,7 @@ type Report struct {
 	AuthorID       string         `json:"authorId" validate:"required"`
 	Author         string         `json:"author" validate:"required"`
 	AuthorNickname string         `json:"authorNickname" validate:"required"`
-	Content        string         `json:"content" validate:"required,max=20000"`
+	Content        string         `json:"content" validate:"required,max=20000" datastore:"Content,noindex"`
 	ContentType    string         `json:"contentType" validate:"required"`
 	ReportedAt     time.Time      `json:"reportedAt"`
 	CreatedAt      time.Time      `json:"createdAt"`
@@ -52,7 +52,7 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 }
 
 func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err error) {
-	limit := 10
+	limit := 30
 	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit)
 	reports = make([]Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
@@ -60,7 +60,7 @@ func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err err
 }
 
 func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []Report, err error) {
-	limit := 10
+	limit := 30
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
