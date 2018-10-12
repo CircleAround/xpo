@@ -28,7 +28,8 @@ class UserService {
   }
 
   retriveMe() {
-    return this.api.get('/users/me')
+    const now = new Date().getTime()
+    return this.api.get(`/users/me?_=${now}`)
   }
 
   postXUser(name, nickname) {
