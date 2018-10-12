@@ -12,12 +12,12 @@ func Routes() {
 
 func Router() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(CrossOriginable)
 
 	r.Get("/", handleRoot)
 	r.Get(loggedInPath, handleLoggedIn)
 
 	r.Route("/users/me", func(r chi.Router) {
+		r.Use(CrossOriginable)
 		r.Use(GAuth)
 
 		r.Post("/", Handler(PostMe))
@@ -27,6 +27,7 @@ func Router() *chi.Mux {
 	})
 
 	r.Route("/reports", func(r chi.Router) {
+		r.Use(CrossOriginable)
 		r.Get(
 			"/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
 			Handler(SearchReportsYmd),
