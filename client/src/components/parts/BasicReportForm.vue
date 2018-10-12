@@ -3,25 +3,7 @@
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
-        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' placeholder="# Markdown で書けます
-`Markdown` のサンプル
-
-## 中タイトル
-### 小タイトル
-
-- 順序関係ないリスト 1
-- 順序関係ないリスト 2
-- 順序関係ないリスト 3
-
-
-1. 順序関係あるリスト 1
-1. 順序関係あるリスト 2
-1. 順序関係あるリスト 3
-
-```
-ソースコードとか
-```
-"></textarea>
+        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' :placeholder="$t('ui.placeholder.markdown')"></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
@@ -36,7 +18,14 @@
           title="Help"
           width="200"
           trigger="click"
-          content="テキストエリアにマークダウンで記述できます。変更の反映はショートカットキーでもできます。 Mac: Command + Enter, Win: Control + Enter">
+        >
+          <p>
+            {{$t('ui.help.markdown')}}
+          </p>
+          <div>
+            <div>Mac: {{$t('ui.help.shortcutkey.post.mac')}}</div>
+            <div>Windows: {{$t('ui.help.shortcutkey.post.win')}}</div>
+          </div>
           <el-button icon="el-icon-question" circle slot="reference"></el-button>
         </el-popover>
         <el-button type="success" icon="el-icon-check" circle @click='postReport()' title="Mac: Command + Enter, Win: Control + Enter"></el-button>
@@ -52,6 +41,7 @@
 import core from '../../core'
 import marked from 'marked'
 import Overlay from './Overlay'
+import ErrorHandler from '../../app/ErrorHandler'
 
 export default {
   name: 'BasicReportForm',
@@ -65,7 +55,6 @@ export default {
     }
   },
   created() {
-    console.log('created')
     this.initialize()
   },
   methods: {
@@ -80,13 +69,18 @@ export default {
     postReport() {
       this.loading = true
       this.errors = []
-      this.doPostReport().catch(error => {
-        core.eachResponseErrors(error, (msg, type, property) => {
-          this.errors.push(msg)
+      this.doPostReport()
+        .catch(error => {
+          new ErrorHandler(this.$i18n).eachInResponse(
+            error.response.data,
+            (msg, type, property) => {
+              this.errors.push(msg)
+            }
+          )
         })
-      }).finally(() => {
-        this.loading = false
-      })
+        .finally(() => {
+          this.loading = false
+        })
     },
     updateMarkdown() {
       this.markdown = marked(this.state.newReport.content)
@@ -95,10 +89,17 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '@/scss/mixin.scss';
 .editor {
   display: flex;
   position: relative;
+
+  textarea {
+    @include placeholder() {
+      color: #aaa;
+    }
+  }
 }
 
 .textcontent {

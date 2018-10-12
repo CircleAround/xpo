@@ -8,6 +8,13 @@
     }],
     "stage-2"
   ],
+  "env": {
+    "test": {
+      "presets": [
+        ["env", { "targets": { "node": "current" }}]
+      ]
+    }
+  },
   "plugins": [
     "transform-vue-jsx", 
     "transform-runtime",[

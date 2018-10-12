@@ -1,42 +1,15 @@
-import moment from 'moment-timezone'
-import marked from 'marked'
-import jstimezonedetect from 'jstimezonedetect'
 import router from './router'
-import service from './service'
-import collection from './lib/collection'
-
-var tz = jstimezonedetect.determine()
-moment.tz.setDefault(tz.name())
-
-function enhanceReport(item) {
-  if (item.markdown) {
-    // already enhanced guard
-    return item
-  }
-
-  item.reportedAt = moment(item.reportedAt)
-  item.createdAt = moment(item.createdAt)
-  item.updatedAt = moment(item.updatedAt)
-  item.markdown = function() {
-    return marked(this.content)
-  }
-  return item
-}
-
-class ReportListMap extends collection.ListMap {
-  getKey(object) {
-    return `${object.authorId}/${object.id}`
-  }
-
-  enhanceObject(object) {
-    return enhanceReport(object)
-  }
-}
+import ReportListMap from './app/ReportListMap'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
 
-export default {
+var service
+export function setServices(s) {
+  service = s
+}
+
+const core = {
   state: {
     me: {
       id: null,
@@ -132,57 +105,7 @@ export default {
   },
   forceUpdateMainList() {
     listMap.forceUpdate()
-  },
-  eachResponseErrors(error, handler) {
-    const e = error.response.data.error
-
-    const i18n = {
-      required: property => {
-        return `${property}は必須です`
-      },
-      min: property => {
-        return `${property}は短すぎます。`
-      },
-      max: property => {
-        return `${property}は長すぎます。`
-      },
-      username_format: property => {
-        return `${property}は先頭英数小文字かつ半角英数小文字とアンダースコアです`
-      },
-      usernickname_format: property => {
-        return `ニックネームには <>/:"'と空白を含めてはいけません`
-      },
-      nothing: property => {
-        return `${property}が何らかのエラーです`
-      }
-    }
-
-    switch (e.type) {
-      case 'ValidationError':
-        const items = e.items
-        Object.keys(items).forEach(property => {
-          const item = items[property]
-          item.reasons.forEach(reason => {
-            if (i18n[reason]) {
-              return handler(i18n[reason](property), e.type, property)
-            }
-            handler(i18n['nothing'](property), e.type, property)
-          })
-        })
-        break
-      case 'ValueNotUniqueError':
-        handler(`${e.property}は既に存在します`, e.type, e.property)
-        break
-      case 'InvalidParameterError':
-        handler(`${e.property}は既に存在します`, e.type, e.property)
-        break
-      case 'DuplicatedObjectError':
-        handler(`既に存在します`, e.type, null)
-        break
-
-      default:
-        handler(`予期しないエラーです`, e.type || 'UnexpectedError', null)
-        break
-    }
   }
 }
+
+export default core

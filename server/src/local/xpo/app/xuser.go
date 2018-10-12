@@ -65,7 +65,7 @@ func (s *XUserService) Create(c context.Context, u user.User, params XUserProfil
 
 	if err = s.Get(c, xu); err == nil {
 		log.Infof(c, "%v found!. duplicated.", xu)
-		return nil, &gaekit.DuplicatedObjectError{Type: "DuplicatedObjectError"}
+		return nil, &gaekit.DuplicatedObjectError{Type: "duplicatedObject"}
 	}
 
 	if err != datastore.ErrNoSuchEntity {

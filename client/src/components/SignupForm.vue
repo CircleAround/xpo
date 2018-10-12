@@ -18,6 +18,20 @@
 <script>
 import ProfileForm from './parts/ProfileForm'
 import core from '../core'
+import ErrorHandler from '../app/ErrorHandler'
+
+class FormErrorHandler extends ErrorHandler {
+  messageKeyByType(type, property) {
+    if (type === 'duplicatedObject') {
+      return `error.messages.duplicatedUser`
+    }
+    if (type === 'valueNotUnique') {
+      return `error.messages.duplicatedUserName`
+    }
+    return `error.messages.${type}`
+  }
+}
+
 export default {
   name: 'signup_form',
   components: { ProfileForm },
@@ -52,37 +66,31 @@ export default {
           this.$router.push('/')
         })
         .catch(error => {
-          core.eachResponseErrors(error, (msg, type, property) => {
-            if (type === 'DuplicatedObjectError') {
-              this.$message({
-                showClose: true,
-                message: 'すでにユーザー登録済みです',
-                type: 'error',
-                center: true
-              })
+          new FormErrorHandler(this.$i18n).eachInResponse(
+            error.response.data,
+            (msg, type, property) => {
+              if (type === 'duplicatedUser') {
+                this.$message({
+                  showClose: true,
+                  message: msg,
+                  type: 'error',
+                  center: true
+                })
 
-              return this.$router.push('/')
-            }
+                return this.$router.push('/')
+              }
 
-            if (type === 'ValueNotUniqueError') {
+              if (!property) {
+                return this.errors.push(msg)
+              }
+
               if (!this.propErrors[property]) {
                 this.$set(this.propErrors, property, [])
               }
-              return this.propErrors[property].push(
-                '既に取得されてしまったユーザー名です。別の名前にしましょう。'
-              )
-            }
 
-            if (!property) {
-              return this.errors.push(msg)
+              this.propErrors[property].push(msg)
             }
-
-            if (!this.propErrors[property]) {
-              this.$set(this.propErrors, property, [])
-            }
-
-            this.propErrors[property].push(msg)
-          })
+          )
         })
     }
   }

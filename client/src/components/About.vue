@@ -46,6 +46,7 @@
         ご意見ご要望不満など一切は<a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>までいただければ幸いです。
         Pull Requestもいただけたらうれしいです。
       </p>
+
       <p style="text-align:right">
         2018/10/4 佐藤 正志 ms2sato（<a :href="consts.GITHUB_URL" target="_blank">github</a> <a :href="consts.TWITTER_URL" target="_blank">twitter</a>）
       </p>

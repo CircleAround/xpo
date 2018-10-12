@@ -96,7 +96,7 @@ func (s *AppEngineService) CreateUniqueWithProperty(c context.Context, i interfa
 	err := s.Get(c, i)
 	if err == nil {
 		log.Infof(c, "%v is not unique. %v", property, i)
-		return &ValueNotUniqueError{Type: "ValueNotUniqueError", Property: property}
+		return &ValueNotUniqueError{Type: "valueNotUnique", Property: property}
 	}
 
 	if err != datastore.ErrNoSuchEntity {
