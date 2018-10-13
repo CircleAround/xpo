@@ -32,6 +32,10 @@ class UserService {
     return this.api.get(`/users/me?_=${now}`)
   }
 
+  getByName(name) {
+    return errorFilter(this.api.get(`/users/${name}`))
+  }
+
   postXUser(name, nickname) {
     return errorFilter(this.api.post('/users/me', { name, nickname }))
   }
@@ -48,6 +52,10 @@ class ReportService {
 
   retriveReports() {
     return errorFilter(this.api.get('/reports'))
+  }
+
+  searchReportsByAuthorId(authorId) {
+    return errorFilter(this.api.get(`/reports/${authorId}`))
   }
 
   searchReportsYmd(authorId, year, month, day) {

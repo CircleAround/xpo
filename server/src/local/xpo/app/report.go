@@ -59,7 +59,7 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 
 func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err error) {
 	limit := 30
-	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit)
+	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
 	reports = make([]Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
 	return
@@ -84,12 +84,10 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 
 func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []Report, err error) {
 	limit := 30
-
 	return s.search(c, ReportSerchParams{
-		AuthorID:       authorID,
+		AuthorID: authorID,
 	}, limit)
 }
-
 
 func (s *ReportService) Find(c context.Context, uid string, id int64) (report *Report, err error) {
 	xu := XUser{ID: uid}

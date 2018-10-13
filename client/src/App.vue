@@ -6,8 +6,10 @@
         <ul class="topmenu">
           <template v-if="isLoggedIn">
             <li class="user_name">
-              <div class="nickname">{{state.me.nickname}}</div>
-              <div class="name">{{state.me.name}}</div>
+              <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
+                <div class="nickname">{{state.me.nickname}}</div>
+                <div class="name">{{state.me.name}}</div>
+              </router-link>
             </li>
             <li>
               <router-link to='/reports/new'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
@@ -16,6 +18,11 @@
               <el-dropdown>
                 <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
                 <el-dropdown-menu slot="dropdown">
+                  <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
+                    <el-dropdown-item >
+                      MyPage
+                    </el-dropdown-item>
+                  </router-link>
                   <router-link to='/users/me/edit'>
                     <el-dropdown-item >
                       EditProfile
@@ -76,11 +83,13 @@ export default {
 <style lang="scss">
 @import '@/scss/main.scss';
 
+$text-color: #2c3e50;
+
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: $text-color;
 }
 
 .el-container {
@@ -111,13 +120,18 @@ export default {
   .topmenu {
     list-style: none;
     display: flex;
-    padding:0;
+    padding: 0;
     justify-content: flex-end;
   }
 
   .user_name {
     text-align: right;
-    width: 200px;
+    max-width: 200px;
+
+    a,
+    a:visited {
+      color: $text-color;
+    }
   }
 }
 
@@ -125,7 +139,12 @@ export default {
   word-break: break-all;
   padding: 0 5px;
 
-  .nickname, .name {
+  a {
+    text-decoration: none;
+  }
+
+  .nickname,
+  .name {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
@@ -149,9 +168,8 @@ export default {
     padding-right: 2px;
 
     .user_name {
-        width: 100px;
+      width: 100px;
     }
   }
 }
-
 </style>

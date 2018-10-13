@@ -40,14 +40,15 @@ func Handler(next HandlerFunc) http.HandlerFunc {
 }
 
 func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
-	if err == apikit.UnauthorizedError {
-		responseUnauthorized(w, r)
-		return
-	}
 
-	c := Context(r)
 	if err != nil {
+		c := Context(r)
 		log.Infof(c, "Handle Error: %v", err)
+
+		if err == apikit.UnauthorizedError {
+			responseUnauthorized(w, r)
+			return
+		}
 
 		switch err.(type) {
 		case *gaekit.ValueNotUniqueError:
@@ -77,11 +78,14 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 		case *apikit.IllegalAccessError:
 			apikit.RespondFailure(w, err, http.StatusForbidden)
 			return
+		}
 
-		default:
-			log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
-			apikit.RespondFailure(w, err, http.StatusInternalServerError)
+		if err == datastore.ErrNoSuchEntity {
+			apikit.RespondFailure(w, "NotFound", http.StatusNotFound)
 			return
 		}
+
+		log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
+		apikit.RespondFailure(w, err, http.StatusInternalServerError)
 	}
 }

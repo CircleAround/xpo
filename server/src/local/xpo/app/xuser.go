@@ -134,6 +134,19 @@ func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *XUser, err
 	return
 }
 
+func (s *XUserService) GetByName(c context.Context, name string) (*XUser, error) {
+	q := datastore.NewQuery("XUser").Filter("Name=", name).Limit(1)
+	var xus []XUser
+	_, err := s.Goon(c).GetAll(q, &xus)
+	if err != nil {
+		return nil, err
+	}
+	if len(xus) == 0 {
+		return nil, datastore.ErrNoSuchEntity
+	}
+	return &xus[0], nil
+}
+
 // IsUsedName is method for checking UserName already taken.
 func (s *XUserService) IsUsedName(c context.Context, name string) (bool, error) {
 	i := _XUserNameUniqueIndex{value: name}
