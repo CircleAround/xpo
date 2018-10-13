@@ -41,6 +41,12 @@ type ReportUpdatingParams struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
+type ReportSerchParams struct {
+	AuthorID       string
+	ReportedAtFrom time.Time
+	ReportedAtTo   time.Time
+}
+
 func NewReportService() *ReportService {
 	return NewReportServiceWithTheTime(the_time.Real())
 }
@@ -53,7 +59,7 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 
 func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err error) {
 	limit := 30
-	q := datastore.NewQuery("Report").Order("-CreatedAt").Limit(limit)
+	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
 	reports = make([]Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
 	return
@@ -69,13 +75,18 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 	from := time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
 	to := from.AddDate(0, 0, 1)
 
-	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit).
-		Filter("ReportedAt>=", from).
-		Filter("ReportedAt<", to).
-		Filter("AuthorID=", authorID)
-	reports = make([]Report, 0, limit)
-	_, err = s.Goon(c).GetAll(q, &reports)
-	return
+	return s.search(c, ReportSerchParams{
+		AuthorID:       authorID,
+		ReportedAtFrom: from,
+		ReportedAtTo:   to,
+	}, limit)
+}
+
+func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []Report, err error) {
+	limit := 30
+	return s.search(c, ReportSerchParams{
+		AuthorID: authorID,
+	}, limit)
 }
 
 func (s *ReportService) Find(c context.Context, uid string, id int64) (report *Report, err error) {
@@ -155,4 +166,24 @@ func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatin
 
 func (s *ReportService) now() time.Time {
 	return s.timeProvider.Now()
+}
+
+func (s *ReportService) search(c context.Context, p ReportSerchParams, limit int) (reports []Report, err error) {
+	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
+
+	if p.AuthorID != "" {
+		q = q.Filter("AuthorID=", p.AuthorID)
+	}
+
+	if !p.ReportedAtFrom.IsZero() {
+		q = q.Filter("ReportedAt>=", p.ReportedAtFrom)
+	}
+
+	if !p.ReportedAtTo.IsZero() {
+		q = q.Filter("ReportedAt<", p.ReportedAtTo)
+	}
+
+	reports = make([]Report, 0, limit)
+	_, err = s.Goon(c).GetAll(q, &reports)
+	return
 }

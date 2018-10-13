@@ -1,12 +1,15 @@
-package xpo_test
+package app_test
 
 import (
 	"local/apikit"
 	"local/gaekit"
 	"local/testkit"
 	"local/xpo/app"
+	xpo "local/xpo_test"
 	"reflect"
 	"testing"
+
+	"google.golang.org/appengine/datastore"
 
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/user"
@@ -16,7 +19,7 @@ func TestXUserScenario(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory()
+	f := xpo.NewTestFactory()
 	s := app.NewXUserService()
 
 	d := f.BuildXUser()
@@ -40,6 +43,26 @@ func TestXUserScenario(t *testing.T) {
 			}
 
 			checkXUser(t, c, s, f, u, ret, d)
+		}
+	}
+
+	{
+		t.Logf("GetByName")
+		xu, err := s.GetByName(c, d.Name)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if xu.ID != d.ID {
+			t.Errorf("It should be get matched name XUser: %v", d)
+		}
+	}
+
+	{
+		t.Logf("GetByName - name not found")
+		_, err := s.GetByName(c, d.Name+"invalid")
+		if err != datastore.ErrNoSuchEntity {
+			t.Error("It should not be get matched name ")
 		}
 	}
 
@@ -68,7 +91,7 @@ func TestXUserScenario(t *testing.T) {
 			t.Fatal(err)
 		}
 		if used {
-			t.Fatalf("It should release before name!: %v", d.Name)
+			t.Errorf("It should release before name!: %v", d.Name)
 		}
 	}
 }
@@ -77,7 +100,7 @@ func TestValidation(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory()
+	f := xpo.NewTestFactory()
 	s := app.NewXUserService()
 	t.Logf("Validation")
 
@@ -139,7 +162,7 @@ func TestValidation(t *testing.T) {
 	}
 }
 
-func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *TestFactory, u user.User, ret app.XUser, d app.XUser) {
+func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.TestFactory, u user.User, ret app.XUser, d app.XUser) {
 	t.Logf("Update!")
 
 	if ret.Email != d.Email {

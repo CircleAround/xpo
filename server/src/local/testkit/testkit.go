@@ -74,3 +74,7 @@ func NewRequestWithBody(i aetest.Instance, method string, path string, data inte
 	req.Header.Set("Content-Length", strconv.Itoa(len(res)))
 	return req, nil
 }
+
+func NewPostRequest(i aetest.Instance, path string, data interface{}) (*http.Request, error) {
+	return NewRequestWithBody(i, "POST", path, data)
+}

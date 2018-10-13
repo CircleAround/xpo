@@ -3,8 +3,10 @@
     <el-card class="box-card" v-for='(item, key , index) in list' v-bind:key="index">
       <div slot="header" class="clearfix card-header">
         <div class="user_name">
-          <div class="nickname">{{item.authorNickname}}</div>
-          <div class="name">{{item.author}}</div>
+          <router-link :to="{ name:'UserPage', params: { author: item.author } }">
+            <div class="nickname">{{item.authorNickname}}</div>
+            <div class="name">{{item.author}}</div>
+          </router-link>
         </div>
         <div class="card-header-optoins">
           <div class="date">

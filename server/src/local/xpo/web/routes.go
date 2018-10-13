@@ -16,27 +16,39 @@ func Router() *chi.Mux {
 	r.Get("/", handleRoot)
 	r.Get(loggedInPath, handleLoggedIn)
 
-	r.Route("/users/me", func(r chi.Router) {
+	r.Route("/users", func(r chi.Router) {
 		r.Use(CrossOriginable)
-		r.Use(GAuth)
 
-		r.Post("/", Handler(PostMe))
+		r.Route("/me", func(r chi.Router) {
+			r.Use(GAuth)
 
-		r.Get("/", Handler(Auth(GetMe)))
-		r.Put("/", Handler(Auth(UpdateMe)))
+			r.Post("/", Handler(PostMe))
+
+			r.Get("/", Handler(Auth(GetMe)))
+			r.Put("/", Handler(Auth(UpdateMe)))
+		})
+
+		r.Route("/{authorName:[a-z][0-9a-z_]+}", func(r chi.Router) {
+			r.Get("/", Handler(GetByName))
+		})
 	})
 
 	r.Route("/reports", func(r chi.Router) {
 		r.Use(CrossOriginable)
-		r.Get(
-			"/{authorId:[0-9]+}/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
-			Handler(SearchReportsYmd),
-		)
 
-		r.Route("/{authorId:[0-9]+}/{id:[0-9]+}", func(r chi.Router) {
-			r.Get("/", Handler(GetReport))
+		r.Route("/{authorId:[0-9]+}", func(r chi.Router) {
+			r.Get("/", Handler(SearchReportsByAuthor))
 
-			r.With(GAuth).Put("/", Handler(Auth(UpdateReport)))
+			r.Get(
+				"/_/{year:[0-9]+}/{month:[0-9]+}/{day:[0-9]+}",
+				Handler(SearchReportsYmd),
+			)
+
+			r.Route("/{id:[0-9]+}", func(r chi.Router) {
+				r.Get("/", Handler(GetReport))
+
+				r.With(GAuth).Put("/", Handler(Auth(UpdateReport)))
+			})
 		})
 
 		r.Route("/", func(r chi.Router) {

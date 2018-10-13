@@ -28,6 +28,14 @@ func GetReports(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().RetriveAll(c))
 }
 
+func SearchReportsByAuthor(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+
+	p := exchi.URLParams(r)
+	uid := p.Get("authorId")
+	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchByAuthor(c, uid))
+}
+
 func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	c := Context(r)
 

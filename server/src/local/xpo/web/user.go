@@ -1,6 +1,7 @@
 package web
 
 import (
+	"local/apikit/exchi"
 	"local/xpo/app"
 	"net/http"
 
@@ -25,6 +26,13 @@ func PostMe(w http.ResponseWriter, r *http.Request) error {
 	log.Infof(c, "params: %v\n", p)
 
 	return NewResponder(w, r).RenderMeOrError(Services.XUser().Create(c, *u, p))
+}
+
+func GetByName(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+	p := exchi.URLParams(r)
+	n := p.Get("authorName")
+	return NewResponder(w, r).RenderMeOrError(Services.XUser().GetByName(c, n))
 }
 
 func UpdateMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {

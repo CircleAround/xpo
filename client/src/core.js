@@ -51,6 +51,9 @@ const core = {
       this.state.me.loginUrl = error.response.data.error
     }
   },
+  getXUserByName: async function(name) {
+    return service.users.getByName(name)
+  },
   postXUser: async function(name, nickname) {
     const response = await service.users.postXUser(name, nickname)
     this.state.me = response.data
@@ -63,6 +66,11 @@ const core = {
     listMap.clear()
     const response = await service.reports.retriveReports()
     listMap.pushAll(response.data)
+  },
+  searchByAuthor: async function (authorId) {
+    subListMap.clear()
+    const response = await service.reports.searchReportsByAuthorId(authorId)
+    subListMap.pushAll(response.data)
   },
   searchReportsYmd: async function(authorId, year, month, day) {
     subListMap.clear()
