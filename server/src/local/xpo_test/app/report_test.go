@@ -34,6 +34,8 @@ func TestReportScenario(t *testing.T) {
 
 	tp.TravelTo(oneHourBefore)
 	s := app.NewReportServiceWithTheTime(tp)
+	us := app.NewXUserService()
+
 	{
 		t.Log("Create")
 		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
@@ -57,6 +59,13 @@ func TestReportScenario(t *testing.T) {
 		}
 		if !r.ReportedAt.Equal(oneHourBefore) {
 			t.Errorf("It should have specified ReportedAt: %v", r.ReportedAt)
+		}
+
+		{
+			us.Get(c, &xu)
+			if xu.ReportCount != 1 {
+				t.Errorf("It should have 1 report count: %v", xu)
+			}
 		}
 
 		now := tp.TravelTo(tm)
@@ -145,6 +154,13 @@ func TestReportScenario(t *testing.T) {
 		if !r.ReportedAt.Equal(oneHourBefore) {
 			t.Errorf("It should have specified ReportedAt: %v", r.ReportedAt)
 		}
+
+		{
+			us.Get(c, &xu)
+			if xu.ReportCount != 2 {
+				t.Errorf("It should have 2 report count: %v", xu)
+			}
+		}
 	}
 
 	{
@@ -153,7 +169,7 @@ func TestReportScenario(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-	
+
 		d := f.BuildReport()
 		_, err = s.Create(c, oxu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
 		if err != nil {
