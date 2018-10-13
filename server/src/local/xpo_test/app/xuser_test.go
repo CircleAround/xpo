@@ -1,10 +1,11 @@
-package xpo_test
+package app_test
 
 import (
 	"local/apikit"
 	"local/gaekit"
 	"local/testkit"
 	"local/xpo/app"
+	xpo "local/xpo_test"
 	"reflect"
 	"testing"
 
@@ -16,7 +17,7 @@ func TestXUserScenario(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory()
+	f := xpo.NewTestFactory()
 	s := app.NewXUserService()
 
 	d := f.BuildXUser()
@@ -77,7 +78,7 @@ func TestValidation(t *testing.T) {
 	_, c, done := testkit.StartTest(t)
 	defer done()
 
-	f := NewTestFactory()
+	f := xpo.NewTestFactory()
 	s := app.NewXUserService()
 	t.Logf("Validation")
 
@@ -139,7 +140,7 @@ func TestValidation(t *testing.T) {
 	}
 }
 
-func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *TestFactory, u user.User, ret app.XUser, d app.XUser) {
+func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.TestFactory, u user.User, ret app.XUser, d app.XUser) {
 	t.Logf("Update!")
 
 	if ret.Email != d.Email {

@@ -1,9 +1,10 @@
-package xpo_test
+package app_test
 
 import (
 	"local/testkit"
 	"local/the_time"
 	"local/xpo/app"
+	"local/xpo_test"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ func TestReportScenario(t *testing.T) {
 	defer done()
 
 	t.Log("ReportScenario")
-	f := NewTestFactory()
+	f := xpo.NewTestFactory()
 
 	xu, err := f.CreateXUser(c)
 	if err != nil {
