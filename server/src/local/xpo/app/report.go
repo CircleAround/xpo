@@ -129,7 +129,29 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	if err != nil {
 		return
 	}
-	err = s.Put(c, report)
+
+	if xu.ReportCount == 0 {
+		rs, err := s.search(c, ReportSerchParams{
+			AuthorID: xu.ID,
+		}, 0)
+
+		if err != nil {
+			return nil, err
+		}
+
+		xu.ReportCount = int64(len(rs))
+	}
+
+	xu.ReportCount++
+
+	err = s.RunInXGTransaction(c, func(c context.Context) error {
+		err = s.Put(c, report)
+		if err != nil {
+			return err
+		}
+
+		return s.Put(c, &xu)
+	})
 	return
 }
 
@@ -169,7 +191,10 @@ func (s *ReportService) now() time.Time {
 }
 
 func (s *ReportService) search(c context.Context, p ReportSerchParams, limit int) (reports []Report, err error) {
-	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
+	q := datastore.NewQuery("Report").Order("-ReportedAt")
+	if limit != 0 {
+		q = q.Limit(limit)
+	}
 
 	if p.AuthorID != "" {
 		q = q.Filter("AuthorID=", p.AuthorID)
