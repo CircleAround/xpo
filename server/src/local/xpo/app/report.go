@@ -82,6 +82,15 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 	}, limit)
 }
 
+func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []Report, err error) {
+	limit := 30
+
+	return s.search(c, ReportSerchParams{
+		AuthorID:       authorID,
+	}, limit)
+}
+
+
 func (s *ReportService) Find(c context.Context, uid string, id int64) (report *Report, err error) {
 	xu := XUser{ID: uid}
 	return s.FindByXUserAndID(c, xu, id)

@@ -148,8 +148,34 @@ func TestReportScenario(t *testing.T) {
 	}
 
 	{
+		// Create one by another user
+		oxu, err := f.CreateXUser(c)
+		if err != nil {
+			t.Fatal(err)
+		}
+	
+		d := f.BuildReport()
+		_, err = s.Create(c, oxu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	{
 		t.Log("Search By")
 		rs, err := s.SearchBy(c, xu.ID, now.Year(), int(now.Month()), now.Day())
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(rs) != 2 {
+			t.Errorf("It should have 2 results: %v", rs)
+		}
+	}
+
+	{
+		t.Log("Search By Author")
+		rs, err := s.SearchByAuthor(c, xu.ID)
 		if err != nil {
 			t.Fatal(err)
 		}

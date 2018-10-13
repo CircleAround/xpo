@@ -182,32 +182,6 @@ func TestWebXUserScenario(t *testing.T) {
 	}
 }
 
-// func TestWebReportScenario(t *testing.T) {
-// 	os.Setenv("ALLOW_ORIGIN", origin)
-
-// 	i, _, done := testkit.StartTest(t)
-// 	defer done()
-
-// 	var u user.User
-// 	u.Email = "test@example.com"
-// 	u.ID = "1"
-
-// 	data := app.XUserProfileParams{Name: "aaaa", Nickname: "てすと"}
-// 	req, err := XHPost(i, "/users/me", data)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	aetest.Login(&u, req)
-
-// 	rr := ServeHTTP(req)
-
-// 	if rr.Code != 200 {
-// 		t.Fatal("It should return 200")
-// 	}
-
-// }
-
 // Utils
 
 func XHRequest(i aetest.Instance, method string, path string, body io.Reader) (*http.Request, error) {
