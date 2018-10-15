@@ -20,8 +20,11 @@
           </div>
           <el-dropdown class="card-menu">
             <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
-            <el-dropdown-menu slot="dropdown" v-if="item.authorId == state.me.id">
-              <router-link :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">
+            <el-dropdown-menu slot="dropdown">
+              <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
+                <el-dropdown-item>Show</el-dropdown-item>
+              </router-link>
+              <router-link v-if="item.authorId == state.me.id" :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">
                 <el-dropdown-item>Edit</el-dropdown-item>
               </router-link>
             </el-dropdown-menu>
