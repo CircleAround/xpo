@@ -31,7 +31,9 @@
       <div v-html="item.markdown()" class="markdown"></div>
       <div>
         <div class="updated-at">
-          {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+          <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
+            {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+          </router-link>
         </div>
       </div>
     </el-card>
