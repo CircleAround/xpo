@@ -145,6 +145,17 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	xu.ReportCount++
 
 	err = s.RunInXGTransaction(c, func(c context.Context) error {
+		// for idempotent
+		oxu := XUser{ ID: xu.ID }
+		err = s.Get(c, &oxu)
+		if err != nil {
+			return err
+		}
+		if oxu.ReportCount == xu.ReportCount {
+			// already put
+			return nil
+		}
+
 		err = s.Put(c, report)
 		if err != nil {
 			return err
