@@ -20,7 +20,7 @@ const core = {
     },
     list: listMap.array,
     subList: subListMap.array,
-    newReport: { content: null },
+    targetReport: { content: null },
     posted: false
   },
   initialize() {
@@ -88,17 +88,17 @@ const core = {
   },
   findReport4Update: async function(authorId, id) {
     const newObject = await this.findReport(authorId, id)
-    Object.assign(this.state.newReport, newObject)
+    Object.assign(this.state.targetReport, newObject)
   },
   postReport: async function() {
-    const response = await service.reports.postReport(this.state.newReport)
+    const response = await service.reports.postReport(this.state.targetReport)
     listMap.unshift(response.data)
     this.initNewReport()
     router.push('/')
   },
   updateReport: async function(params) {
     const response = await service.reports.updateReport(
-      this.state.newReport,
+      this.state.targetReport,
       params
     )
     listMap.updateItem(response.data)
@@ -106,7 +106,7 @@ const core = {
     router.push('/')
   },
   initNewReport() {
-    this.state.newReport = {
+    this.state.targetReport = {
       content: '',
       contentType: 'text/x-markdown'
     }

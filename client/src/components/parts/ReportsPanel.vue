@@ -115,4 +115,8 @@ export default {
   text-align: right;
   font-size: 90%;
 }
+
+.updated-at a {
+  text-decoration: none;
+}
 </style>

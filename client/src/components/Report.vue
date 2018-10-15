@@ -18,7 +18,7 @@ export default {
   created() {
     const params = this.$route.params
     core.findReport4Update(params.authorId, params.id).then(() => {
-      this.list.push(core.state.newReport)
+      this.list.push(core.state.targetReport)
     })
   }
 }
