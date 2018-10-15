@@ -3,7 +3,7 @@
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
-        <textarea v-model="state.newReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' :placeholder="$t('ui.placeholder.markdown')"></textarea>
+        <textarea v-model="state.targetReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' :placeholder="$t('ui.placeholder.markdown')"></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
@@ -83,7 +83,7 @@ export default {
         })
     },
     updateMarkdown() {
-      this.markdown = marked(this.state.newReport.content)
+      this.markdown = marked(this.state.targetReport.content)
     }
   }
 }

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import Report from '@/components/Report'
 import Reports from '@/components/Reports'
 import ReportsYmd from '@/components/ReportsYmd'
 import ReportEditForm from '@/components/ReportEditForm'
@@ -24,14 +25,19 @@ const routerConfig = {
       component: ReportNewForm
     },
     {
-      path: '/reports/:authorId/_/:year/:month/:day',
-      name: 'ReportsYmd',
-      component: ReportsYmd
-    },
-    {
       path: '/reports/:authorId/:id/edit',
       name: 'ReportEditForm',
       component: ReportEditForm
+    },
+    {
+      path: '/reports/:authorId/:id',
+      name: 'Report',
+      component: Report
+    },
+    {
+      path: '/reports/:authorId/_/:year/:month/:day',
+      name: 'ReportsYmd',
+      component: ReportsYmd
     },
     {
       path: '/signup',
