@@ -74,6 +74,16 @@ func (s *AppEngineService) Put(c context.Context, obj interface{}) (err error) {
 	return
 }
 
+func (s *AppEngineService) PutAll(c context.Context, array []interface{}) (err error) {
+	for _, obj := range array {
+		err := s.Put(c, obj)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Delete is a method for deleting obj
 func (s *AppEngineService) Delete(c context.Context, obj interface{}) (err error) {
 	return s.Goon(c).Delete(s.KeyOf(c, obj))

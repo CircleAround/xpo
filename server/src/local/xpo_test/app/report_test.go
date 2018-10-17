@@ -68,6 +68,22 @@ func TestReportScenario(t *testing.T) {
 			}
 		}
 
+		{
+			ra := r.ReportedAt
+			m, err := s.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if len(m.DailyReportCounts) != 32 {
+				t.Errorf("It should have length 32 of DailyReportCounts: %v", len(m.DailyReportCounts))
+			}
+
+			if m.DailyReportCounts[ra.Day()] != 1 {
+				t.Errorf("It should have 1 monthly report count: %v", m)
+			}
+		}
+
 		now := tp.TravelTo(tm)
 		t.Logf("Update: %v", r)
 		{
@@ -159,6 +175,17 @@ func TestReportScenario(t *testing.T) {
 			us.Get(c, &xu)
 			if xu.ReportCount != 2 {
 				t.Errorf("It should have 2 report count: %v", xu)
+			}
+		}
+
+		{
+			ra := oneHourBefore
+			m, err := s.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if m.DailyReportCounts[ra.Day()] != 2 {
+				t.Errorf("It should have 2 monthly report count: %v, obj: %v", m.DailyReportCounts[ra.Day()], m)
 			}
 		}
 	}

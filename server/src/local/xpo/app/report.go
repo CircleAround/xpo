@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"local/gaekit"
 	"local/the_time"
 	"local/validatekit"
@@ -41,7 +42,7 @@ type ReportUpdatingParams struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
-type ReportSerchParams struct {
+type ReportSearchParams struct {
 	AuthorID       string
 	ReportedAtFrom time.Time
 	ReportedAtTo   time.Time
@@ -75,7 +76,7 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 	from := time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
 	to := from.AddDate(0, 0, 1)
 
-	return s.search(c, ReportSerchParams{
+	return s.search(c, ReportSearchParams{
 		AuthorID:       authorID,
 		ReportedAtFrom: from,
 		ReportedAtTo:   to,
@@ -84,7 +85,7 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 
 func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []Report, err error) {
 	limit := 30
-	return s.search(c, ReportSerchParams{
+	return s.search(c, ReportSearchParams{
 		AuthorID: authorID,
 	}, limit)
 }
@@ -117,11 +118,13 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	report.AuthorNickname = xu.Nickname
 
 	now := s.now()
+	var ra time.Time
 	if params.ReportedAt.IsZero() {
-		report.ReportedAt = now
+		ra = now
 	} else {
-		report.ReportedAt = params.ReportedAt
+		ra = params.ReportedAt
 	}
+	report.ReportedAt = ra
 	report.CreatedAt = now
 	report.UpdatedAt = now
 
@@ -131,7 +134,7 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 	}
 
 	if xu.ReportCount == 0 {
-		rs, err := s.search(c, ReportSerchParams{
+		rs, err := s.search(c, ReportSearchParams{
 			AuthorID: xu.ID,
 		}, 0)
 
@@ -142,11 +145,17 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 		xu.ReportCount = int64(len(rs))
 	}
 
+	m, err := s.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
+	if err != nil && err != datastore.ErrNoSuchEntity {
+		return nil, err
+	}
+	m.DailyReportCounts[ra.Day()]++
+
 	xu.ReportCount++
 
 	err = s.RunInXGTransaction(c, func(c context.Context) error {
 		// for idempotent
-		oxu := XUser{ ID: xu.ID }
+		oxu := XUser{ID: xu.ID}
 		err = s.Get(c, &oxu)
 		if err != nil {
 			return err
@@ -156,12 +165,7 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 			return nil
 		}
 
-		err = s.Put(c, report)
-		if err != nil {
-			return err
-		}
-
-		return s.Put(c, &xu)
+		return s.PutAll(c, []interface{}{report, m, &xu})
 	})
 	return
 }
@@ -201,7 +205,7 @@ func (s *ReportService) now() time.Time {
 	return s.timeProvider.Now()
 }
 
-func (s *ReportService) search(c context.Context, p ReportSerchParams, limit int) (reports []Report, err error) {
+func (s *ReportService) search(c context.Context, p ReportSearchParams, limit int) (reports []Report, err error) {
 	q := datastore.NewQuery("Report").Order("-ReportedAt")
 	if limit != 0 {
 		q = q.Limit(limit)
@@ -222,4 +226,29 @@ func (s *ReportService) search(c context.Context, p ReportSerchParams, limit int
 	reports = make([]Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
 	return
+}
+
+type MonthlyReportOverview struct {
+	ID                string         `json:"id" datastore:"-" goon:"id" validate:"required"` // "YYYY/MM"
+	AuthorKey         *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
+	Year              int            `json:"year" validate:"required"`
+	Month             int            `json:"month" validate:"required"`
+	ReportCount       int64          `json:"reportCount" validate:"required"`
+	DailyReportCounts []int          `json:"dailyReportCounts" validate:"required"`
+}
+
+func NewMonthlyReportOverview(ak *datastore.Key, y, m int) *MonthlyReportOverview {
+	return &MonthlyReportOverview{
+		AuthorKey:         ak,
+		Year:              y,
+		Month:             m,
+		ID:                fmt.Sprintf("%d/%0d", y, m),
+		DailyReportCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // DailyReportCounts[0] is unusedvalue
+	}
+}
+
+func (s *ReportService) MontlyReportOverview(c context.Context, xu *XUser, year, month int) (*MonthlyReportOverview, error) {
+	m := NewMonthlyReportOverview(s.KeyOf(c, xu), year, month)
+	err := s.Get(c, m)
+	return m, err
 }
