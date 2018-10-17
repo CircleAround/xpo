@@ -150,6 +150,7 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 		return nil, err
 	}
 	m.DailyReportCounts[ra.Day()]++
+	m.ReportCount++
 
 	xu.ReportCount++
 

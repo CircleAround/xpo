@@ -82,6 +82,10 @@ func TestReportScenario(t *testing.T) {
 			if m.DailyReportCounts[ra.Day()] != 1 {
 				t.Errorf("It should have 1 monthly report count: %v", m)
 			}
+
+			if m.ReportCount != 1 {
+				t.Errorf("It should have 1 monthly report count: %v", m)
+			}
 		}
 
 		now := tp.TravelTo(tm)
@@ -186,6 +190,9 @@ func TestReportScenario(t *testing.T) {
 			}
 			if m.DailyReportCounts[ra.Day()] != 2 {
 				t.Errorf("It should have 2 monthly report count: %v, obj: %v", m.DailyReportCounts[ra.Day()], m)
+			}
+			if m.ReportCount != 2 {
+				t.Errorf("It should have 2 monthly report count: %v", m)
 			}
 		}
 	}
