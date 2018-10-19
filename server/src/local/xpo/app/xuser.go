@@ -13,16 +13,8 @@ import (
 	"local/stdkit"
 	"local/validatekit"
 	"local/xpo/assets"
+	"local/xpo/entities"
 )
-
-// XUser struct
-type XUser struct {
-	ID          string `datastore:"-" goon:"id" json:"id"`
-	Name        string `json:"name" validate:"required,min=3,max=15,username_format"`
-	Email       string `json:"email" validate:"required"`
-	Nickname    string `json:"nickname" validate:"required,min=3,max=24,usernickname_format"`
-	ReportCount int64  `json:"reportCount"`
-}
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
 type _XUserNameUniqueIndex struct {
@@ -51,14 +43,14 @@ func NewXUserService() *XUserService {
 }
 
 // Create is method for creation XUser
-func (s *XUserService) Create(c context.Context, u user.User, params XUserProfileParams) (xu *XUser, err error) {
+func (s *XUserService) Create(c context.Context, u user.User, params XUserProfileParams) (xu *entities.XUser, err error) {
 	log.Infof(c, "Create: %v", params)
 	v, err := validate(params)
 	if err != nil {
 		return nil, err
 	}
 
-	xu = &XUser{ID: u.ID, Name: params.Name, Email: u.Email, Nickname: params.Nickname}
+	xu = &entities.XUser{ID: u.ID, Name: params.Name, Email: u.Email, Nickname: params.Nickname}
 	err = v.Struct(xu)
 	if err != nil {
 		return nil, err
@@ -99,8 +91,8 @@ func (s *XUserService) Create(c context.Context, u user.User, params XUserProfil
 	return
 }
 
-// Update is method for updating XUser
-func (s *XUserService) Update(c context.Context, xu *XUser, params XUserProfileParams) (*XUser, error) {
+// Update is method for updating entities.XUser
+func (s *XUserService) Update(c context.Context, xu *entities.XUser, params XUserProfileParams) (*entities.XUser, error) {
 	log.Infof(c, "Update: %v", params)
 	_, err := validate(params)
 	if err != nil {
@@ -128,16 +120,16 @@ func (s *XUserService) Update(c context.Context, xu *XUser, params XUserProfileP
 	return xu, err
 }
 
-// GetByUser is method for getting XUser by user.User
-func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *XUser, err error) {
-	xu = &XUser{ID: u.ID}
+// GetByUser is method for getting entities.XUser by user.User
+func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *entities.XUser, err error) {
+	xu = &entities.XUser{ID: u.ID}
 	err = s.Get(c, xu)
 	return
 }
 
-func (s *XUserService) GetByName(c context.Context, name string) (*XUser, error) {
+func (s *XUserService) GetByName(c context.Context, name string) (*entities.XUser, error) {
 	q := datastore.NewQuery("XUser").Filter("Name=", name).Limit(1)
-	var xus []XUser
+	var xus []entities.XUser
 	_, err := s.Goon(c).GetAll(q, &xus)
 	if err != nil {
 		return nil, err
@@ -185,7 +177,7 @@ func validate(params XUserProfileParams) (*validatekit.Validate, error) {
 	return v, nil
 }
 
-func (s *XUserService) updateUniqueIndex(c context.Context, xu XUser, params XUserProfileParams) error {
+func (s *XUserService) updateUniqueIndex(c context.Context, xu entities.XUser, params XUserProfileParams) error {
 	i := &_XUserNameUniqueIndex{value: xu.Name}
 	ni := &_XUserNameUniqueIndex{value: params.Name}
 	return s.ChangeUniqueValueMustTr(c, i, ni)

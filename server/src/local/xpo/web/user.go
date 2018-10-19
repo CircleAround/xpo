@@ -3,6 +3,7 @@ package web
 import (
 	"local/apikit/exchi"
 	"local/xpo/app"
+	"local/xpo/entities"
 	"net/http"
 
 	"golang.org/x/net/context"
@@ -10,7 +11,7 @@ import (
 	"google.golang.org/appengine/user"
 )
 
-func GetMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
+func GetMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	return NewResponder(w, r).RenderMeOrError(xu, nil)
 }
 
@@ -35,7 +36,7 @@ func GetByName(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderMeOrError(Services.XUser().GetByName(c, n))
 }
 
-func UpdateMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
+func UpdateMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	p := app.XUserProfileParams{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err

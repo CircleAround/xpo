@@ -3,6 +3,7 @@ package web
 import (
 	"local/apikit/exchi"
 	"local/xpo/app"
+	"local/xpo/entities"
 	"net/http"
 
 	"golang.org/x/net/context"
@@ -57,7 +58,7 @@ func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchBy(c, uid, y, m, d))
 }
 
-func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
+func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	p := &app.ReportCreationParams{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err
@@ -67,7 +68,7 @@ func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *a
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().Create(c, *xu, *p))
 }
 
-func UpdateReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *app.XUser) error {
+func UpdateReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	p := &app.ReportUpdatingParams{}
 	{
 		if err := parseJSONBody(r, &p); err != nil {

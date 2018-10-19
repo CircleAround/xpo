@@ -2,7 +2,7 @@ package web
 
 import (
 	"html/template"
-	"local/xpo/app"
+	"local/xpo/entities"
 	"net/http"
 	"os"
 
@@ -35,7 +35,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	// view構築する
 
 	funcMap := template.FuncMap{
-		"authorName": func(r app.Report) template.HTML {
+		"authorName": func(r entities.Report) template.HTML {
 			//nop sample
 			return ""
 		},
@@ -70,12 +70,12 @@ func redirectUnlessLoggedIn(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
-func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *app.XUser {
+func xUserOrRedirect(w http.ResponseWriter, r *http.Request) *entities.XUser {
 	c := Context(r)
 	u := user.Current(c)
 	g := goon.NewGoon(r)
 
-	xu := &app.XUser{ID: u.ID}
+	xu := &entities.XUser{ID: u.ID}
 	if err := g.Get(xu); err != nil {
 		log.Warningf(c, "Oops! has not user!")
 		url, _ := user.LoginURL(c, loggedInPath)

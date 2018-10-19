@@ -5,6 +5,7 @@ import (
 	"local/gaekit"
 	"local/testkit"
 	"local/xpo/app"
+	"local/xpo/entities"
 	xpo "local/xpo_test"
 	"reflect"
 	"testing"
@@ -37,7 +38,7 @@ func TestXUserScenario(t *testing.T) {
 
 		{
 			t.Logf("Standard")
-			ret := app.XUser{ID: xu.ID}
+			ret := entities.XUser{ID: xu.ID}
 			if err = s.Get(c, &ret); err != nil {
 				t.Fatal(err)
 			}
@@ -68,7 +69,7 @@ func TestXUserScenario(t *testing.T) {
 
 	{
 		t.Logf("Update")
-		od := app.XUser{}
+		od := entities.XUser{}
 		od = d
 		ud := f.BuildXUser()
 
@@ -162,7 +163,7 @@ func TestValidation(t *testing.T) {
 	}
 }
 
-func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.TestFactory, u user.User, ret app.XUser, d app.XUser) {
+func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.TestFactory, u user.User, ret entities.XUser, d entities.XUser) {
 	t.Logf("Update!")
 
 	if ret.Email != d.Email {

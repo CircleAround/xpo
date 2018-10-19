@@ -1,10 +1,12 @@
 package app
 
 import (
-	"fmt"
 	"local/gaekit"
 	"local/the_time"
 	"local/validatekit"
+	"local/xpo/domain"
+	"local/xpo/entities"
+	"local/xpo/store"
 	"time"
 
 	"golang.org/x/net/context"
@@ -12,23 +14,12 @@ import (
 	"google.golang.org/appengine/log"
 )
 
-// Report struct
-type Report struct {
-	ID             int64          `json:"id" datastore:"-" goon:"id"`
-	AuthorKey      *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
-	AuthorID       string         `json:"authorId" validate:"required"`
-	Author         string         `json:"author" validate:"required"`
-	AuthorNickname string         `json:"authorNickname" validate:"required"`
-	Content        string         `json:"content" validate:"required,max=20000" datastore:"Content,noindex"`
-	ContentType    string         `json:"contentType" validate:"required"`
-	ReportedAt     time.Time      `json:"reportedAt"`
-	CreatedAt      time.Time      `json:"createdAt"`
-	UpdatedAt      time.Time      `json:"updatedAt"`
-}
-
 type ReportService struct {
 	gaekit.AppEngineService
 	timeProvider the_time.Provider
+	rcf          *domain.ReportCreatorFactory
+	rrep         *store.ReportRepository
+	mrep         *store.MonthlyReportOverviewRepository
 }
 
 type ReportCreationParams struct {
@@ -42,12 +33,6 @@ type ReportUpdatingParams struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
-type ReportSearchParams struct {
-	AuthorID       string
-	ReportedAtFrom time.Time
-	ReportedAtTo   time.Time
-}
-
 func NewReportService() *ReportService {
 	return NewReportServiceWithTheTime(the_time.Real())
 }
@@ -55,18 +40,21 @@ func NewReportService() *ReportService {
 func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 	s := new(ReportService)
 	s.timeProvider = tp
+	s.rrep = store.NewReportRepository()
+	s.mrep = store.NewMonthlyReportOverviewRepository()
+	s.rcf = domain.NewReportCreatorFactory(s.rrep, s.mrep)
 	return s
 }
 
-func (s *ReportService) RetriveAll(c context.Context) (reports []Report, err error) {
+func (s *ReportService) RetriveAll(c context.Context) (reports []entities.Report, err error) {
 	limit := 30
 	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
-	reports = make([]Report, 0, limit)
+	reports = make([]entities.Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
 	return
 }
 
-func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []Report, err error) {
+func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []entities.Report, err error) {
 	limit := 30
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
@@ -76,40 +64,40 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 	from := time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
 	to := from.AddDate(0, 0, 1)
 
-	return s.search(c, ReportSearchParams{
+	return s.rrep.Search(c, store.ReportSearchParams{
 		AuthorID:       authorID,
 		ReportedAtFrom: from,
 		ReportedAtTo:   to,
 	}, limit)
 }
 
-func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []Report, err error) {
+func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []entities.Report, err error) {
 	limit := 30
-	return s.search(c, ReportSearchParams{
+	return s.rrep.Search(c, store.ReportSearchParams{
 		AuthorID: authorID,
 	}, limit)
 }
 
-func (s *ReportService) Find(c context.Context, uid string, id int64) (report *Report, err error) {
-	xu := XUser{ID: uid}
+func (s *ReportService) Find(c context.Context, uid string, id int64) (report *entities.Report, err error) {
+	xu := entities.XUser{ID: uid}
 	return s.FindByXUserAndID(c, xu, id)
 }
 
-func (s *ReportService) FindByXUserAndID(c context.Context, xu XUser, id int64) (report *Report, err error) {
+func (s *ReportService) FindByXUserAndID(c context.Context, xu entities.XUser, id int64) (report *entities.Report, err error) {
 	ak := s.KeyOf(c, xu)
-	report = &Report{AuthorKey: ak, ID: id}
+	report = &entities.Report{AuthorKey: ak, ID: id}
 	err = s.Get(c, report)
 	return
 }
 
-func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreationParams) (report *Report, err error) {
+func (s *ReportService) Create(c context.Context, xu entities.XUser, params ReportCreationParams) (report *entities.Report, err error) {
 	v := validatekit.NewValidate()
 	err = v.Struct(params)
 	if err != nil {
 		return
 	}
 
-	report = &Report{}
+	report = &entities.Report{}
 	report.Content = params.Content
 	report.ContentType = params.ContentType
 	report.Author = xu.Name
@@ -133,45 +121,18 @@ func (s *ReportService) Create(c context.Context, xu XUser, params ReportCreatio
 		return
 	}
 
-	if xu.ReportCount == 0 {
-		rs, err := s.search(c, ReportSearchParams{
-			AuthorID: xu.ID,
-		}, 0)
-
-		if err != nil {
-			return nil, err
-		}
-
-		xu.ReportCount = int64(len(rs))
+	cds, err := s.rcf.Create(c, &xu, report)
+	if err != nil {
+		return
 	}
-
-	m, err := s.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
-	if err != nil && err != datastore.ErrNoSuchEntity {
-		return nil, err
-	}
-	m.DailyReportCounts[ra.Day()]++
-	m.ReportCount++
-
-	xu.ReportCount++
 
 	err = s.RunInXGTransaction(c, func(c context.Context) error {
-		// for idempotent
-		oxu := XUser{ID: xu.ID}
-		err = s.Get(c, &oxu)
-		if err != nil {
-			return err
-		}
-		if oxu.ReportCount == xu.ReportCount {
-			// already put
-			return nil
-		}
-
-		return s.PutAll(c, []interface{}{report, m, &xu})
+		return cds.Create(c)
 	})
 	return
 }
 
-func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatingParams) (report *Report, err error) {
+func (s *ReportService) Update(c context.Context, xu entities.XUser, params ReportUpdatingParams) (report *entities.Report, err error) {
 	v := validatekit.NewValidate()
 	err = v.Struct(params)
 	if err != nil {
@@ -204,52 +165,4 @@ func (s *ReportService) Update(c context.Context, xu XUser, params ReportUpdatin
 
 func (s *ReportService) now() time.Time {
 	return s.timeProvider.Now()
-}
-
-func (s *ReportService) search(c context.Context, p ReportSearchParams, limit int) (reports []Report, err error) {
-	q := datastore.NewQuery("Report").Order("-ReportedAt")
-	if limit != 0 {
-		q = q.Limit(limit)
-	}
-
-	if p.AuthorID != "" {
-		q = q.Filter("AuthorID=", p.AuthorID)
-	}
-
-	if !p.ReportedAtFrom.IsZero() {
-		q = q.Filter("ReportedAt>=", p.ReportedAtFrom)
-	}
-
-	if !p.ReportedAtTo.IsZero() {
-		q = q.Filter("ReportedAt<", p.ReportedAtTo)
-	}
-
-	reports = make([]Report, 0, limit)
-	_, err = s.Goon(c).GetAll(q, &reports)
-	return
-}
-
-type MonthlyReportOverview struct {
-	ID                string         `json:"id" datastore:"-" goon:"id" validate:"required"` // "YYYY/MM"
-	AuthorKey         *datastore.Key `json:"-" datastore:"-" goon:"parent" validate:"required"`
-	Year              int            `json:"year" validate:"required"`
-	Month             int            `json:"month" validate:"required"`
-	ReportCount       int64          `json:"reportCount" validate:"required"`
-	DailyReportCounts []int          `json:"dailyReportCounts" validate:"required"`
-}
-
-func NewMonthlyReportOverview(ak *datastore.Key, y, m int) *MonthlyReportOverview {
-	return &MonthlyReportOverview{
-		AuthorKey:         ak,
-		Year:              y,
-		Month:             m,
-		ID:                fmt.Sprintf("%d/%0d", y, m),
-		DailyReportCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // DailyReportCounts[0] is unusedvalue
-	}
-}
-
-func (s *ReportService) MontlyReportOverview(c context.Context, xu *XUser, year, month int) (*MonthlyReportOverview, error) {
-	m := NewMonthlyReportOverview(s.KeyOf(c, xu), year, month)
-	err := s.Get(c, m)
-	return m, err
 }

@@ -3,7 +3,7 @@ package web
 import (
 	"local/apikit"
 	"local/gaekit"
-	"local/xpo/app"
+	"local/xpo/entities"
 	"net/http"
 	"reflect"
 
@@ -18,7 +18,7 @@ import (
 
 type HandlerFunc func(http.ResponseWriter, *http.Request) error
 
-func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *app.XUser) error) HandlerFunc {
+func Auth(next func(context.Context, http.ResponseWriter, *http.Request, *entities.XUser) error) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) error {
 		c := Context(r)
 		u := user.Current(c)
