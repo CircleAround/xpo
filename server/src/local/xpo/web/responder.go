@@ -3,13 +3,13 @@ package web
 import (
 	"local/apikit"
 	"local/gaekit"
-	"local/xpo/app"
+	"local/xpo/entities"
 	"net/http"
 	"os"
 )
 
 type XUserResponse struct {
-	*app.XUser
+	*entities.XUser
 	LoginURL  string `json:"loginUrl"`
 	LogoutURL string `json:"logoutUrl"`
 	Version   string `json:"version"`
@@ -25,7 +25,7 @@ func NewResponder(w http.ResponseWriter, r *http.Request) *Responder {
 	return &Responder{w: w, r: r, jr: apikit.NewJSONRenderer(w)}
 }
 
-func (r *Responder) RenderMeOrError(xu *app.XUser, err error) error {
+func (r *Responder) RenderMeOrError(xu *entities.XUser, err error) error {
 	res := XUserResponse{
 		XUser:     xu,
 		LoginURL:  gaekit.LoginFullURL(r.r, loggedInPath),
