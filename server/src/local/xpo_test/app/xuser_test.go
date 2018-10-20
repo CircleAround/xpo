@@ -31,7 +31,7 @@ func TestXUserScenario(t *testing.T) {
 	{
 		t.Log("Scenario")
 
-		xu, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		xu, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -73,7 +73,7 @@ func TestXUserScenario(t *testing.T) {
 		od = d
 		ud := f.BuildXUser()
 
-		ret, err := s.Update(c, &od, app.XUserProfileParams{
+		ret, err := s.Update(c, &od, entities.XUserProfileParams{
 			Name:     ud.Name,
 			Nickname: ud.Nickname,
 		})
@@ -114,22 +114,22 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Name")
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Nickname: d.Nickname})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: "", Nickname: d.Nickname})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: "", Nickname: d.Nickname})
 			apikit.ShouldHaveRequiredError(t, err, "Name")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
 			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
 				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
@@ -139,22 +139,22 @@ func TestValidation(t *testing.T) {
 	{
 		t.Logf("Nickname")
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: ""})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: ""})
 			apikit.ShouldHaveRequiredError(t, err, "Nickname")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: "<nynickname"})
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: "<nynickname"})
 			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "usernickname_format")
 		}
 
 		{
-			_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
+			_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
 			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
 				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
 			}
@@ -188,7 +188,7 @@ func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.Tes
 
 	{
 		t.Logf("Duplicaed")
-		_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated user")
 		}
@@ -207,7 +207,7 @@ func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.Tes
 		u.ID = d2.ID
 
 		// duplicated name
-		_, err := s.Create(c, u, app.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
+		_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err == nil {
 			t.Fatal("It should error on creating duplicated name user")
 		}

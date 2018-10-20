@@ -2,7 +2,6 @@ package web
 
 import (
 	"local/apikit/exchi"
-	"local/xpo/app"
 	"local/xpo/entities"
 	"net/http"
 
@@ -19,7 +18,7 @@ func PostMe(w http.ResponseWriter, r *http.Request) error {
 	c := Context(r)
 	u := user.Current(c)
 
-	p := app.XUserProfileParams{}
+	p := entities.XUserProfileParams{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err
 	}
@@ -37,7 +36,7 @@ func GetByName(w http.ResponseWriter, r *http.Request) error {
 }
 
 func UpdateMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
-	p := app.XUserProfileParams{}
+	p := entities.XUserProfileParams{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err
 	}

@@ -3,7 +3,7 @@ package web_test
 import (
 	"io"
 	"local/testkit"
-	"local/xpo/app"
+	"local/xpo/entities"
 	"local/xpo/web"
 	"local/xpo_test"
 
@@ -120,7 +120,7 @@ func TestWebXUserScenario(t *testing.T) {
 		{
 			t.Log("Create Success")
 
-			data := app.XUserProfileParams{Name: xu.Name, Nickname: xu.Nickname}
+			data := entities.XUserProfileParams{Name: xu.Name, Nickname: xu.Nickname}
 			req, err := XHPost(i, "/users/me", data)
 			if err != nil {
 				t.Fatal(err)
