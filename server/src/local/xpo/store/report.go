@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"local/gaekit"
 	"local/xpo/entities"
 	"time"
@@ -44,4 +45,60 @@ func (s *ReportRepository) Search(c context.Context, p ReportSearchParams, limit
 	reports = make([]entities.Report, 0, limit)
 	_, err = s.Goon(c).GetAll(q, &reports)
 	return
+}
+
+func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report *entities.Report) error {
+	if xu.ReportCount == 0 {
+		rs, err := f.Search(c, ReportSearchParams{
+			AuthorID: xu.ID,
+		}, 0)
+
+		if err != nil {
+			return err
+		}
+
+		xu.ReportCount = int64(len(rs))
+	}
+
+	ra := report.ReportedAt
+	m, err := f.MontlyReportOverview(c, xu, ra.Year(), int(ra.Month()))
+	if err != nil && err != datastore.ErrNoSuchEntity {
+		return err
+	}
+	m.DailyReportCounts[ra.Day()]++
+	m.ReportCount++
+
+	xu.ReportCount++
+
+	return f.RunInXGTransaction(c, func(c context.Context) error {
+		// for idempotent
+		oxu := entities.XUser{ID: xu.ID}
+		err := f.Get(c, &oxu)
+		if err != nil {
+			return err
+		}
+
+		if oxu.ReportCount == xu.ReportCount {
+			// already put
+			return nil
+		}
+
+		return f.PutAll(c, []interface{}{report, m, xu})
+	})
+}
+
+func (s *ReportRepository) MontlyReportOverview(c context.Context, xu *entities.XUser, year, month int) (*entities.MonthlyReportOverview, error) {
+	m := s.NewMonthlyReportOverview(s.KeyOf(c, xu), year, month)
+	err := s.Get(c, m)
+	return m, err
+}
+
+func (s *ReportRepository) NewMonthlyReportOverview(ak *datastore.Key, y, m int) *entities.MonthlyReportOverview {
+	return &entities.MonthlyReportOverview{
+		AuthorKey:         ak,
+		Year:              y,
+		Month:             m,
+		ID:                fmt.Sprintf("%d/%0d", y, m),
+		DailyReportCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // DailyReportCounts[0] is unusedvalue
+	}
 }

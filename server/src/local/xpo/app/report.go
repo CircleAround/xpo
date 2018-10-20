@@ -4,7 +4,6 @@ import (
 	"local/gaekit"
 	"local/the_time"
 	"local/validatekit"
-	"local/xpo/domain"
 	"local/xpo/entities"
 	"local/xpo/store"
 	"time"
@@ -17,9 +16,7 @@ import (
 type ReportService struct {
 	gaekit.AppEngineService
 	timeProvider the_time.Provider
-	rcf          *domain.ReportCreatorFactory
 	rrep         *store.ReportRepository
-	mrep         *store.MonthlyReportOverviewRepository
 }
 
 type ReportCreationParams struct {
@@ -41,8 +38,6 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 	s := new(ReportService)
 	s.timeProvider = tp
 	s.rrep = store.NewReportRepository()
-	s.mrep = store.NewMonthlyReportOverviewRepository()
-	s.rcf = domain.NewReportCreatorFactory(s.rrep, s.mrep)
 	return s
 }
 
@@ -121,14 +116,7 @@ func (s *ReportService) Create(c context.Context, xu entities.XUser, params Repo
 		return
 	}
 
-	cds, err := s.rcf.Create(c, &xu, report)
-	if err != nil {
-		return
-	}
-
-	err = s.RunInXGTransaction(c, func(c context.Context) error {
-		return cds.Create(c)
-	})
+	err = s.rrep.Create(c, &xu, report)
 	return
 }
 

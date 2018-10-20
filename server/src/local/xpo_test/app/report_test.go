@@ -1,10 +1,10 @@
 package app_test
 
 import (
+	"local/xpo/store"
 	"local/testkit"
 	"local/the_time"
 	"local/xpo/app"
-	"local/xpo/store"
 	"local/xpo_test"
 	"testing"
 	"time"
@@ -36,6 +36,7 @@ func TestReportScenario(t *testing.T) {
 	tp.TravelTo(oneHourBefore)
 	s := app.NewReportServiceWithTheTime(tp)
 	us := app.NewXUserService()
+	rrep := store.NewReportRepository()
 
 	{
 		t.Log("Create")
@@ -71,7 +72,7 @@ func TestReportScenario(t *testing.T) {
 
 		{
 			ra := r.ReportedAt
-			m, err := store.NewMonthlyReportOverviewRepository().MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
+			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -185,7 +186,7 @@ func TestReportScenario(t *testing.T) {
 
 		{
 			ra := oneHourBefore
-			m, err := store.NewMonthlyReportOverviewRepository().MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
+			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
 				t.Fatal(err)
 			}
