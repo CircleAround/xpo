@@ -1,18 +1,26 @@
 <template>
   <div class='newest-reports'>
+    <user-header :xuser="xuser"></user-header>
+    <div class="ymd">{{year}}/{{month}}/{{day}}</div>
     <reports-panel :reports="list"></reports-panel>
   </div>
 </template>
 
 <script>
 import core from '../core'
+import UserHeader from './parts/UserHeader'
 import ReportsPanel from './parts/ReportsPanel'
 export default {
   name: 'reports',
-  components: { ReportsPanel },
+  components: { ReportsPanel, UserHeader },
   data() {
+    const params = this.$route.params
     return {
-      list: core.state.subList
+      xuser: core.state.me,
+      list: core.state.subList,
+      year: params.year,
+      month: params.month,
+      day: params.day
     }
   },
   created() {
@@ -26,3 +34,10 @@ export default {
   }
 }
 </script>
+<style scoped>
+.ymd {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+</style>
