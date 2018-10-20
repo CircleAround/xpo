@@ -1,16 +1,17 @@
 <template>
   <div class='users-page'>
-    <h1>{{xuser.nickname}} - {{xuser.name}}</h1>
+    <user-header :xuser="xuser"></user-header>
     <reports-panel :reports="list"></reports-panel>
   </div>
 </template>
 
 <script>
 import core from '../core'
+import UserHeader from './parts/UserHeader'
 import ReportsPanel from './parts/ReportsPanel'
 export default {
   name: 'reports',
-  components: { ReportsPanel },
+  components: { ReportsPanel, UserHeader },
   data() {
     return {
       xuser: {},
