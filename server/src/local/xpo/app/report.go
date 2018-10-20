@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"golang.org/x/net/context"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 )
 
@@ -43,10 +42,7 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 
 func (s *ReportService) RetriveAll(c context.Context) (reports []entities.Report, err error) {
 	limit := 30
-	q := datastore.NewQuery("Report").Order("-ReportedAt").Limit(limit)
-	reports = make([]entities.Report, 0, limit)
-	_, err = s.Goon(c).GetAll(q, &reports)
-	return
+	return s.rrep.Search(c, store.ReportSearchParams{}, limit)
 }
 
 func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []entities.Report, err error) {
