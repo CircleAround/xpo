@@ -1,7 +1,7 @@
 <template>
   <header>
     <h1>
-      <span class="nickname">{{xuser.nickname}}</span><span class="name">{{xuser.name}}</span>
+      <span class="nickname">{{xuser.nickname}}</span><span class="name">&lt;{{xuser.name}}&gt;</span>
       ({{xuser.reportCount}}レポート)
     </h1>
   </header>
