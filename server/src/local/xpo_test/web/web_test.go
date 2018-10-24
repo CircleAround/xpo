@@ -1,6 +1,7 @@
 package web_test
 
 import (
+	"fmt"
 	"io"
 	"local/testkit"
 	"local/xpo/entities"
@@ -105,7 +106,7 @@ func TestWebXUserScenario(t *testing.T) {
 			rr := ServeHTTP(req)
 
 			if rr.Code != 200 {
-				t.Errorf("It should return 200")
+				t.Errorf("It should return 200: %v", rr.Code)
 			}
 
 			if "application/json" != rr.HeaderMap.Get("Content-Type") {
@@ -131,7 +132,7 @@ func TestWebXUserScenario(t *testing.T) {
 			rr := ServeHTTP(req)
 
 			if rr.Code != 200 {
-				t.Fatal("It should return 200")
+				t.Errorf("It should return 200: %v", rr.Code)
 			}
 
 			if "application/json" != rr.HeaderMap.Get("Content-Type") {
@@ -151,7 +152,7 @@ func TestWebXUserScenario(t *testing.T) {
 			rr := ServeHTTP(req)
 
 			if rr.Code != 200 {
-				t.Errorf("It should return 200")
+				t.Errorf("It should return 200: %v", rr.Code)
 			}
 
 			if "application/json" != rr.HeaderMap.Get("Content-Type") {
@@ -177,6 +178,29 @@ func TestWebXUserScenario(t *testing.T) {
 			}
 			if !strings.HasPrefix(data.LogoutURL, "http:///_ah/logout?continue=http%3A//") {
 				t.Errorf("It should have specified value :%v", data.LogoutURL)
+			}
+		}
+	}
+
+	{
+		t.Log("GET /users/:id")
+		{
+			t.Log("Get Success")
+			p := fmt.Sprintf("/users/%v", xu.ID)
+			t.Logf("path: %v", p)
+			req, err := XHGet(i, p)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := ServeHTTP(req)
+
+			if rr.Code != 200 {
+				t.Errorf("It should return 200: %v", rr.Code)
+			}
+
+			if "application/json" != rr.HeaderMap.Get("Content-Type") {
+				t.Errorf("It should have Content-Type application/json : %v", rr.HeaderMap.Get("Content-Type"))
 			}
 		}
 	}

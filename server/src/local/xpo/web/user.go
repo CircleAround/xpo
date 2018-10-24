@@ -28,11 +28,18 @@ func PostMe(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderMeOrError(Services.XUser().Create(c, *u, p))
 }
 
-func GetByName(w http.ResponseWriter, r *http.Request) error {
+func GetUserByName(w http.ResponseWriter, r *http.Request) error {
 	c := Context(r)
 	p := exchi.URLParams(r)
 	n := p.Get("authorName")
 	return NewResponder(w, r).RenderMeOrError(Services.XUser().GetByName(c, n))
+}
+
+func GetUserByID(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+	p := exchi.URLParams(r)
+	n := p.Get("authorId")
+	return NewResponder(w, r).RenderMeOrError(Services.XUser().GetByID(c, n))
 }
 
 func UpdateMe(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {

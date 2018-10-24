@@ -58,8 +58,8 @@ func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *entities.X
 }
 
 // GetByUser is method for getting entities.XUser by user.User
-func (s *XUserService) GetByID(c context.Context, ID string) (xu *entities.XUser, err error) {
-	xu = &entities.XUser{ID: ID}
+func (s *XUserService) GetByID(c context.Context, i string) (xu *entities.XUser, err error) {
+	xu = &entities.XUser{ID: i}
 	err = s.urep.Get(c, xu)
 	return
 }
