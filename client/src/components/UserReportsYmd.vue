@@ -16,15 +16,19 @@ export default {
   data() {
     const params = this.$route.params
     return {
-      xuser: core.state.me,
+      xuser: {},
       list: core.state.subList,
       year: params.year,
       month: params.month,
       day: params.day
     }
   },
-  created() {
+  async created() {
     const params = this.$route.params
+
+    const xresponse = await core.getXUserByName(params.authorId)
+    this.xuser = xresponse.data
+
     core.searchReportsYmd(
       params.authorId,
       params.year,

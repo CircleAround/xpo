@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Report from '@/components/Report'
 import Reports from '@/components/Reports'
-import ReportsYmd from '@/components/ReportsYmd'
+import UserReportsYmd from '@/components/UserReportsYmd'
 import ReportEditForm from '@/components/ReportEditForm'
 import ReportNewForm from '@/components/ReportNewForm'
 import SignupForm from '@/components/SignupForm'
@@ -36,8 +36,8 @@ const routerConfig = {
     },
     {
       path: '/reports/:authorId/_/:year/:month/:day',
-      name: 'ReportsYmd',
-      component: ReportsYmd
+      name: 'UserReportsYmd',
+      component: UserReportsYmd
     },
     {
       path: '/signup',

@@ -54,6 +54,9 @@ const core = {
   getXUserByName: async function(name) {
     return service.users.getByName(name)
   },
+  getXUserById: async function(id) {
+    return service.users.getById(id)
+  },
   postXUser: async function(name, nickname) {
     const response = await service.users.postXUser(name, nickname)
     this.state.me = response.data
@@ -67,7 +70,7 @@ const core = {
     const response = await service.reports.retriveReports()
     listMap.pushAll(response.data)
   },
-  searchByAuthor: async function (authorId) {
+  searchReportsByAuthor: async function (authorId) {
     subListMap.clear()
     const response = await service.reports.searchReportsByAuthorId(authorId)
     subListMap.pushAll(response.data)

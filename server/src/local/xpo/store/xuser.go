@@ -10,7 +10,7 @@ import (
 )
 
 type XUserRepository struct {
-	gaekit.AppEngineService
+	gaekit.DatastoreAccessObject
 }
 
 func NewXUserRepository() *XUserRepository {

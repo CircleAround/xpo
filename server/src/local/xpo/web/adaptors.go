@@ -41,51 +41,53 @@ func Handler(next HandlerFunc) http.HandlerFunc {
 
 func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 
-	if err != nil {
-		c := Context(r)
-		log.Infof(c, "Handle Error: %v", err)
-
-		if err == apikit.UnauthorizedError {
-			responseUnauthorized(w, r)
-			return
-		}
-
-		switch err.(type) {
-		case *gaekit.ValueNotUniqueError:
-			apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
-			return
-
-		case *gaekit.DuplicatedObjectError:
-			apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
-			return
-
-		case *validator.InvalidValidationError:
-			apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
-			return
-
-		case *apikit.InvalidParameterError:
-			apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
-			return
-
-		case validator.ValidationErrors:
-			ve := apikit.NewValidationError()
-			for _, err := range err.(validator.ValidationErrors) {
-				ve.PushOne(strcase.ToSnake(err.Field()), err.Tag())
-			}
-			apikit.RespondFailure(w, ve, http.StatusUnprocessableEntity)
-			return
-
-		case *apikit.IllegalAccessError:
-			apikit.RespondFailure(w, err, http.StatusForbidden)
-			return
-		}
-
-		if err == datastore.ErrNoSuchEntity {
-			apikit.RespondFailure(w, "NotFound", http.StatusNotFound)
-			return
-		}
-
-		log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
-		apikit.RespondFailure(w, err, http.StatusInternalServerError)
+	if err == nil {
+		return
 	}
+
+	c := Context(r)
+	log.Infof(c, "Handle Error: %v", err)
+
+	if err == apikit.UnauthorizedError {
+		responseUnauthorized(w, r)
+		return
+	}
+
+	switch err.(type) {
+	case *gaekit.ValueNotUniqueError:
+		apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
+		return
+
+	case *gaekit.DuplicatedObjectError:
+		apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
+		return
+
+	case *validator.InvalidValidationError:
+		apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
+		return
+
+	case *apikit.InvalidParameterError:
+		apikit.RespondFailure(w, err, http.StatusUnprocessableEntity)
+		return
+
+	case validator.ValidationErrors:
+		ve := apikit.NewValidationError()
+		for _, err := range err.(validator.ValidationErrors) {
+			ve.PushOne(strcase.ToSnake(err.Field()), err.Tag())
+		}
+		apikit.RespondFailure(w, ve, http.StatusUnprocessableEntity)
+		return
+
+	case *apikit.IllegalAccessError:
+		apikit.RespondFailure(w, err, http.StatusForbidden)
+		return
+	}
+
+	if err == datastore.ErrNoSuchEntity {
+		apikit.RespondFailure(w, "NotFound", http.StatusNotFound)
+		return
+	}
+
+	log.Warningf(c, "err: %v, %v\n", err.Error(), reflect.TypeOf(err))
+	apikit.RespondFailure(w, err, http.StatusInternalServerError)
 }
