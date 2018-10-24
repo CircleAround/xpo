@@ -9,26 +9,26 @@ import (
 	"google.golang.org/appengine/log"
 )
 
-// AppEngineService is Basi Service of AppEngine
-type AppEngineService struct {
+// DatastoreAccessObject is Datastore Access Object
+type DatastoreAccessObject struct {
 }
 
-func (s *AppEngineService) Goon(c context.Context) *goon.Goon {
+func (s *DatastoreAccessObject) Goon(c context.Context) *goon.Goon {
 	return goon.FromContext(c)
 }
 
 // KeyOf is a method for getting key from obj
-func (s *AppEngineService) KeyOf(c context.Context, obj interface{}) *datastore.Key {
+func (s *DatastoreAccessObject) KeyOf(c context.Context, obj interface{}) *datastore.Key {
 	return s.Goon(c).Key(obj)
 }
 
 // Get is a method for retriving object
-func (s *AppEngineService) Get(c context.Context,obj interface{}) error {
+func (s *DatastoreAccessObject) Get(c context.Context, obj interface{}) error {
 	return s.Goon(c).Get(obj)
 }
 
 // Exists is a method for check object exists on DB
-func (s *AppEngineService) Exists(c context.Context, obj interface{}) (bool, error) {
+func (s *DatastoreAccessObject) Exists(c context.Context, obj interface{}) (bool, error) {
 	err := s.Get(c, obj)
 	if err == datastore.ErrNoSuchEntity {
 		return false, nil
@@ -36,21 +36,21 @@ func (s *AppEngineService) Exists(c context.Context, obj interface{}) (bool, err
 	return true, err
 }
 
-func (s *AppEngineService) RunInTransaction(c context.Context, process func(context.Context) error) error {
+func (s *DatastoreAccessObject) RunInTransaction(c context.Context, process func(context.Context) error) error {
 	return s.RunInTransactionWithOption(c, process, nil)
 }
 
-func (s *AppEngineService) RunInXGTransaction(c context.Context, process func(context.Context) error) error {
-  opt := &datastore.TransactionOptions{XG: true}
+func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, process func(context.Context) error) error {
+	opt := &datastore.TransactionOptions{XG: true}
 	return s.RunInTransactionWithOption(c, process, opt)
 }
 
-func (s *AppEngineService) RunInTransactionWithOption(c context.Context, process func(context.Context) error, opts *datastore.TransactionOptions) error {
+func (s *DatastoreAccessObject) RunInTransactionWithOption(c context.Context, process func(context.Context) error, opts *datastore.TransactionOptions) error {
 	return datastore.RunInTransaction(c, process, opts)
 }
 
 // FindOrCreate is a method for find or create Object
-func (s *AppEngineService) FindOrCreate(ctx context.Context, obj interface{}) (xret interface{}, err error) {
+func (s *DatastoreAccessObject) FindOrCreate(ctx context.Context, obj interface{}) (xret interface{}, err error) {
 	err = s.RunInTransaction(ctx, func(c context.Context) error {
 		if err := s.Get(c, obj); err != nil {
 			if err != datastore.ErrNoSuchEntity {
@@ -69,12 +69,12 @@ func (s *AppEngineService) FindOrCreate(ctx context.Context, obj interface{}) (x
 }
 
 // Put is a method for saving obj
-func (s *AppEngineService) Put(c context.Context, obj interface{}) (err error) {
+func (s *DatastoreAccessObject) Put(c context.Context, obj interface{}) (err error) {
 	_, err = s.Goon(c).Put(obj)
 	return
 }
 
-func (s *AppEngineService) PutAll(c context.Context, array []interface{}) (err error) {
+func (s *DatastoreAccessObject) PutAll(c context.Context, array []interface{}) (err error) {
 	for _, obj := range array {
 		err := s.Put(c, obj)
 		if err != nil {
@@ -85,7 +85,7 @@ func (s *AppEngineService) PutAll(c context.Context, array []interface{}) (err e
 }
 
 // Delete is a method for deleting obj
-func (s *AppEngineService) Delete(c context.Context, obj interface{}) (err error) {
+func (s *DatastoreAccessObject) Delete(c context.Context, obj interface{}) (err error) {
 	return s.Goon(c).Delete(s.KeyOf(c, obj))
 }
 
@@ -98,11 +98,11 @@ type UniqueIndex interface {
 // type UniqueIndexOfString struct {
 // 	value string `datastore:"-" goon:"id"`
 // }
-func (s *AppEngineService) CreateUnique(c context.Context, i UniqueIndex) error {
+func (s *DatastoreAccessObject) CreateUnique(c context.Context, i UniqueIndex) error {
 	return s.CreateUniqueWithProperty(c, i, i.Property())
 }
 
-func (s *AppEngineService) CreateUniqueWithProperty(c context.Context, i interface{}, property string) error {
+func (s *DatastoreAccessObject) CreateUniqueWithProperty(c context.Context, i interface{}, property string) error {
 	err := s.Get(c, i)
 	if err == nil {
 		log.Infof(c, "%v is not unique. %v", property, i)
@@ -117,7 +117,7 @@ func (s *AppEngineService) CreateUniqueWithProperty(c context.Context, i interfa
 	return s.Put(c, i)
 }
 
-func (s *AppEngineService) ChangeUniqueValueMustTr(c context.Context, i UniqueIndex, ni UniqueIndex) error {
+func (s *DatastoreAccessObject) ChangeUniqueValueMustTr(c context.Context, i UniqueIndex, ni UniqueIndex) error {
 	if i.Property() != ni.Property() {
 		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
 	}

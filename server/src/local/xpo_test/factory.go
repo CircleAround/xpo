@@ -9,7 +9,7 @@ import (
 )
 
 type TestFactory struct {
-	gaekit.AppEngineService
+	gaekit.DatastoreAccessObject
 	XUserCounter  int64
 	ReportCounter int64
 }

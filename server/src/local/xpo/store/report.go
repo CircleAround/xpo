@@ -11,7 +11,7 @@ import (
 )
 
 type ReportRepository struct {
-	gaekit.AppEngineService
+	gaekit.DatastoreAccessObject
 }
 
 type ReportSearchParams struct {
