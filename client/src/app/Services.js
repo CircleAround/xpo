@@ -36,6 +36,10 @@ class UserService {
     return errorFilter(this.api.get(`/users/${name}`))
   }
 
+  getById(id) {
+    return errorFilter(this.api.get(`/users/${id}`))
+  }
+
   postXUser(name, nickname) {
     return errorFilter(this.api.post('/users/me', { name, nickname }))
   }

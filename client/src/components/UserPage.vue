@@ -24,7 +24,7 @@ export default {
     try {
       const xresponse = await core.getXUserByName(params['author'])
       this.xuser = xresponse.data
-      await core.searchByAuthor(this.xuser.id)
+      await core.searchReportsByAuthor(this.xuser.id)
     } catch (e) {
       // nop
       console.error(e)

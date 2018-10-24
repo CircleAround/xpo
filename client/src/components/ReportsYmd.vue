@@ -23,8 +23,12 @@ export default {
       day: params.day
     }
   },
-  created() {
+  async created() {
     const params = this.$route.params
+
+    const xresponse = await core.getXUserByName(params.authorId)
+    this.xuser = xresponse.data
+
     core.searchReportsYmd(
       params.authorId,
       params.year,
