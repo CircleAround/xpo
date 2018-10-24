@@ -10,7 +10,7 @@
         </div>
         <div class="card-header-optoins">
           <div class="date">
-            <router-link :to="{ name:'ReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
+            <router-link :to="{ name:'UserReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
               <div class="month-day">
                 <div class="month">{{item.reportedAt.format('M')}}</div>
                 <div class="separator">/</div>
