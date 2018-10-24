@@ -38,12 +38,12 @@ func TestXUserScenario(t *testing.T) {
 
 		{
 			t.Logf("Standard")
-			ret := entities.XUser{ID: xu.ID}
-			if err = s.Get(c, &ret); err != nil {
+			var ret *entities.XUser
+			if ret, err = s.GetByID(c, xu.ID); err != nil {
 				t.Fatal(err)
 			}
 
-			checkXUser(t, c, s, f, u, ret, d)
+			checkXUser(t, c, s, f, u, *ret, d)
 		}
 	}
 

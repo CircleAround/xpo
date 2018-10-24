@@ -1,7 +1,6 @@
 package app
 
 import (
-	"local/gaekit"
 	"local/the_time"
 	"local/validatekit"
 	"local/xpo/entities"
@@ -13,7 +12,6 @@ import (
 )
 
 type ReportService struct {
-	gaekit.AppEngineService
 	timeProvider the_time.Provider
 	rrep         *store.ReportRepository
 }
@@ -75,9 +73,9 @@ func (s *ReportService) Find(c context.Context, uid string, id int64) (report *e
 }
 
 func (s *ReportService) FindByXUserAndID(c context.Context, xu entities.XUser, id int64) (report *entities.Report, err error) {
-	ak := s.KeyOf(c, xu)
+	ak := s.rrep.KeyOf(c, xu)
 	report = &entities.Report{AuthorKey: ak, ID: id}
-	err = s.Get(c, report)
+	err = s.rrep.Get(c, report)
 	return
 }
 
@@ -93,7 +91,7 @@ func (s *ReportService) Create(c context.Context, xu entities.XUser, params Repo
 	report.ContentType = params.ContentType
 	report.Author = xu.Name
 	report.AuthorID = xu.ID
-	report.AuthorKey = s.KeyOf(c, xu)
+	report.AuthorKey = s.rrep.KeyOf(c, xu)
 	report.AuthorNickname = xu.Nickname
 
 	now := s.now()
@@ -143,7 +141,7 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 	if err != nil {
 		return
 	}
-	err = s.Put(c, report)
+	err = s.rrep.Put(c, report)
 	return
 }
 

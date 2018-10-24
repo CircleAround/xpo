@@ -5,7 +5,6 @@ import (
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 
-	"local/gaekit"
 	"local/validatekit"
 	"local/xpo/domain"
 	"local/xpo/entities"
@@ -14,7 +13,6 @@ import (
 
 // XUserService is Service for XUser
 type XUserService struct {
-	gaekit.AppEngineService
 	urep *store.XUserRepository
 }
 
@@ -56,8 +54,13 @@ func (s *XUserService) Update(c context.Context, xu *entities.XUser, params enti
 
 // GetByUser is method for getting entities.XUser by user.User
 func (s *XUserService) GetByUser(c context.Context, u user.User) (xu *entities.XUser, err error) {
-	xu = &entities.XUser{ID: u.ID}
-	err = s.Get(c, xu)
+	return s.GetByID(c, u.ID)
+}
+
+// GetByUser is method for getting entities.XUser by user.User
+func (s *XUserService) GetByID(c context.Context, ID string) (xu *entities.XUser, err error) {
+	xu = &entities.XUser{ID: ID}
+	err = s.urep.Get(c, xu)
 	return
 }
 

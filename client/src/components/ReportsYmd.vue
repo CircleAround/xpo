@@ -16,7 +16,7 @@ export default {
   data() {
     const params = this.$route.params
     return {
-      xuser: core.state.me,
+      xuser: {},
       list: core.state.subList,
       year: params.year,
       month: params.month,

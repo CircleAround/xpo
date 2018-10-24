@@ -1,10 +1,10 @@
 package app_test
 
 import (
-	"local/xpo/store"
 	"local/testkit"
 	"local/the_time"
 	"local/xpo/app"
+	"local/xpo/store"
 	"local/xpo_test"
 	"testing"
 	"time"
@@ -35,7 +35,7 @@ func TestReportScenario(t *testing.T) {
 
 	tp.TravelTo(oneHourBefore)
 	s := app.NewReportServiceWithTheTime(tp)
-	us := app.NewXUserService()
+	ur := store.NewXUserRepository()
 	rrep := store.NewReportRepository()
 
 	{
@@ -44,7 +44,7 @@ func TestReportScenario(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if *r.AuthorKey != *s.KeyOf(c, xu) {
+		if *r.AuthorKey != *rrep.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
@@ -64,7 +64,7 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		{
-			us.Get(c, &xu)
+			ur.Get(c, &xu)
 			if xu.ReportCount != 1 {
 				t.Errorf("It should have 1 report count: %v", xu)
 			}
@@ -142,7 +142,7 @@ func TestReportScenario(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if *hit.AuthorKey != *s.KeyOf(c, xu) {
+			if *hit.AuthorKey != *rrep.KeyOf(c, xu) {
 				t.Error("It should be equal AuthorKey and Key of xu")
 			}
 			if hit.ID != r.ID {
@@ -158,7 +158,7 @@ func TestReportScenario(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if *r.AuthorKey != *s.KeyOf(c, xu) {
+		if *r.AuthorKey != *rrep.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
 		}
 		if r.Content != d.Content {
@@ -178,7 +178,7 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		{
-			us.Get(c, &xu)
+			ur.Get(c, &xu)
 			if xu.ReportCount != 2 {
 				t.Errorf("It should have 2 report count: %v", xu)
 			}
