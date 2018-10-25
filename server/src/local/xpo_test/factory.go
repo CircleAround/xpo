@@ -52,3 +52,12 @@ func (f *TestFactory) BuildReport() entities.Report {
 		ID:          f.ReportCounter,
 	}
 }
+
+func (f *TestFactory) BuildReportWithAuthor(c context.Context, xu *entities.XUser) entities.Report {
+	report := f.BuildReport()
+	report.AuthorKey = f.KeyOf(c, xu)
+	report.AuthorID = xu.ID
+	report.Author = xu.Name
+	report.AuthorNickname = xu.Nickname
+	return report
+}

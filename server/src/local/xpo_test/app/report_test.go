@@ -3,6 +3,7 @@ package app_test
 import (
 	"local/testkit"
 	"local/the_time"
+	"local/validatekit"
 	"local/xpo/app"
 	"local/xpo/store"
 	"local/xpo_test"
@@ -234,6 +235,62 @@ func TestReportScenario(t *testing.T) {
 
 		if len(rs) != 2 {
 			t.Errorf("It should have 2 results: %v", rs)
+		}
+	}
+}
+
+func TestReportValidation(t *testing.T) {
+	_, c, done := testkit.StartTest(t)
+	defer done()
+
+	t.Log("ReportValidation")
+	f := xpo.NewTestFactory()
+
+	xu, err := f.CreateXUser(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	v := validatekit.NewValidate()
+
+	{
+		t.Log("Language")
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"c"}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"test"}
+			t.Logf("%v", report)
+			err := v.Struct(report)
+			if err == nil {
+				t.Errorf("It should not be valid")
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"golang javascript"}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"cpp golang test"}
+			err := v.Struct(report)
+			if err == nil {
+				t.Errorf("It should not be valid")
+			}
 		}
 	}
 }

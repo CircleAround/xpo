@@ -47,10 +47,15 @@ func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
 	done := func() {
 		testerator.SpinDown()
 
-		err := recover()
-		if err != nil {
-			pc, fn, line, _ := runtime.Caller(1)
-			t.Fatalf("Panic!: %s[%s:%d] %v", runtime.FuncForPC(pc).Name(), fn, line, err)
+		if err := recover(); err != nil {
+			t.Logf("[ERROR] %s\n", err)
+			for depth := 0; ; depth++ {
+				_, file, line, ok := runtime.Caller(depth)
+				if !ok {
+					break
+				}
+				t.Logf("======> %d: %v:%d", depth, file, line)
+			}
 		}
 	}
 
