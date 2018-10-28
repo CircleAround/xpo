@@ -1,7 +1,6 @@
 import router from './router'
 import ReportListMap from './app/ReportListMap'
 import 'highlightjs/styles/vs2015.css'
-import Language from './app/Language'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
