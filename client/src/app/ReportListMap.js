@@ -1,7 +1,14 @@
 import moment from 'moment-timezone'
 import collection from '../lib/collection'
 import marked from 'marked'
+import hljs from 'highlightjs'
 import jstimezonedetect from 'jstimezonedetect'
+
+marked.setOptions({
+  highlight: function(code, lang) {
+    return hljs.highlightAuto(code, [lang]).value
+  }
+})
 
 var tz = jstimezonedetect.determine()
 moment.tz.setDefault(tz.name())

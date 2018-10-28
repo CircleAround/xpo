@@ -277,7 +277,7 @@ func TestReportValidation(t *testing.T) {
 
 		{
 			report := f.BuildReportWithAuthor(c, &xu)
-			report.Languages = []string{"golang javascript"}
+			report.Languages = []string{"golang", "javascript"}
 			err := v.Struct(report)
 			if err != nil {
 				t.Errorf("It should be valid %v", err)
@@ -286,7 +286,7 @@ func TestReportValidation(t *testing.T) {
 
 		{
 			report := f.BuildReportWithAuthor(c, &xu)
-			report.Languages = []string{"cpp golang test"}
+			report.Languages = []string{"cpp", "golang", "test"}
 			err := v.Struct(report)
 			if err == nil {
 				t.Errorf("It should not be valid")

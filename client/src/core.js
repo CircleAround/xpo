@@ -1,5 +1,7 @@
 import router from './router'
 import ReportListMap from './app/ReportListMap'
+import 'highlightjs/styles/vs2015.css'
+import Language from './app/Language'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
@@ -70,7 +72,7 @@ const core = {
     const response = await service.reports.retriveReports()
     listMap.pushAll(response.data)
   },
-  searchReportsByAuthor: async function (authorId) {
+  searchReportsByAuthor: async function(authorId) {
     subListMap.clear()
     const response = await service.reports.searchReportsByAuthorId(authorId)
     subListMap.pushAll(response.data)

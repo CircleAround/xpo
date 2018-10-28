@@ -56,5 +56,7 @@ func Router() *chi.Mux {
 			r.With(GAuth).Post("/", Handler(Auth(PostReport)))
 		})
 	})
+
+	r.Get("/languages", Handler(GetLanguages))
 	return r
 }
