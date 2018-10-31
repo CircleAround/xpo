@@ -1,64 +1,83 @@
 <template>
-  <div id="app">
-    <el-container>
-      <el-header>
+  <v-app id="app">
+    <v-navigation-drawer
+      v-if="isLoggedIn"
+      v-model="drawer"
+      fixed
+      app
+    >
+      <v-list>
+        <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
+          <v-list-tile>
+            <v-list-tile-title>MyPage</v-list-tile-title>
+          </v-list-tile>
+        </router-link>
+        <router-link to='/users/me/edit'>
+          <v-list-tile>
+            <v-list-tile-title>EditProfile</v-list-tile-title>
+          </v-list-tile>
+        </router-link>
+        <router-link to='/about'>
+          <v-list-tile>
+            <v-list-tile-title>About</v-list-tile-title>
+          </v-list-tile>
+        </router-link>
+        <a v-bind:href="state.me.logoutUrl">
+          <v-list-tile>
+            <v-list-tile-title>Logout</v-list-tile-title>
+          </v-list-tile>
+        </a>
+      </v-list>
+    </v-navigation-drawer>
+
+    <v-toolbar color="white" class="toolbar" app>
+      <v-toolbar-side-icon @click.native="drawer = !drawer" v-if="isLoggedIn"></v-toolbar-side-icon>
+      <v-toolbar-title>
         <h1 class="site_title"><router-link to='/'>TechLog</router-link></h1>
-        <ul class="topmenu">
-          <template v-if="isLoggedIn">
-            <li class="user_name">
-              <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
-                <div class="nickname">{{state.me.nickname}}</div>
-                <div class="name">{{state.me.name}}</div>
-              </router-link>
-            </li>
-            <li>
-              <router-link to='/reports/new'><el-button type="primary" icon="el-icon-edit" circle></el-button></router-link>
-            </li>
-            <li>
-              <el-dropdown>
-                <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
-                    <el-dropdown-item >
-                      MyPage
-                    </el-dropdown-item>
-                  </router-link>
-                  <router-link to='/users/me/edit'>
-                    <el-dropdown-item >
-                      EditProfile
-                    </el-dropdown-item>
-                  </router-link>
-                  <router-link to='/about'>
-                    <el-dropdown-item >
-                      About
-                    </el-dropdown-item>
-                  </router-link>
-                  <a v-bind:href="state.me.logoutUrl">
-                    <el-dropdown-item divided>Logout</el-dropdown-item>
-                  </a>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </li>
-          </template>
-          <template v-else>
-            <li>
-              <a v-bind:href="state.me.loginUrl">Googleアカウントでログイン</a>して投稿する
-              <router-link to='/about'><el-button icon="el-icon-info" circle></el-button></router-link>
-            </li>
-          </template>
-        </ul>
-      </el-header>
-      <el-main>
-        <router-view/>
-      </el-main>
-      <el-footer>
-        このサービスはまだ実験的に作成しています。利用規約など気になる人はまだ使っちゃダメです！
-        データの永続性なども保証していません。
-        サービス提供者の<a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>は一切の責任を負えませんので承知の上でご利用ください。
-        ソースコードは<a :href="consts.REPOSITORY_URL" target="_blank">公開</a>されていますので、気になる方はご確認の上でご利用ください。
-      </el-footer>
-    </el-container>
-  </div>
+      </v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-toolbar-items class="hidden-sm-and-down">
+        <template v-if="isLoggedIn">
+          <v-btn flat class="user_name" :to="{ name:'UserPage', params: { author: state.me.name } }">
+            <div>
+              <div class="nickname">{{state.me.nickname}}</div>
+              <div class="name">{{state.me.name}}</div>
+            </div>
+          </v-btn>
+          <v-btn flat color="primary" to='/reports/new'>
+            <v-icon dark>edit</v-icon>
+          </v-btn>
+        </template>
+        <template v-else>
+          <v-btn flat>
+            <a v-bind:href="state.me.loginUrl">Googleアカウントでログイン</a>して投稿する
+          </v-btn>
+          <v-btn flat to='/about'>
+            <v-icon>info</v-icon>
+          </v-btn>
+        </template>
+      </v-toolbar-items>
+    </v-toolbar>
+
+    <v-content>
+      <router-view></router-view>
+    </v-content>
+    
+    <v-content>
+      <v-container fluid>
+        <v-layout row wrap>
+          <v-flex xs12>
+            このサービスはまだ実験的に作成しています。利用規約など気になる人はまだ使っちゃダメです！
+            データの永続性なども保証していません。
+            サービス提供者の<a :href="consts.TWITTER_URL" target="_blank">ms2sato</a>は一切の責任を負えませんので承知の上でご利用ください。
+            ソースコードは<a :href="consts.REPOSITORY_URL" target="_blank">公開</a>されていますので、気になる方はご確認の上でご利用ください。
+          </v-flex>
+        </v-layout>
+      </v-container>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
@@ -68,6 +87,7 @@ export default {
   name: 'App',
   data() {
     return {
+      drawer: null,
       state: core.state,
       consts: consts
     }
@@ -83,45 +103,20 @@ export default {
 <style lang="scss">
 @import '@/scss/main.scss';
 
-$text-color: #2c3e50;
-
-#app {
+.application {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: $text-color;
 }
 
-.el-container {
-  margin: 0 auto;
-  max-width: 960px;
-}
-
-.el-dropdown-menu a {
-  text-decoration: none;
-}
-
-.el-dropdown-menu a:visited {
-  text-decoration: none;
-}
-
-.el-header {
-  display: flex;
-  justify-content: space-between;
-
+.toolbar {
   .site_title {
     display: inline-block;
   }
 
   .site_title a {
     text-decoration: none;
-  }
-
-  .topmenu {
-    list-style: none;
-    display: flex;
-    padding: 0;
-    justify-content: flex-end;
   }
 
   .user_name {
@@ -157,19 +152,19 @@ $text-color: #2c3e50;
   }
 }
 
-@media screen and (max-width: 480px) {
-  .el-main {
-    padding-left: 2px;
-    padding-right: 2px;
-  }
+// @media screen and (max-width: 480px) {
+//   .el-main {
+//     padding-left: 2px;
+//     padding-right: 2px;
+//   }
 
-  .el-header {
-    padding-left: 2px;
-    padding-right: 2px;
+//   .el-header {
+//     padding-left: 2px;
+//     padding-right: 2px;
 
-    .user_name {
-      width: 100px;
-    }
-  }
-}
+//     .user_name {
+//       width: 100px;
+//     }
+//   }
+// }
 </style>

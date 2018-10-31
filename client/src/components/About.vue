@@ -1,5 +1,5 @@
 <template>
-  <div class='about'>
+  <v-container class='about'>
     <div>
       <p>
         ご覧いただきありがとうございます。このサービスは
@@ -51,7 +51,7 @@
         2018/10/4 佐藤 正志 ms2sato（<a :href="consts.GITHUB_URL" target="_blank">github</a> <a :href="consts.TWITTER_URL" target="_blank">twitter</a>）
       </p>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script>

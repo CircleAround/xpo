@@ -1,5 +1,8 @@
 <template>
-  <div class="report_form">
+  <v-container
+    class="report_form"
+    fluid
+  >
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
@@ -13,28 +16,25 @@
       </div>
       <div class="actions">
         <overlay :visible="loading"></overlay>
-        <el-popover
-          placement="top-start"
-          title="Help"
-          width="200"
-          trigger="click"
-        >
-          <p>
-            {{$t('ui.help.markdown')}}
-          </p>
+        <v-tooltip top>
+          <v-btn flat slot="activator" fab >
+            <v-icon dark>info</v-icon>
+          </v-btn>
+          <span>{{$t('ui.help.markdown')}}</span>
           <div>
             <div>Mac: {{$t('ui.help.shortcutkey.post.mac')}}</div>
             <div>Windows: {{$t('ui.help.shortcutkey.post.win')}}</div>
           </div>
-          <el-button icon="el-icon-question" circle slot="reference"></el-button>
-        </el-popover>
-        <el-button type="success" icon="el-icon-check" circle @click='postReport()' title="Mac: Command + Enter, Win: Control + Enter"></el-button>
+        </v-tooltip>
+        <v-btn fab dark color="primary" @click='postReport()'>
+          <v-icon dark>done</v-icon>
+        </v-btn>
       </div>
     </div>
     <div v-if="!state.me.id">
       ログインすると使えます
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script>

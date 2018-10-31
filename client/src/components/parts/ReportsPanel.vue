@@ -1,45 +1,77 @@
 <template>
   <div class='reports'>
-    <el-card class="box-card" v-for='(item, key , index) in list' v-bind:key="index">
-      <div slot="header" class="clearfix card-header">
-        <div class="user_name">
-          <router-link :to="{ name:'UserPage', params: { author: item.author } }">
-            <div class="nickname">{{item.authorNickname}}</div>
-            <div class="name">{{item.author}}</div>
-          </router-link>
-        </div>
-        <div class="card-header-optoins">
-          <div class="date">
-            <router-link :to="{ name:'UserReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
-              <div class="month-day">
-                <div class="month">{{item.reportedAt.format('M')}}</div>
-                <div class="separator">/</div>
-                <div class="day">{{item.reportedAt.format('DD')}}</div>
+    <v-container
+      fluid
+      grid-list-lg
+    >
+      <v-layout row wrap>
+        <v-flex xs12 v-for='(item, key , index) in list' v-bind:key="index">
+          <v-card class="box-card">
+            <v-card-title primary-title class="clearfix card-header">
+              <router-link :to="{ name:'UserPage', params: { author: item.author } }">
+                <div class="user_name headline">
+                  <span class="nickname">{{item.authorNickname}}</span><span class="name">&lt;{{item.author}}&gt;</span>
+                </div>
+              </router-link>
+
+              <v-spacer></v-spacer>
+
+              <div class="date">
+                <router-link :to="{ name:'UserReportsYmd', params: { authorId: item.authorId, year: item.reportedAt.format('YYYY'), month: item.reportedAt.format('M'), day: item.reportedAt.format('DD') } }">
+                  <div class="month-day">
+                    <div class="month">{{item.reportedAt.format('M')}}</div>
+                    <div class="separator">/</div>
+                    <div class="day">{{item.reportedAt.format('DD')}}</div>
+                  </div>
+                </router-link>
               </div>
-            </router-link>
-          </div>
-          <el-dropdown class="card-menu">
-            <el-button class="el-dropdown-link" icon="el-icon-arrow-down" circle></el-button>
-            <el-dropdown-menu slot="dropdown">
-              <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
-                <el-dropdown-item>Show</el-dropdown-item>
-              </router-link>
-              <router-link v-if="item.authorId == state.me.id" :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">
-                <el-dropdown-item>Edit</el-dropdown-item>
-              </router-link>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-      </div>
-      <div v-html="item.markdown()" class="markdown"></div>
-      <div>
-        <div class="updated-at">
-          <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
-            {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
-          </router-link>
-        </div>
-      </div>
-    </el-card>
+
+              <v-menu bottom left>
+                <v-btn
+                  slot="activator"
+                  icon
+                >
+                  <v-icon>more_vert</v-icon>
+                </v-btn>
+
+                <v-list>
+                  <v-list-tile>
+                    <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
+                      <v-list-tile-title>Show</v-list-tile-title>
+                    </router-link>
+                  </v-list-tile>
+                  <v-list-tile>
+                    <router-link v-if="item.authorId == state.me.id" :to="{ name:'ReportEditForm', params: { authorId: item.authorId, id: item.id } }">
+                      <v-list-tile-title>Edit</v-list-tile-title>
+                    </router-link>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </v-card-title>
+
+            <v-container fluid>
+              <v-layout row wrap>
+                <v-flex xs12>
+                  <div v-html="item.markdown()" class="markdown"></div>
+                </v-flex>
+              </v-layout>
+            </v-container>
+
+            <v-container fluid>
+              <v-layout row wrap>
+                <v-flex xs12>
+                  <div class="updated-at">
+                    <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
+                      {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+                    </router-link>
+                  </div>
+                </v-flex>
+              </v-layout>
+            </v-container>
+          </v-card>
+        </v-flex>
+      </v-layout>
+    </v-container>
   </div>
 </template>
 
@@ -68,34 +100,12 @@ export default {
 </script>
 
 <style scoped>
-.box-card {
-  margin-bottom: 10px;
-}
-
-.el-card__header {
-  padding: 10px 20px;
-}
-
-.author-name {
-  font-weight: bold;
+.user_name {
+  display: flex;
 }
 
 .card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-header-optoins {
-  flex-basis: 90px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-menu {
-  flex-basis: 30px;
+  border-bottom: solid 1px #eee;
 }
 
 .date {
@@ -116,7 +126,6 @@ export default {
 
 .updated-at {
   text-align: right;
-  font-size: 90%;
 }
 
 .updated-at a {
