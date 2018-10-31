@@ -1,42 +1,35 @@
 <template>
-  <div>
-    <el-row>
-      <el-col :sm="{span:6, offset: 4}" class="errors" v-if="errors.length > 0">
-        <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
-          {{item}}
+  <v-container>
+    <v-layout row wrap>
+      <v-flex xs12 offset-sm3 sm6>
+
+        <div class="errors" v-if="errors.length > 0">
+          <div class="error" v-for='(item, key , index) in errors' v-bind:key="index">
+            {{item}}
+          </div>
         </div>
-      </el-col>
-    </el-row>
-    <div>
-      <el-row>
-        <el-col  :sm="{span:6, offset: 4}">
-          <el-form-item label="ユーザー名（半角英数小文字）" for="input-name"></el-form-item>
-        </el-col>
-        <el-col  :sm="10">
-          <el-input placeholder="ユーザー名（半角英数小文字）" v-model="uname" id="input-name" minlength="3" maxlength="15"></el-input>
-          <div class="errors" v-if="propErrors.name">
-            <div class="error" v-for="(item, key, index) in propErrors.name" v-bind:key="index">{{item}}</div>
-          </div>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col  :sm="{span:6, offset: 4}">
-          <el-form-item label="ニックネーム" for="input-nickname"></el-form-item>
-        </el-col>
-        <el-col  :sm="10">
-          <el-input placeholder="ニックネーム" v-model="nname" id="input-nickname" minlength="3" maxlength="24"></el-input>
-          <div class="errors" v-if="propErrors.nickname">
-            <div class="error" v-for="(item, key, index) in propErrors.nickname" v-bind:key="index">{{item}}</div>
-          </div>
-        </el-col>
-      </el-row>
-    </div>
-    <el-row class="actions">
-      <el-col :sm="{offset:4, span: 16}">
-        <el-button type="primary" icon="el-icon-check" class="button-submit" @click='clickedSubmit'></el-button>
-      </el-col>
-    </el-row>
-  </div>
+
+        <div>
+          <v-text-field label="ユーザー名（半角英数小文字）"
+            v-model="uname" id="input-name" minlength="3" counter="15" maxlength="15"
+            :error-messages="propErrors.name" error-count="3"
+          ></v-text-field>
+          <v-text-field label="ニックネーム"
+            v-model="nname" id="input-nickname" minlength="3" counter="24" maxlength="24"
+            :error-messages="propErrors.nickname" error-count="3"
+          ></v-text-field>
+        </div>
+        <div class="actions">
+          <v-btn
+            fab dark color="primary" 
+            @click="clickedSubmit"
+          >
+            <v-icon dark>done</v-icon>
+          </v-btn>
+        </div>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 <script>
 export default {
@@ -50,7 +43,8 @@ export default {
   data() {
     return {
       uname: this.name,
-      nname: this.nickname
+      nname: this.nickname,
+      rules: {}
     }
   },
   methods: {
@@ -65,6 +59,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .actions {
+  padding-top: 1em;
   text-align: right;
 }
 </style>

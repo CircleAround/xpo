@@ -3,19 +3,21 @@
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
 import moment from 'vue-moment'
-import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import router from './router'
 import core, { setServices } from './core'
 import messages from './i18n'
 import DefaultServiceFactory from './app/DefaultServicesFactory'
+import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
+
+Vue.use(Vuetify)
 
 Vue.use(VueI18n)
 
 Vue.config.productionTip = false
 
-Vue.use(ElementUI)
 Vue.use(moment)
 
 // @see https://jp.vuejs.org/v2/guide/custom-directive.html
