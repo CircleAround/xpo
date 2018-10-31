@@ -53,20 +53,18 @@
         <template v-else>
           <v-btn flat>
             <a v-bind:href="state.me.loginUrl">Googleアカウントでログイン</a>して投稿する
-            <router-link to='/about'>
-              <v-btn fab dark small color="grey">
-                <v-icon dark>info</v-icon>
-              </v-btn>
-            </router-link>
+          </v-btn>
+          <v-btn flat to='/about'>
+            <v-icon>info</v-icon>
           </v-btn>
         </template>
       </v-toolbar-items>
     </v-toolbar>
+
     <v-content>
-      <v-container fluid>
-        <router-view></router-view>
-      </v-container>
+      <router-view></router-view>
     </v-content>
+    
     <v-content>
       <v-container fluid>
         <v-layout row wrap>
@@ -104,8 +102,6 @@ export default {
 
 <style lang="scss">
 @import '@/scss/main.scss';
-
-$text-color: #2c3e50;
 
 .application {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

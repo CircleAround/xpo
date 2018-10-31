@@ -19,14 +19,14 @@
             :error-messages="propErrors.nickname" error-count="3"
           ></v-text-field>
         </div>
-        <div>
+        <div class="actions">
           <v-btn
+            fab dark color="primary" 
             @click="clickedSubmit"
           >
-            OK
+            <v-icon dark>done</v-icon>
           </v-btn>
         </div>
-
       </v-flex>
     </v-layout>
   </v-container>
@@ -59,6 +59,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .actions {
+  padding-top: 1em;
   text-align: right;
 }
 </style>

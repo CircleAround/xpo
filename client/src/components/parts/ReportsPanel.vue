@@ -10,8 +10,7 @@
             <v-card-title primary-title class="clearfix card-header">
               <router-link :to="{ name:'UserPage', params: { author: item.author } }">
                 <div class="user_name headline">
-                  <div class="nickname">{{item.authorNickname}}</div>
-                  <div class="name">{{item.author}}</div>
+                  <span class="nickname">{{item.authorNickname}}</span><span class="name">&lt;{{item.author}}&gt;</span>
                 </div>
               </router-link>
 
