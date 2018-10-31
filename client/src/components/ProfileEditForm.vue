@@ -1,12 +1,12 @@
 <template>
   <div>
-    <el-form ref="form" class="profile_edit_form" :model="form" :rules="rules">
+    <v-form ref="form" class="profile_edit_form" :model="form" :rules="rules">
       <profile-form :errors="errors" :propErrors="propErrors"
         :name="form.name" :nickname="form.nickname"
         v-on:clicked-submit="updateXUser"
       >
       </profile-form>
-    </el-form>
+    </v-form>
   </div>
 </template>
 
