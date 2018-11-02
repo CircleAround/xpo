@@ -14,6 +14,15 @@
           {{item}}
         </div>
       </div>
+      <v-autocomplete
+        v-model="state.targetReport.languages"
+        hint="言語選択"
+        :items="state.languages"
+        label="言語"
+        persistent-hint
+        :multiple="true"
+      >
+      </v-autocomplete>
       <div class="actions">
         <overlay :visible="loading"></overlay>
         <v-tooltip top>
@@ -55,6 +64,7 @@ export default {
     }
   },
   created() {
+    core.getLanguages()
     this.initialize()
   },
   methods: {

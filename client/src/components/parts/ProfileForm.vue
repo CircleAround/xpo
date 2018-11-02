@@ -21,7 +21,7 @@
         </div>
         <div class="actions">
           <v-btn
-            fab dark color="primary" 
+            fab dark color="primary"
             @click="clickedSubmit"
           >
             <v-icon dark>done</v-icon>

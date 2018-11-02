@@ -64,7 +64,7 @@
     <v-content>
       <router-view></router-view>
     </v-content>
-    
+
     <v-content>
       <v-container fluid>
         <v-layout row wrap>

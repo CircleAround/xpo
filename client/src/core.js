@@ -22,6 +22,7 @@ const core = {
     list: listMap.array,
     subList: subListMap.array,
     targetReport: { content: null },
+    languages: [],
     posted: false
   },
   initialize() {
@@ -114,6 +115,12 @@ const core = {
       content: '',
       contentType: 'text/x-markdown'
     }
+  },
+  getLanguages: async function() {
+    const response = await service.languages.getAll()
+    response.data.forEach(lng => {
+      this.state.languages.push(lng)
+    })
   },
   forceUpdateMainList() {
     listMap.forceUpdate()

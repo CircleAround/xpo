@@ -57,6 +57,11 @@ func Router() *chi.Mux {
 		})
 	})
 
-	r.Get("/languages", Handler(GetLanguages))
+	r.Route("/languages", func(r chi.Router) {
+		r.Use(CrossOriginable)
+
+		r.Get("/", Handler(GetLanguages))
+	})
+
 	return r
 }
