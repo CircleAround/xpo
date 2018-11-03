@@ -16,10 +16,10 @@
       </div>
       <v-autocomplete
         v-model="state.targetReport.languages"
-        hint="言語選択"
         :items="state.languages"
         label="言語"
         persistent-hint
+        :chips="true"
         :multiple="true"
       >
       </v-autocomplete>
