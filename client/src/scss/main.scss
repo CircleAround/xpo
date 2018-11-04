@@ -78,4 +78,9 @@ $language-background-color: #333;
     font-size: 100%;
     background-color: $strong-background-color;
   }
+
+  code.hljs:before,
+  code.hljs:after {
+    content: '';
+  }
 }
