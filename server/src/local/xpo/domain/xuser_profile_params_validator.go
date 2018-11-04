@@ -10,7 +10,7 @@ import (
 )
 
 func ValidateXUserProfileParams(params entities.XUserProfileParams) (*validatekit.Validate, error) {
-	v := entities.NewXUserValidator()
+	v := newXUserValidator()
 	err := v.Struct(params)
 	if err != nil {
 		return nil, err
@@ -51,4 +51,11 @@ func checkBlockedWord(callback func(line string) bool) (bool, error) {
 	reader := bufio.NewReaderSize(f, 128)
 	hit, err := stdkit.FindLine(reader, callback)
 	return hit, err
+}
+
+func newXUserValidator() *validatekit.Validate {
+	v := validatekit.NewValidate()
+	v.RegisterRegexValidation("username_format", `^[a-z][0-9a-z_]+$`)
+	v.RegisterRegexValidation("usernickname_format", `^[^<>/:"'\s]+$`)
+	return v
 }

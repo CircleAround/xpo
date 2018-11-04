@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div>
     <v-layout row wrap>
       <v-flex xs12 offset-sm3 sm6>
 
@@ -29,7 +29,7 @@
         </div>
       </v-flex>
     </v-layout>
-  </v-container>
+  </div>
 </template>
 <script>
 export default {

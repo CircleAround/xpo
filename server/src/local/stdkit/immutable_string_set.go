@@ -26,6 +26,20 @@ func (l *ImmutableStringSet) Contains(v string) bool {
 	return ok
 }
 
+func (l *ImmutableStringSet) ContainsAll(vs []string) bool {
+	if vs == nil {
+		return true
+	}
+
+	for _, v := range vs {
+		_, ok := l.values[v]
+		if !ok {
+			return false
+		}
+	}
+	return true
+}
+
 func (l *ImmutableStringSet) Size() int {
 	return len(l.values)
 }

@@ -1,7 +1,6 @@
 <template>
-  <v-container
+  <div
     class="report_form"
-    fluid
   >
     <div v-if="state.me.id">
       <div class="editor">
@@ -43,7 +42,7 @@
     <div v-if="!state.me.id">
       ログインすると使えます
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script>

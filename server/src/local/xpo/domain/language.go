@@ -1,6 +1,10 @@
 package domain
 
-import "local/stdkit"
+import (
+	"local/stdkit"
+
+	validator "gopkg.in/go-playground/validator.v9"
+)
 
 var langs = []string{
 	"1c-enterprise",
@@ -447,14 +451,22 @@ var langs = []string{
 	"zimpl",
 }
 
-type LanguagesType = stdkit.ImmutableStringSet
+type LanguagesType struct {
+	*stdkit.ImmutableStringSet
+}
 
 func NewLanguages() *LanguagesType {
-	return stdkit.NewImmutableStringSet(langs)
+	return &LanguagesType{stdkit.NewImmutableStringSet(langs)}
 }
 
 var Languages *LanguagesType
 
 func init() {
 	Languages = NewLanguages()
+}
+
+func NewLanguagesValidation() validator.Func {
+	return func(fl validator.FieldLevel) bool {
+		return Languages.ContainsAll(fl.Field().Interface().([]string))
+	}
 }

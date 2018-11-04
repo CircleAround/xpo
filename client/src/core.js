@@ -1,6 +1,7 @@
 import router from './router'
 import ReportListMap from './app/ReportListMap'
 import 'highlightjs/styles/vs2015.css'
+import { remove } from './lib/collection'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
@@ -23,6 +24,7 @@ const core = {
     subList: subListMap.array,
     targetReport: { content: null },
     languages: [],
+    alerts: [],
     posted: false
   },
   initialize() {
@@ -124,6 +126,13 @@ const core = {
   },
   forceUpdateMainList() {
     listMap.forceUpdate()
+  },
+  alert(message, type) {
+    const msg = { message: message, type: type || 'info' }
+    this.state.alerts.push(msg)
+    setTimeout(() => {
+      remove(this.state.alerts, msg)
+    }, 2000)
   }
 }
 

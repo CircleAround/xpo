@@ -1,5 +1,5 @@
 import moment from 'moment-timezone'
-import collection from '../lib/collection'
+import { ListMap } from '../lib/collection'
 import marked from 'marked'
 import hljs from 'highlightjs'
 import jstimezonedetect from 'jstimezonedetect'
@@ -28,7 +28,7 @@ function enhanceReport(item) {
   return item
 }
 
-class ReportListMap extends collection.ListMap {
+class ReportListMap extends ListMap {
   getKey(object) {
     return `${object.authorId}/${object.id}`
   }

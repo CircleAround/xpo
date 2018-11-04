@@ -62,7 +62,18 @@
     </v-toolbar>
 
     <v-content>
-      <router-view></router-view>
+      <v-container fluid>
+        <v-alert
+          :value="true"
+          :dismissible="true"
+          :type="alert.type"
+          v-for="(alert, key , index) in state.alerts" v-bind:key="index"
+        >
+          {{alert.message}}
+        </v-alert>
+
+        <router-view></router-view>
+      </v-container>
     </v-content>
 
     <v-content>
@@ -96,6 +107,9 @@ export default {
     isLoggedIn() {
       return core.isLoggedIn()
     }
+  },
+  created() {
+    console.log('app created')
   }
 }
 </script>

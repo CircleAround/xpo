@@ -1,10 +1,10 @@
 <template>
-  <v-container fluid>
+  <div>
     <h1>
       <span class="nickname">{{xuser.nickname}}</span><span class="name">&lt;{{xuser.name}}&gt;</span>
       ({{xuser.reportCount}}レポート)
     </h1>
-  </v-container>
+  </div>
 </template>
 
 <script>

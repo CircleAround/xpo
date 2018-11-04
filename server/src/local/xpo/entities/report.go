@@ -15,7 +15,7 @@ type Report struct {
 	AuthorNickname string         `json:"authorNickname" validate:"required"`
 	Content        string         `json:"content" validate:"required,max=20000" datastore:"Content,noindex"`
 	ContentType    string         `json:"contentType" validate:"required"`
-	Languages      []string       `json:"languages"`
+	Languages      []string       `json:"languages" validate:"languages"`
 	ReportedAt     time.Time      `json:"reportedAt"`
 	CreatedAt      time.Time      `json:"createdAt"`
 	UpdatedAt      time.Time      `json:"updatedAt"`

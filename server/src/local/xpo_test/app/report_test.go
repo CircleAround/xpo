@@ -3,8 +3,8 @@ package app_test
 import (
 	"local/testkit"
 	"local/the_time"
-	"local/validatekit"
 	"local/xpo/app"
+	"local/xpo/domain"
 	"local/xpo/store"
 	"local/xpo_test"
 	"testing"
@@ -251,10 +251,27 @@ func TestReportValidation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	v := validatekit.NewValidate()
+	v := domain.NewReportValidate()
 
 	{
 		t.Log("Language")
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
 
 		{
 			report := f.BuildReportWithAuthor(c, &xu)
@@ -277,7 +294,7 @@ func TestReportValidation(t *testing.T) {
 
 		{
 			report := f.BuildReportWithAuthor(c, &xu)
-			report.Languages = []string{"golang", "javascript"}
+			report.Languages = []string{"go", "javascript"}
 			err := v.Struct(report)
 			if err != nil {
 				t.Errorf("It should be valid %v", err)
@@ -286,7 +303,7 @@ func TestReportValidation(t *testing.T) {
 
 		{
 			report := f.BuildReportWithAuthor(c, &xu)
-			report.Languages = []string{"cpp", "golang", "test"}
+			report.Languages = []string{"cpp", "go", "test"}
 			err := v.Struct(report)
 			if err == nil {
 				t.Errorf("It should not be valid")

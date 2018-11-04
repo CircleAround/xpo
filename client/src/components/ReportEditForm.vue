@@ -17,12 +17,7 @@ export default {
     },
     doPostReport() {
       return core.updateReport(this.$route.params).then(() => {
-        this.$message({
-          showClose: true,
-          message: '更新しました！',
-          type: 'success',
-          center: true
-        })
+        core.alert('更新しました！', 'success')
       })
     }
   }
