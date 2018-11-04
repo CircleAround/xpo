@@ -4,10 +4,15 @@ import marked from 'marked'
 import hljs from 'highlightjs'
 import jstimezonedetect from 'jstimezonedetect'
 
+var renderer = new marked.Renderer()
+renderer.code = function(code, language) {
+  return `<pre><code class="hljs language-${language}">${
+    hljs.highlightAuto(code).value
+  }</code></pre>`
+}
+
 marked.setOptions({
-  highlight: function(code, lang) {
-    return hljs.highlightAuto(code, [lang]).value
-  }
+  renderer: renderer
 })
 
 var tz = jstimezonedetect.determine()

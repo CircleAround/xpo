@@ -1,6 +1,6 @@
 import router from './router'
 import ReportListMap from './app/ReportListMap'
-import 'highlightjs/styles/vs2015.css'
+import 'highlightjs/styles/tomorrow-night-bright.css'
 import { remove } from './lib/collection'
 
 const listMap = new ReportListMap()
