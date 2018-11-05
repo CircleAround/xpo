@@ -38,7 +38,7 @@
 
       <v-spacer></v-spacer>
 
-      <v-toolbar-items class="hidden-sm-and-down">
+      <v-toolbar-items>
         <template v-if="isLoggedIn">
           <v-btn flat class="user_name" :to="{ name:'UserPage', params: { author: state.me.name } }">
             <div>
