@@ -1,17 +1,16 @@
 <template>
   <div>
-    <el-form ref="form" class="signup_form" :model="form" :rules="rules">
-      <el-row>
-        <el-col :sm="{offset:4, span: 16}">
-          <el-alert
-            title="初めてのご利用の方ですね？ユーザー名とニックネームを入れてから進みましょう。"
-            type="success">
-          </el-alert>
-        </el-col>
-      </el-row>
-      <profile-form :errors="errors" :propErrors="propErrors" :name="form.name" :nickname="form.nickname" v-on:clicked-submit="postXUser">
+    <v-alert
+      :value="true"
+      type="success"
+    >
+      初めてのご利用の方ですね？ユーザー名とニックネームを入れてから進みましょう。
+    </v-alert>
+    <v-form ref="form" class="signup_form" :model="form" :rules="rules">
+      <profile-form :errors="errors" :propErrors="propErrors"
+       :name="form.name" :nickname="form.nickname" v-on:clicked-submit="postXUser">
       </profile-form>
-    </el-form>
+    </v-form>
   </div>
 </template>
 
@@ -55,14 +54,12 @@ export default {
       core
         .postXUser(this.form.name, this.form.nickname)
         .then(() => {
-          this.$message({
-            showClose: true,
-            message: `${
+          core.alert(
+            `${
               this.form.nickname
             }さん、サインアップできました！楽しんでください！`,
-            type: 'success',
-            center: true
-          })
+            'success'
+          )
           this.$router.push('/')
         })
         .catch(error => {
@@ -70,13 +67,7 @@ export default {
             error.response.data,
             (msg, type, property) => {
               if (type === 'duplicatedUser') {
-                this.$message({
-                  showClose: true,
-                  message: msg,
-                  type: 'error',
-                  center: true
-                })
-
+                core.alert(msg, 'error')
                 return this.$router.push('/')
               }
 

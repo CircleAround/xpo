@@ -83,10 +83,21 @@ class ReportService {
   }
 }
 
+class LanguageService {
+  constructor(api) {
+    this.api = api
+  }
+
+  getAll() {
+    return errorFilter(this.api.get(`/languages`))
+  }
+}
+
 class Services {
   constructor(api) {
     this.users = new UserService(api)
     this.reports = new ReportService(api)
+    this.languages = new LanguageService(api)
   }
 }
 

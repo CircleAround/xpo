@@ -1,7 +1,6 @@
 <template>
-  <v-container
+  <div
     class="report_form"
-    fluid
   >
     <div v-if="state.me.id">
       <div class="editor">
@@ -14,6 +13,15 @@
           {{item}}
         </div>
       </div>
+      <v-autocomplete
+        v-model="state.targetReport.languages"
+        :items="state.languages"
+        label="言語"
+        persistent-hint
+        :chips="true"
+        :multiple="true"
+      >
+      </v-autocomplete>
       <div class="actions">
         <overlay :visible="loading"></overlay>
         <v-tooltip top>
@@ -34,7 +42,7 @@
     <div v-if="!state.me.id">
       ログインすると使えます
     </div>
-  </v-container>
+  </div>
 </template>
 
 <script>
@@ -55,6 +63,7 @@ export default {
     }
   },
   created() {
+    core.getLanguages()
     this.initialize()
   },
   methods: {

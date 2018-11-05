@@ -79,11 +79,6 @@ class ListMap {
     this.pushAll(objects)
   }
 
-  injectTo(list) {
-    list.splice(0)
-    this.pushAll(list)
-  }
-
   _addMap(object) {
     const obj = this.enhanceObject(object)
     this.map.set(this.getKey(object), obj)
@@ -112,4 +107,8 @@ class ListMap {
   }
 }
 
-export default { ListMap }
+function remove(array, item) {
+  array.splice(array.indexOf(item), 1)
+}
+
+export { ListMap, remove }

@@ -13,16 +13,16 @@ var Assets = assets.NewFileSystem(map[string][]string{"/": []string{"assets"}, "
 	"/": &assets.File{
 		Path:     "/",
 		FileMode: 0x800001ed,
-		Mtime:    time.Unix(1537755903, 1537755903505387999),
+		Mtime:    time.Unix(1538884352, 1538884352303934091),
 		Data:     nil,
 	}, "/assets": &assets.File{
 		Path:     "/assets",
 		FileMode: 0x800001ed,
-		Mtime:    time.Unix(1537724217, 1537724217420969665),
+		Mtime:    time.Unix(1540717896, 1540717896351803088),
 		Data:     nil,
 	}, "/assets/reserved_username_list": &assets.File{
 		Path:     "/assets/reserved_username_list",
 		FileMode: 0x1a4,
-		Mtime:    time.Unix(1537765385, 1537765385579727436),
+		Mtime:    time.Unix(1538742396, 1538742396259188084),
 		Data:     []byte(_Assetse6c86b5433d53fa12650cfe9767ac57d4a36df51),
 	}}, "")

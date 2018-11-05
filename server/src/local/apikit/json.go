@@ -3,34 +3,20 @@ package apikit
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 // ParseJSONBody is parse from requested body formatted JSON
 func ParseJSONBody(r *http.Request, jsonBody interface{}) error {
-	cl := r.Header.Get("Content-Length")
-	if cl == "" {
-		return NewInvalidParameterErrorWithMessage("Content-Length", "Content-Length not found")
-	}
-
-	length, err := strconv.Atoi(cl)
+	limitedReader := &io.LimitedReader{R: r.Body, N: 10000000}
+	b, err := ioutil.ReadAll(limitedReader)
+	defer r.Body.Close()
 	if err != nil {
 		return err
 	}
 
-	body := make([]byte, length)
-	length, err = r.Body.Read(body)
-	if err != nil && err != io.EOF {
-		return err
-	}
-
-	err = json.Unmarshal(body[:length], jsonBody)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(b, jsonBody)
 }
 
 func RespondJSON(w http.ResponseWriter, obj interface{}) error {

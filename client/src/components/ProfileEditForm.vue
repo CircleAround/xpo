@@ -47,12 +47,7 @@ export default {
       core
         .updateXUser(this.form.name, this.form.nickname)
         .then(() => {
-          this.$message({
-            showClose: true,
-            message: 'プロフィールを更新しました',
-            type: 'success',
-            center: true
-          })
+          core.alert('プロフィールを更新しました', 'success')
           this.$router.push('/')
         })
         .catch(error => {

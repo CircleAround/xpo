@@ -2,8 +2,10 @@ package gaekit
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/mjibson/goon"
+	uuid "github.com/pborman/uuid"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -36,17 +38,36 @@ func (s *DatastoreAccessObject) Exists(c context.Context, obj interface{}) (bool
 	return true, err
 }
 
-func (s *DatastoreAccessObject) RunInTransaction(c context.Context, process func(context.Context) error) error {
-	return s.RunInTransactionWithOption(c, process, nil)
+func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(context.Context) error) error {
+	opts := &datastore.TransactionOptions{XG: true}
+
+	key := uuid.New()
+	return s.Goon(c).RunInTransaction(func(g *goon.Goon) error {
+		t := NewTransactionKey(key)
+		err := g.Get(t)
+		if err == nil {
+			// already saved
+			return nil
+		}
+
+		if err != datastore.ErrNoSuchEntity {
+			return err
+		}
+
+		t.CreatedAt = time.Now()
+		g.Put(t)
+		return f(g.Context)
+	}, opts)
 }
 
-func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, process func(context.Context) error) error {
-	opt := &datastore.TransactionOptions{XG: true}
-	return s.RunInTransactionWithOption(c, process, opt)
+func (s *DatastoreAccessObject) RunInTransaction(c context.Context, f func(context.Context) error) error {
+	return s.RunInTransactionWithOption(c, f, nil)
 }
 
-func (s *DatastoreAccessObject) RunInTransactionWithOption(c context.Context, process func(context.Context) error, opts *datastore.TransactionOptions) error {
-	return datastore.RunInTransaction(c, process, opts)
+func (s *DatastoreAccessObject) RunInTransactionWithOption(c context.Context, f func(context.Context) error, opts *datastore.TransactionOptions) error {
+	return s.Goon(c).RunInTransaction(func(g *goon.Goon) error {
+		return f(g.Context)
+	}, opts)
 }
 
 // FindOrCreate is a method for find or create Object
@@ -74,14 +95,9 @@ func (s *DatastoreAccessObject) Put(c context.Context, obj interface{}) (err err
 	return
 }
 
-func (s *DatastoreAccessObject) PutAll(c context.Context, array []interface{}) (err error) {
-	for _, obj := range array {
-		err := s.Put(c, obj)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+func (s *DatastoreAccessObject) PutMulti(c context.Context, array []interface{}) (err error) {
+	_, err = s.Goon(c).PutMulti(array)
+	return
 }
 
 // Delete is a method for deleting obj

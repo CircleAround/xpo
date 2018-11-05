@@ -1,7 +1,19 @@
 import moment from 'moment-timezone'
-import collection from '../lib/collection'
+import { ListMap } from '../lib/collection'
 import marked from 'marked'
+import hljs from 'highlightjs'
 import jstimezonedetect from 'jstimezonedetect'
+
+var renderer = new marked.Renderer()
+renderer.code = function(code, language) {
+  return `<pre><code class="hljs language-${language}">${
+    hljs.highlightAuto(code).value
+  }</code></pre>`
+}
+
+marked.setOptions({
+  renderer: renderer
+})
 
 var tz = jstimezonedetect.determine()
 moment.tz.setDefault(tz.name())
@@ -21,7 +33,7 @@ function enhanceReport(item) {
   return item
 }
 
-class ReportListMap extends collection.ListMap {
+class ReportListMap extends ListMap {
   getKey(object) {
     return `${object.authorId}/${object.id}`
   }

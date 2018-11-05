@@ -12,12 +12,7 @@ export default {
     },
     doPostReport() {
       return core.postReport().then(() => {
-        this.$message({
-          showClose: true,
-          message: '投稿しました！',
-          type: 'success',
-          center: true
-        })
+        core.alert('投稿しました！', 'success')
       })
     }
   }

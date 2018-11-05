@@ -4,11 +4,13 @@ import (
 	"local/testkit"
 	"local/the_time"
 	"local/xpo/app"
+	"local/xpo/domain"
 	"local/xpo/store"
 	"local/xpo_test"
 	"testing"
 	"time"
 
+	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -154,7 +156,12 @@ func TestReportScenario(t *testing.T) {
 	now := tp.TravelTo(tm)
 	{
 		t.Log("Create with ReportedAt")
-		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, xu, app.ReportCreationParams{
+			Content:     d.Content,
+			ContentType: d.ContentType,
+			ReportedAt:  oneHourBefore,
+			Languages:   []string{"c", "go"},
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -185,6 +192,11 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		{
+			checkLanguageCount(t, c, "c", 1)
+			checkLanguageCount(t, c, "go", 1)
+		}
+
+		{
 			ra := oneHourBefore
 			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
@@ -207,9 +219,45 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		d := f.BuildReport()
-		_, err = s.Create(c, oxu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, oxu, app.ReportCreationParams{
+			Content:     d.Content,
+			ContentType: d.ContentType,
+			ReportedAt:  oneHourBefore,
+			Languages:   []string{"c", "javascript"},
+		})
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		{
+			checkLanguageCount(t, c, "c", 2)
+			checkLanguageCount(t, c, "go", 1)
+			checkLanguageCount(t, c, "javascript", 1)
+		}
+
+		// Update Language
+		{
+			p := app.ReportUpdatingParams{
+				ReportCreationParams: app.ReportCreationParams{
+					Content:     d.Content,
+					ContentType: d.ContentType,
+					ReportedAt:  oneHourBefore,
+					Languages:   []string{"c++", "go", "c"},
+				},
+				ID: r.ID,
+			}
+
+			_, err := s.Update(c, oxu, p)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		{
+			checkLanguageCount(t, c, "c", 2)
+			checkLanguageCount(t, c, "go", 2)
+			checkLanguageCount(t, c, "c++", 1)
+			checkLanguageCount(t, c, "javascript", 0)
 		}
 	}
 
@@ -235,5 +283,90 @@ func TestReportScenario(t *testing.T) {
 		if len(rs) != 2 {
 			t.Errorf("It should have 2 results: %v", rs)
 		}
+	}
+}
+
+func TestReportValidation(t *testing.T) {
+	_, c, done := testkit.StartTest(t)
+	defer done()
+
+	t.Log("ReportValidation")
+	f := xpo.NewTestFactory()
+
+	xu, err := f.CreateXUser(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	v := domain.NewReportValidate()
+
+	{
+		t.Log("Language")
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"c"}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"test"}
+			t.Logf("%v", report)
+			err := v.Struct(report)
+			if err == nil {
+				t.Errorf("It should not be valid")
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"go", "javascript"}
+			err := v.Struct(report)
+			if err != nil {
+				t.Errorf("It should be valid %v", err)
+			}
+		}
+
+		{
+			report := f.BuildReportWithAuthor(c, &xu)
+			report.Languages = []string{"cpp", "go", "test"}
+			err := v.Struct(report)
+			if err == nil {
+				t.Errorf("It should not be valid")
+			}
+		}
+	}
+}
+
+func checkLanguageCount(t *testing.T, c context.Context, name string, count int64) {
+	lrep := store.NewLanguageRepository()
+
+	lc, err := lrep.GetByName(c, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lc.ReportCount != count {
+		t.Errorf("%v should have %v ReportCount but %v", name, count, lc.ReportCount)
 	}
 }

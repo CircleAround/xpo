@@ -1,5 +1,7 @@
 import router from './router'
 import ReportListMap from './app/ReportListMap'
+import 'highlightjs/styles/agate.css'
+import { remove } from './lib/collection'
 
 const listMap = new ReportListMap()
 const subListMap = new ReportListMap()
@@ -21,6 +23,8 @@ const core = {
     list: listMap.array,
     subList: subListMap.array,
     targetReport: { content: null },
+    languages: [],
+    alerts: [],
     posted: false
   },
   initialize() {
@@ -70,7 +74,7 @@ const core = {
     const response = await service.reports.retriveReports()
     listMap.pushAll(response.data)
   },
-  searchReportsByAuthor: async function (authorId) {
+  searchReportsByAuthor: async function(authorId) {
     subListMap.clear()
     const response = await service.reports.searchReportsByAuthorId(authorId)
     subListMap.pushAll(response.data)
@@ -114,8 +118,21 @@ const core = {
       contentType: 'text/x-markdown'
     }
   },
+  getLanguages: async function() {
+    const response = await service.languages.getAll()
+    response.data.forEach(lng => {
+      this.state.languages.push(lng)
+    })
+  },
   forceUpdateMainList() {
     listMap.forceUpdate()
+  },
+  alert(message, type) {
+    const msg = { message: message, type: type || 'info' }
+    this.state.alerts.push(msg)
+    setTimeout(() => {
+      remove(this.state.alerts, msg)
+    }, 2000)
   }
 }
 

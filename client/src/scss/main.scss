@@ -1,5 +1,7 @@
 $text-color: #2c3e50;
 $strong-background-color: #f9f9f9;
+$language-color: #fff;
+$language-background-color: #333;
 
 .errors {
   color: red;
@@ -14,20 +16,24 @@ $strong-background-color: #f9f9f9;
 
   ul,
   ol,
-  pre,
   blockquote {
     background-color: $strong-background-color;
+  }
+
+  pre {
+    margin-bottom: 16px;
   }
 
   ul,
   ol {
     padding-top: 0.75em;
     padding-bottom: 0.75em;
+    margin-bottom: 16px;
   }
 
-  pre,
   blockquote {
     padding: 1em;
+    margin-bottom: 16px;
 
     white-space: -moz-pre-wrap;
     white-space: -pre-wrap;
@@ -62,15 +68,19 @@ $strong-background-color: #f9f9f9;
   }
 
   hr {
-    margin-top: 1em;
-    margin-bottom: 1em;
+    margin-bottom: 16px;
   }
 
-  code {
+  code:not(.hljs) {
     color: $text-color;
     box-shadow: none;
     font-weight: normal;
     font-size: 100%;
     background-color: $strong-background-color;
+  }
+
+  code.hljs:before,
+  code.hljs:after {
+    content: '';
   }
 }

@@ -3,6 +3,7 @@ package app
 import (
 	"local/the_time"
 	"local/validatekit"
+	"local/xpo/domain"
 	"local/xpo/entities"
 	"local/xpo/store"
 	"time"
@@ -20,6 +21,7 @@ type ReportCreationParams struct {
 	Content     string    `json:"content" validate:"required"`
 	ContentType string    `json:"contentType" validate:"required"`
 	ReportedAt  time.Time `json:"reportedAt"`
+	Languages   []string  `json:"languages" validate:"languages"`
 }
 
 type ReportUpdatingParams struct {
@@ -80,19 +82,16 @@ func (s *ReportService) FindByXUserAndID(c context.Context, xu entities.XUser, i
 }
 
 func (s *ReportService) Create(c context.Context, xu entities.XUser, params ReportCreationParams) (report *entities.Report, err error) {
-	v := validatekit.NewValidate()
+	v := newValidate()
 	err = v.Struct(params)
 	if err != nil {
 		return
 	}
 
 	report = &entities.Report{}
-	report.Content = params.Content
-	report.ContentType = params.ContentType
-	report.Author = xu.Name
+	s.setAttributes(&xu, report, params)
 	report.AuthorID = xu.ID
 	report.AuthorKey = s.rrep.KeyOf(c, xu)
-	report.AuthorNickname = xu.Nickname
 
 	now := s.now()
 	var ra time.Time
@@ -115,7 +114,7 @@ func (s *ReportService) Create(c context.Context, xu entities.XUser, params Repo
 }
 
 func (s *ReportService) Update(c context.Context, xu entities.XUser, params ReportUpdatingParams) (report *entities.Report, err error) {
-	v := validatekit.NewValidate()
+	v := newValidate()
 	err = v.Struct(params)
 	if err != nil {
 		return
@@ -126,10 +125,7 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 		return
 	}
 
-	report.Content = params.Content
-	report.ContentType = params.ContentType
-	report.Author = xu.Name
-	report.AuthorNickname = xu.Nickname
+	s.setAttributes(&xu, report, params.ReportCreationParams)
 
 	if !params.ReportedAt.IsZero() {
 		log.Infof(c, "update ReportedAt: %v", params.ReportedAt)
@@ -141,10 +137,22 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 	if err != nil {
 		return
 	}
-	err = s.rrep.Put(c, report)
+	err = s.rrep.Update(c, report)
 	return
 }
 
 func (s *ReportService) now() time.Time {
 	return s.timeProvider.Now()
+}
+
+func newValidate() *validatekit.Validate {
+	return domain.NewReportValidate()
+}
+
+func (s *ReportService) setAttributes(xu *entities.XUser, report *entities.Report, params ReportCreationParams) {
+	report.Content = params.Content
+	report.ContentType = params.ContentType
+	report.Author = xu.Name
+	report.AuthorNickname = xu.Nickname
+	report.Languages = params.Languages
 }
