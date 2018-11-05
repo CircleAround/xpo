@@ -7,6 +7,7 @@ import (
 	"local/xpo/entities"
 	"time"
 
+	funk "github.com/thoas/go-funk"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -60,30 +61,69 @@ func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report 
 		xu.ReportCount = int64(len(rs))
 	}
 
-	ra := report.ReportedAt
-	m, err := f.MontlyReportOverview(c, xu, ra.Year(), int(ra.Month()))
-	if err != nil && err != datastore.ErrNoSuchEntity {
-		return err
-	}
-	m.DailyReportCounts[ra.Day()]++
-	m.ReportCount++
-
-	xu.ReportCount++
-
 	return f.RunInXGTransaction(c, func(c context.Context) error {
-		// for idempotent
-		oxu := entities.XUser{ID: xu.ID}
-		err := f.Get(c, &oxu)
+		ra := report.ReportedAt
+		m, err := f.MontlyReportOverview(c, xu, ra.Year(), int(ra.Month()))
+		if err != nil && err != datastore.ErrNoSuchEntity {
+			return err
+		}
+		m.DailyReportCounts[ra.Day()]++
+		m.ReportCount++
+
+		xu.ReportCount++
+
+		es := []interface{}{}
+		for _, value := range report.Languages {
+			l := &entities.Language{Name: value, ReportCount: 0}
+			err := f.Get(c, l)
+			if err != nil && err != datastore.ErrNoSuchEntity {
+				return err
+			}
+			l.ReportCount++
+			es = append(es, l)
+		}
+		return f.PutMulti(c, append(es, report, m, xu))
+	})
+}
+
+func (f *ReportRepository) Update(c context.Context, report *entities.Report) error {
+	return f.RunInXGTransaction(c, func(c context.Context) error {
+		br := &entities.Report{ID: report.ID, AuthorKey: report.AuthorKey}
+		err := f.Get(c, br)
 		if err != nil {
 			return err
 		}
 
-		if oxu.ReportCount == xu.ReportCount {
-			// already put
-			return nil
+		es := []interface{}{}
+		for _, value := range report.Languages {
+			if funk.Contains(br.Languages, value) {
+				continue
+			}
+
+			l := &entities.Language{Name: value, ReportCount: 0}
+			err := f.Get(c, l)
+			if err != nil && err != datastore.ErrNoSuchEntity {
+				return err
+			}
+			l.ReportCount++
+			es = append(es, l)
 		}
 
-		return f.PutAll(c, []interface{}{report, m, xu})
+		for _, value := range br.Languages {
+			if funk.Contains(report.Languages, value) {
+				continue
+			}
+
+			l := &entities.Language{Name: value}
+			err := f.Get(c, l)
+			if err != nil {
+				return err
+			}
+			l.ReportCount--
+			es = append(es, l)
+		}
+
+		return f.PutMulti(c, append(es, report))
 	})
 }
 

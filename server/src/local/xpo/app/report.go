@@ -137,7 +137,7 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 	if err != nil {
 		return
 	}
-	err = s.rrep.Put(c, report)
+	err = s.rrep.Update(c, report)
 	return
 }
 

@@ -2,19 +2,6 @@
 
 
 [[projects]]
-  digest = "1:83cdfe2c1391602c93b7731f293a5f8ce27b7c20c6358724b7368877000eadc4"
-  name = "github.com/emirpasic/gods"
-  packages = [
-    "containers",
-    "sets",
-    "sets/hashset",
-    "utils",
-  ]
-  pruneopts = "UT"
-  revision = "1615341f118ae12f353cc8a983f35b584342c9b3"
-  version = "v1.12.0"
-
-[[projects]]
   branch = "master"
   digest = "1:491c1da65a24421134a5d49ce70ad8cbe72ec884b4f0ca27afe51c2ddb13f12d"
   name = "github.com/favclip/testerator"
@@ -58,6 +45,14 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:3a26588bc48b96825977c1b3df964f8fd842cd6860cc26370588d3563433cf11"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
   name = "github.com/gorilla/context"
   packages = ["."]
@@ -98,6 +93,14 @@
   revision = "0c01b4bc4f4970fa6f91409bf7f134a10809219c"
 
 [[projects]]
+  digest = "1:e5d0bd87abc2781d14e274807a470acd180f0499f8bf5bb18606e9ec22ad9de9"
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
+
+[[projects]]
   digest = "1:d1816f8f4877e87cf0a80a25fbc0e7c7a6937bd728ccbf85e2c151c792445a1b"
   name = "github.com/thoas/go-funk"
   packages = ["."]
@@ -111,11 +114,11 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "9b4f9f5ad5197c79fd623a3638e70d8b26cef344"
+  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
 
 [[projects]]
   branch = "master"
-  digest = "1:dead42743b07bd57ccf7e8f8023c480aef111f966484466a4396a557c752db80"
+  digest = "1:2c5345bfaac053de2bc990a541f9b562417eb43ca6e9d75fa5ec71451334591e"
   name = "google.golang.org/appengine"
   packages = [
     ".",
@@ -135,27 +138,27 @@
     "user",
   ]
   pruneopts = "UT"
-  revision = "ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06"
+  revision = "4a4468ece617fc8205e99368fa2200e9d1fad421"
 
 [[projects]]
-  digest = "1:ac3731dc825de45ed32a21b671864202b29d9cfb7502986508c82d86d72f16a5"
+  digest = "1:2c6a8f26c364b006a27b8090a9583fcc4b7865583fcf93f99a20fce339e87192"
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f8af4b15dbe132b53d3a53e7c3724271040e82e7"
-  version = "v9.21.1"
+  revision = "1fa3c8d6336562f0a3f95c73593ee2b57ff4da11"
+  version = "v9.23.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/emirpasic/gods/sets/hashset",
     "github.com/favclip/testerator",
     "github.com/go-chi/chi",
     "github.com/gorilla/mux",
     "github.com/iancoleman/strcase",
     "github.com/jessevdk/go-assets",
     "github.com/mjibson/goon",
+    "github.com/pborman/uuid",
     "github.com/thoas/go-funk",
     "golang.org/x/net/context",
     "google.golang.org/appengine",

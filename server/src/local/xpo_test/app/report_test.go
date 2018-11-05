@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -155,7 +156,12 @@ func TestReportScenario(t *testing.T) {
 	now := tp.TravelTo(tm)
 	{
 		t.Log("Create with ReportedAt")
-		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, xu, app.ReportCreationParams{
+			Content:     d.Content,
+			ContentType: d.ContentType,
+			ReportedAt:  oneHourBefore,
+			Languages:   []string{"c", "go"},
+		})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -186,6 +192,11 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		{
+			checkLanguageCount(t, c, "c", 1)
+			checkLanguageCount(t, c, "go", 1)
+		}
+
+		{
 			ra := oneHourBefore
 			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
@@ -208,9 +219,45 @@ func TestReportScenario(t *testing.T) {
 		}
 
 		d := f.BuildReport()
-		_, err = s.Create(c, oxu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType, ReportedAt: oneHourBefore})
+		r, err := s.Create(c, oxu, app.ReportCreationParams{
+			Content:     d.Content,
+			ContentType: d.ContentType,
+			ReportedAt:  oneHourBefore,
+			Languages:   []string{"c", "javascript"},
+		})
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		{
+			checkLanguageCount(t, c, "c", 2)
+			checkLanguageCount(t, c, "go", 1)
+			checkLanguageCount(t, c, "javascript", 1)
+		}
+
+		// Update Language
+		{
+			p := app.ReportUpdatingParams{
+				ReportCreationParams: app.ReportCreationParams{
+					Content:     d.Content,
+					ContentType: d.ContentType,
+					ReportedAt:  oneHourBefore,
+					Languages:   []string{"c++", "go", "c"},
+				},
+				ID: r.ID,
+			}
+
+			_, err := s.Update(c, oxu, p)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		{
+			checkLanguageCount(t, c, "c", 2)
+			checkLanguageCount(t, c, "go", 2)
+			checkLanguageCount(t, c, "c++", 1)
+			checkLanguageCount(t, c, "javascript", 0)
 		}
 	}
 
@@ -309,5 +356,17 @@ func TestReportValidation(t *testing.T) {
 				t.Errorf("It should not be valid")
 			}
 		}
+	}
+}
+
+func checkLanguageCount(t *testing.T, c context.Context, name string, count int64) {
+	lrep := store.NewLanguageRepository()
+
+	lc, err := lrep.GetByName(c, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lc.ReportCount != count {
+		t.Errorf("%v should have %v ReportCount but %v", name, count, lc.ReportCount)
 	}
 }
