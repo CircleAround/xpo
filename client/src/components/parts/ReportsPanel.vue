@@ -1,4 +1,5 @@
 <template>
+  <v-container fluid grid-list-lg pl-0 pr-0>
   <v-layout row wrap>
     <v-flex xs12 v-for='(item, key , index) in list' v-bind:key="index">
       <v-card class="box-card">
@@ -46,30 +47,31 @@
               </v-list-tile>
             </v-list>
           </v-menu>
-        </v-card-title>
+          </v-card-title>
 
-        <v-container fluid>
-          <v-layout row wrap>
-            <v-flex xs12>
-              <div v-html="item.markdown()" class="markdown"></div>
-            </v-flex>
-          </v-layout>
-        </v-container>
+          <v-container fluid>
+            <v-layout row wrap>
+              <v-flex xs12>
+                <div v-html="item.markdown()" class="markdown"></div>
+              </v-flex>
+            </v-layout>
+          </v-container>
 
-        <v-container fluid>
-          <v-layout row wrap>
-            <v-flex xs12>
-              <div class="updated-at">
-                <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
-                  {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
-                </router-link>
-              </div>
-            </v-flex>
-          </v-layout>
-        </v-container>
-      </v-card>
-    </v-flex>
-  </v-layout>
+          <v-container fluid>
+            <v-layout row wrap>
+              <v-flex xs12>
+                <div class="updated-at">
+                  <router-link :to="{ name:'Report', params: { authorId: item.authorId, id: item.id } }">
+                    {{item.updatedAt.format('YYYY[/]MM[/]DD HH[:]mm[:]ss')}}
+                  </router-link>
+                </div>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
