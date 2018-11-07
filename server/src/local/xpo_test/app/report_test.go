@@ -5,6 +5,7 @@ import (
 	"local/the_time"
 	"local/xpo/app"
 	"local/xpo/domain"
+	"local/xpo/entities"
 	"local/xpo/store"
 	"local/xpo_test"
 	"testing"
@@ -194,6 +195,8 @@ func TestReportScenario(t *testing.T) {
 		{
 			checkLanguageCount(t, c, "c", 1)
 			checkLanguageCount(t, c, "go", 1)
+			checkXUserLanguageCount(t, c, &xu, "c", 1)
+			checkXUserLanguageCount(t, c, &xu, "go", 1)
 		}
 
 		{
@@ -233,6 +236,11 @@ func TestReportScenario(t *testing.T) {
 			checkLanguageCount(t, c, "c", 2)
 			checkLanguageCount(t, c, "go", 1)
 			checkLanguageCount(t, c, "javascript", 1)
+
+			checkXUserLanguageCount(t, c, &oxu, "c", 1)
+			checkXUserLanguageCount(t, c, &oxu, "javascript", 1)
+			checkXUserLanguageCount(t, c, &xu, "c", 1)
+			checkXUserLanguageCount(t, c, &xu, "go", 1)
 		}
 
 		// Update Language
@@ -258,6 +266,13 @@ func TestReportScenario(t *testing.T) {
 			checkLanguageCount(t, c, "go", 2)
 			checkLanguageCount(t, c, "c++", 1)
 			checkLanguageCount(t, c, "javascript", 0)
+
+			checkXUserLanguageCount(t, c, &oxu, "c", 1)
+			checkXUserLanguageCount(t, c, &oxu, "go", 1)
+			checkXUserLanguageCount(t, c, &oxu, "c++", 1)
+			checkXUserLanguageCount(t, c, &oxu, "javascript", 0)
+			checkXUserLanguageCount(t, c, &xu, "c", 1)
+			checkXUserLanguageCount(t, c, &xu, "go", 1)
 		}
 	}
 
@@ -367,6 +382,18 @@ func checkLanguageCount(t *testing.T, c context.Context, name string, count int6
 		t.Fatal(err)
 	}
 	if lc.ReportCount != count {
-		t.Errorf("%v should have %v ReportCount but %v", name, count, lc.ReportCount)
+		t.Errorf("Language %v should have %v ReportCount but %v", name, count, lc.ReportCount)
+	}
+}
+
+func checkXUserLanguageCount(t *testing.T, c context.Context, xu *entities.XUser, name string, count int64) {
+	lrep := store.NewXUserLanguageRepository()
+
+	lc, err := lrep.GetByXUserAndName(c, xu, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lc.ReportCount != count {
+		t.Errorf("XUserLanguage %v should have %v ReportCount but %v", name, count, lc.ReportCount)
 	}
 }

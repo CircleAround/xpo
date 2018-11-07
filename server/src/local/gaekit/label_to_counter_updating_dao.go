@@ -11,7 +11,7 @@ import (
 type LabelToCounterUpdatingDao struct {
 	DatastoreAccessObject
 
-	NewFunc       func(string) interface{}
+	NewFunc       func(context.Context, string) interface{}
 	IncrementFunc func()
 	DecrementFunc func()
 }
@@ -25,7 +25,7 @@ func (d *LabelToCounterUpdatingDao) BuildEntities(c context.Context, b []string,
 			continue
 		}
 
-		l := d.NewFunc(value)
+		l := d.NewFunc(c, value)
 		err := d.Get(c, l)
 		if err != nil && err != datastore.ErrNoSuchEntity {
 			return nil, err
@@ -39,7 +39,7 @@ func (d *LabelToCounterUpdatingDao) BuildEntities(c context.Context, b []string,
 			continue
 		}
 
-		l := d.NewFunc(value)
+		l := d.NewFunc(c, value)
 		err := d.Get(c, l)
 		if err != nil {
 			return nil, err

@@ -470,3 +470,9 @@ func NewLanguagesValidation() validator.Func {
 		return Languages.ContainsAll(fl.Field().Interface().([]string))
 	}
 }
+
+func NewLanguageValidation() validator.Func {
+	return func(fl validator.FieldLevel) bool {
+		return Languages.Contains(fl.Field().String())
+	}
+}
