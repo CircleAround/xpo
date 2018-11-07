@@ -7,7 +7,6 @@ import (
 	"local/xpo/entities"
 	"time"
 
-	funk "github.com/thoas/go-funk"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -72,15 +71,9 @@ func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report 
 
 		xu.ReportCount++
 
-		es := []interface{}{}
-		for _, value := range report.Languages {
-			l := &entities.Language{Name: value, ReportCount: 0}
-			err := f.Get(c, l)
-			if err != nil && err != datastore.ErrNoSuchEntity {
-				return err
-			}
-			l.ReportCount++
-			es = append(es, l)
+		es, err := newLanguageLabelToCounterUpdatingDao().BuildEntities(c, []string{}, report.Languages)
+		if err != nil {
+			return err
 		}
 		return f.PutMulti(c, append(es, report, m, xu))
 	})
@@ -94,33 +87,9 @@ func (f *ReportRepository) Update(c context.Context, report *entities.Report) er
 			return err
 		}
 
-		es := []interface{}{}
-		for _, value := range report.Languages {
-			if funk.Contains(br.Languages, value) {
-				continue
-			}
-
-			l := &entities.Language{Name: value, ReportCount: 0}
-			err := f.Get(c, l)
-			if err != nil && err != datastore.ErrNoSuchEntity {
-				return err
-			}
-			l.ReportCount++
-			es = append(es, l)
-		}
-
-		for _, value := range br.Languages {
-			if funk.Contains(report.Languages, value) {
-				continue
-			}
-
-			l := &entities.Language{Name: value}
-			err := f.Get(c, l)
-			if err != nil {
-				return err
-			}
-			l.ReportCount--
-			es = append(es, l)
+		es, err := newLanguageLabelToCounterUpdatingDao().BuildEntities(c, br.Languages, report.Languages)
+		if err != nil {
+			return err
 		}
 
 		return f.PutMulti(c, append(es, report))
@@ -140,5 +109,21 @@ func (s *ReportRepository) NewMonthlyReportOverview(ak *datastore.Key, y, m int)
 		Month:             m,
 		ID:                fmt.Sprintf("%d/%0d", y, m),
 		DailyReportCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // DailyReportCounts[0] is unusedvalue
+	}
+}
+
+func newLanguageLabelToCounterUpdatingDao() *gaekit.LabelToCounterUpdatingDao {
+	var lng *entities.Language
+	return &gaekit.LabelToCounterUpdatingDao{
+		NewFunc: func(label string) interface{} {
+			lng = &entities.Language{Name: label, ReportCount: 0}
+			return lng
+		},
+		IncrementFunc: func() {
+			lng.ReportCount++
+		},
+		DecrementFunc: func() {
+			lng.ReportCount--
+		},
 	}
 }

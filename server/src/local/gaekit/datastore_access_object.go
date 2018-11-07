@@ -2,7 +2,6 @@ package gaekit
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/mjibson/goon"
 	uuid "github.com/pborman/uuid"
@@ -54,7 +53,6 @@ func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(con
 			return err
 		}
 
-		t.CreatedAt = time.Now()
 		g.Put(t)
 		return f(g.Context)
 	}, opts)

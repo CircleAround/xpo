@@ -9,6 +9,7 @@ type TransactionKey_ struct {
 
 func NewTransactionKey(key string) *TransactionKey_ {
 	return &TransactionKey_{
-		Key: key,
+		Key:       key,
+		CreatedAt: time.Now(),
 	}
 }
