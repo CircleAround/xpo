@@ -114,7 +114,7 @@ export default {
 .textcontent {
   flex: 1;
   width: 100%;
-  height: 10em;
+  min-height: 10em;
 
   font-size: 16px;
   border: solid 1px #ccc;

@@ -69,6 +69,21 @@ func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (repo
 	}, limit)
 }
 
+func (s *ReportService) SearchByLanguage(c context.Context, l string) (reports []entities.Report, err error) {
+	limit := 30
+	return s.rrep.Search(c, store.ReportSearchParams{
+		Languages: []string{l},
+	}, limit)
+}
+
+func (s *ReportService) SearchByAuthorAndLanguage(c context.Context, aid string, l string) (reports []entities.Report, err error) {
+	limit := 30
+	return s.rrep.Search(c, store.ReportSearchParams{
+		AuthorID: aid,
+		Languages: []string{l},
+	}, limit)
+}
+
 func (s *ReportService) Find(c context.Context, uid string, id int64) (report *entities.Report, err error) {
 	xu := entities.XUser{ID: uid}
 	return s.FindByXUserAndID(c, xu, id)
