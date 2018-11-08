@@ -79,6 +79,11 @@ const core = {
     const response = await service.reports.searchReportsByAuthorId(authorId)
     subListMap.pushAll(response.data)
   },
+  searchReportsByLanguage: async function(language) {
+    subListMap.clear()
+    const response = await service.reports.searchReportsByLanguage(language)
+    subListMap.pushAll(response.data)
+  },
   searchReportsYmd: async function(authorId, year, month, day) {
     subListMap.clear()
     const response = await service.reports.searchReportsYmd(

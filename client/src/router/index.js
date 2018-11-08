@@ -9,6 +9,7 @@ import SignupForm from '@/components/SignupForm'
 import ProfileEditForm from '@/components/ProfileEditForm'
 import About from '@/components/About'
 import UserPage from '@/components/UserPage'
+import LanguagePage from '@/components/LanguagePage'
 
 Vue.use(Router)
 
@@ -53,6 +54,11 @@ const routerConfig = {
       path: '/about',
       name: 'About',
       component: About
+    },
+    {
+      path: '/languages/:language',
+      name: 'LanguagePage',
+      component: LanguagePage
     },
     {
       path: '/:author',
