@@ -7,26 +7,30 @@
       app
     >
       <v-list>
-        <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
-          <v-list-tile>
-            <v-list-tile-title>MyPage</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <router-link to='/users/me/edit'>
-          <v-list-tile>
-            <v-list-tile-title>EditProfile</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <router-link to='/about'>
-          <v-list-tile>
-            <v-list-tile-title>About</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <a v-bind:href="state.me.logoutUrl">
-          <v-list-tile>
-            <v-list-tile-title>Logout</v-list-tile-title>
-          </v-list-tile>
-        </a>
+        <v-list-tile :to="{ name:'UserPage', params: { author: state.me.name } }">
+          <v-list-tile-action>
+            <v-icon>home</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>MyPage</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile to='/users/me/edit'>
+          <v-list-tile-action>
+            <v-icon>person</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>EditProfile</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile to='/about'>
+          <v-list-tile-action>
+            <v-icon>info</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>About</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile v-bind:href="state.me.logoutUrl">
+          <v-list-tile-action>
+            <v-icon>exit_to_app</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>Logout</v-list-tile-title>
+        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
 
