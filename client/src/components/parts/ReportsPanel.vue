@@ -5,7 +5,11 @@
       <v-card class="box-card">
         <v-card-title primary-title class="clearfix card-header">
           <div class="languages" v-if="item.languages">
-            <v-chip v-for='(lng, k, i) in item.languages' v-bind:key="i">{{lng}}</v-chip>
+            <v-chip v-for='(lng, k, i) in item.languages' v-bind:key="i">
+              <router-link :to="{ name:'LanguagePage', params: { language: lng } }">
+                {{ lng }}
+              </router-link>
+            </v-chip>
           </div>
 
           <router-link :to="{ name:'UserPage', params: { author: item.author } }">
