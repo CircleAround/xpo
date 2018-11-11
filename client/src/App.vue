@@ -51,8 +51,8 @@
           </v-btn>
         </template>
         <template v-else>
-          <v-btn flat>
-            <a v-bind:href="state.me.loginUrl">Googleアカウントでログイン</a>して投稿する
+          <v-btn v-bind:href="state.me.loginUrl" flat>
+            Googleアカウントでログインして投稿する
           </v-btn>
           <v-btn flat to='/about'>
             <v-icon>info</v-icon>
