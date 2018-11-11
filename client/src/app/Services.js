@@ -95,6 +95,10 @@ class LanguageService {
   getAll() {
     return errorFilter(this.api.get(`/languages`))
   }
+
+  getAllNames() {
+    return errorFilter(this.api.get(`/languages/names`))
+  }
 }
 
 class Services {
