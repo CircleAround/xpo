@@ -15,7 +15,7 @@
       </div>
       <v-autocomplete
         v-model="state.targetReport.languages"
-        :items="state.languages"
+        :items="state.languageNames"
         label="言語"
         persistent-hint
         :chips="true"
@@ -63,7 +63,7 @@ export default {
     }
   },
   created() {
-    core.getLanguages()
+    core.getAllLanguageNames()
     this.initialize()
   },
   methods: {
@@ -114,7 +114,7 @@ export default {
 .textcontent {
   flex: 1;
   width: 100%;
-  height: 10em;
+  min-height: 10em;
 
   font-size: 16px;
   border: solid 1px #ccc;

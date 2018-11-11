@@ -274,6 +274,38 @@ func TestReportScenario(t *testing.T) {
 			checkXUserLanguageCount(t, c, &xu, "c", 1)
 			checkXUserLanguageCount(t, c, &xu, "go", 1)
 		}
+
+		{
+			t.Log("Search By Language")
+			rs, err := s.SearchByLanguage(c, "c++")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if len(rs) != 1 {
+				t.Errorf("It should have 1 results: %v", rs)
+			}
+
+			if rs[0].ID != r.ID {
+				t.Errorf("It should have ID: %v", rs[0].ID)
+			}
+		}
+
+		{
+			t.Log("Search By Author And Language")
+			rs, err := s.SearchByAuthorAndLanguage(c, oxu.ID, "go")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if len(rs) != 1 {
+				t.Errorf("It should have 1 results: %v", rs)
+			}
+
+			if rs[0].ID != r.ID {
+				t.Errorf("It should have ID: %v", rs[0].ID)
+			}
+		}
 	}
 
 	{

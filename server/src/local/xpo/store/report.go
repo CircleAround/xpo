@@ -18,6 +18,7 @@ type ReportSearchParams struct {
 	AuthorID       string
 	ReportedAtFrom time.Time
 	ReportedAtTo   time.Time
+	Languages []string
 }
 
 func NewReportRepository() *ReportRepository {
@@ -40,6 +41,10 @@ func (s *ReportRepository) Search(c context.Context, p ReportSearchParams, limit
 
 	if !p.ReportedAtTo.IsZero() {
 		q = q.Filter("ReportedAt<", p.ReportedAtTo)
+	}
+
+	for _, l := range p.Languages {
+		q = q.Filter("Languages=", l)
 	}
 
 	reports = make([]entities.Report, 0, limit)

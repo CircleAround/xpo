@@ -62,6 +62,10 @@ class ReportService {
     return errorFilter(this.api.get(`/reports/${authorId}`))
   }
 
+  searchReportsByLanguage(language) {
+    return errorFilter(this.api.get(`/languages/${language}/reports`))
+  }
+
   searchReportsYmd(authorId, year, month, day) {
     return errorFilter(
       this.api.get(`/reports/${authorId}/_/${year}/${month}/${day}`)
@@ -90,6 +94,10 @@ class LanguageService {
 
   getAll() {
     return errorFilter(this.api.get(`/languages`))
+  }
+
+  getAllNames() {
+    return errorFilter(this.api.get(`/languages/names`))
   }
 }
 

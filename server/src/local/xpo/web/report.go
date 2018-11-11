@@ -58,6 +58,24 @@ func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchBy(c, uid, y, m, d))
 }
 
+func SearchReportsByLanguage(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+
+	p := exchi.URLParams(r)
+	l := p.Get("language")
+	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchByLanguage(c, l))
+}
+
+func SearchReportsByAuthorAndLanguage(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+
+	p := exchi.URLParams(r)
+	uid := p.Get("authorId")
+	l := p.Get("language")
+	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchByAuthorAndLanguage(c, uid, l))
+}
+
+
 func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	p := &app.ReportCreationParams{}
 	if err := parseJSONBody(r, &p); err != nil {

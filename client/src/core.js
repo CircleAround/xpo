@@ -24,6 +24,7 @@ const core = {
     subList: subListMap.array,
     targetReport: { content: null },
     languages: [],
+    languageNames: [],
     alerts: [],
     posted: false
   },
@@ -79,6 +80,11 @@ const core = {
     const response = await service.reports.searchReportsByAuthorId(authorId)
     subListMap.pushAll(response.data)
   },
+  searchReportsByLanguage: async function(language) {
+    subListMap.clear()
+    const response = await service.reports.searchReportsByLanguage(language)
+    subListMap.pushAll(response.data)
+  },
   searchReportsYmd: async function(authorId, year, month, day) {
     subListMap.clear()
     const response = await service.reports.searchReportsYmd(
@@ -118,7 +124,18 @@ const core = {
       contentType: 'text/x-markdown'
     }
   },
-  getLanguages: async function() {
+  removeLanguageOnTargetReport(name) {
+    remove(this.state.targetReport.languages, name)
+  },
+  getAllLanguageNames: async function() {
+    const response = await service.languages.getAllNames()
+    response.data.forEach(lng => {
+      this.state.languageNames.push(lng)
+    })
+  },
+  getAllLanguages: async function() {
+    if (this.state.languages.length) return
+
     const response = await service.languages.getAll()
     response.data.forEach(lng => {
       this.state.languages.push(lng)

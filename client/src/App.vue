@@ -7,26 +7,41 @@
       app
     >
       <v-list>
-        <router-link :to="{ name:'UserPage', params: { author: state.me.name } }">
-          <v-list-tile>
-            <v-list-tile-title>MyPage</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <router-link to='/users/me/edit'>
-          <v-list-tile>
-            <v-list-tile-title>EditProfile</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <router-link to='/about'>
-          <v-list-tile>
-            <v-list-tile-title>About</v-list-tile-title>
-          </v-list-tile>
-        </router-link>
-        <a v-bind:href="state.me.logoutUrl">
-          <v-list-tile>
-            <v-list-tile-title>Logout</v-list-tile-title>
-          </v-list-tile>
-        </a>
+        <v-list-tile :to="{ name:'UserPage', params: { author: state.me.name } }">
+          <v-list-tile-action>
+            <v-icon>home</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>MyPage</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile to='/users/me/edit'>
+          <v-list-tile-action>
+            <v-icon>person</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>EditProfile</v-list-tile-title>
+        </v-list-tile>
+        <v-list-group
+            :v-model="openedOption"
+            :prepend-icon="openedOption ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+            append-icon=""
+          >
+            <v-list-tile slot="activator">
+              <v-list-tile-content>
+                <v-list-tile-title>Options</v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-tile to='/about'>
+              <v-list-tile-action>
+                <v-icon>info</v-icon>
+              </v-list-tile-action>
+              <v-list-tile-title>About</v-list-tile-title>
+            </v-list-tile>
+            <v-list-tile v-bind:href="state.me.logoutUrl">
+              <v-list-tile-action>
+                <v-icon>power_settings_new</v-icon>
+              </v-list-tile-action>
+              <v-list-tile-title>Logout</v-list-tile-title>
+            </v-list-tile>
+        </v-list-group>
       </v-list>
     </v-navigation-drawer>
 
@@ -99,6 +114,7 @@ export default {
   data() {
     return {
       drawer: null,
+      openedOption: false,
       state: core.state,
       consts: consts
     }
@@ -165,20 +181,4 @@ export default {
     font-weight: bold;
   }
 }
-
-// @media screen and (max-width: 480px) {
-//   .el-main {
-//     padding-left: 2px;
-//     padding-right: 2px;
-//   }
-
-//   .el-header {
-//     padding-left: 2px;
-//     padding-right: 2px;
-
-//     .user_name {
-//       width: 100px;
-//     }
-//   }
-// }
 </style>

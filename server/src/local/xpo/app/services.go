@@ -1,8 +1,9 @@
 package app
 
 type ServiceFactory struct {
-	xUser  *XUserService
-	report *ReportService
+	xUser    *XUserService
+	report   *ReportService
+	language *LanguageService
 }
 
 func (s *ServiceFactory) XUser() *XUserService {
@@ -13,9 +14,14 @@ func (s *ServiceFactory) Report() *ReportService {
 	return s.report
 }
 
+func (s *ServiceFactory) Language() *LanguageService {
+	return s.language
+}
+
 var instance *ServiceFactory = &ServiceFactory{
-	xUser:  NewXUserService(),
-	report: NewReportService(),
+	xUser:    NewXUserService(),
+	report:   NewReportService(),
+	language: NewLanguageService(),
 }
 
 func Factory() *ServiceFactory {
