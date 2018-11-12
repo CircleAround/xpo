@@ -3,14 +3,7 @@
   <v-layout row wrap>
     <v-flex xs12 v-for='(item, key , index) in list' v-bind:key="index">
       <v-card class="box-card">
-        <v-card-title primary-title class="clearfix card-header">
-          <div class="languages" v-if="item.languages">
-            <v-chip v-for='(lng, k, i) in item.languages' v-bind:key="i">
-              <router-link :to="{ name:'LanguagePage', params: { language: lng } }">
-                {{ lng }}
-              </router-link>
-            </v-chip>
-          </div>
+        <v-card-title primary-title class="clearfix card-header pt-2 pb-2">
 
           <router-link :to="{ name:'UserPage', params: { author: item.author } }">
             <div class="user_name headline">
@@ -18,6 +11,14 @@
               <div class="name">{{item.author}}</div>
             </div>
           </router-link>
+
+          <div class="languages" v-if="item.languages">
+            <v-chip v-for='(lng, k, i) in item.languages' v-bind:key="i">
+              <router-link :to="{ name:'LanguagePage', params: { language: lng } }">
+                {{ lng }}
+              </router-link>
+            </v-chip>
+          </div>
 
           <v-spacer></v-spacer>
 
