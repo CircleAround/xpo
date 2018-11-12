@@ -14,7 +14,8 @@
 
           <router-link :to="{ name:'UserPage', params: { author: item.author } }">
             <div class="user_name headline">
-              <span class="nickname">{{item.authorNickname}}</span><span class="name">&lt;{{item.author}}&gt;</span>
+              <div class="nickname">{{item.authorNickname}}</div>
+              <div class="name">{{item.author}}</div>
             </div>
           </router-link>
 
@@ -61,7 +62,7 @@
             </v-layout>
           </v-container>
 
-          <v-container fluid>
+          <v-container pt-2 fluid>
             <v-layout row wrap>
               <v-flex xs12>
                 <div class="updated-at">
@@ -102,9 +103,17 @@ export default {
 }
 </script>
 
-<style scoped>
-.user_name {
-  display: flex;
+<style lang="scss" scoped>
+.user_name.headline {
+  .nickname {
+    font-size: 16px !important;
+    line-height: 16px !important;
+  }
+
+  .name {
+    font-size: 14px !important;
+    line-height: 14px !important;
+  }
 }
 
 .card-header {
@@ -113,10 +122,10 @@ export default {
 
 .date {
   text-align: center;
-}
 
-.date a {
-  text-decoration: none;
+  a {
+    text-decoration: none;
+  }
 }
 
 .month-day {
@@ -131,7 +140,7 @@ export default {
   text-align: right;
 }
 
-.updated-at a {
+.u  pdated-at a {
   text-decoration: none;
 }
 </style>
