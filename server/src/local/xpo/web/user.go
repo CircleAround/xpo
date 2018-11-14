@@ -51,3 +51,10 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) error {
 	n := p.Get("authorId")
 	return NewResponder(w, r).RenderObjectOrError(Services.XUser().GetByID(c, n))
 }
+
+func GetUserLanguages(w http.ResponseWriter, r *http.Request) error {
+	c := Context(r)
+	p := exchi.URLParams(r)
+	n := p.Get("authorId")
+	return NewResponder(w, r).RenderObjectOrError(Services.XUser().GetLanguages(c, n))
+}

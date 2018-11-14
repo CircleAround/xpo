@@ -38,6 +38,7 @@ func TestReportScenario(t *testing.T) {
 
 	tp.TravelTo(oneHourBefore)
 	s := app.NewReportServiceWithTheTime(tp)
+	us := app.NewXUserService()
 	ur := store.NewXUserRepository()
 	rrep := store.NewReportRepository()
 
@@ -273,6 +274,18 @@ func TestReportScenario(t *testing.T) {
 			checkXUserLanguageCount(t, c, &oxu, "javascript", 0)
 			checkXUserLanguageCount(t, c, &xu, "c", 1)
 			checkXUserLanguageCount(t, c, &xu, "go", 1)
+
+			{
+				t.Log("Languages")
+
+				ls, err := us.GetLanguages(c, xu.ID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if len(ls) != 2 {
+					t.Errorf("It should have length of 2 : %v,  xuser: %v", ls, xu)
+				}
+			}
 		}
 
 		{
@@ -422,6 +435,8 @@ func checkXUserLanguageCount(t *testing.T, c context.Context, xu *entities.XUser
 	lrep := store.NewXUserLanguageRepository()
 
 	lc, err := lrep.GetByXUserAndName(c, xu, name)
+	t.Logf("XUserLanguage: %v", lc)
+
 	if err != nil {
 		t.Fatal(err)
 	}

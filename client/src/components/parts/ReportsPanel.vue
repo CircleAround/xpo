@@ -3,7 +3,15 @@
   <v-layout row wrap>
     <v-flex xs12 v-for='(item, key , index) in list' v-bind:key="index">
       <v-card class="box-card">
-        <v-card-title primary-title class="clearfix card-header">
+        <v-card-title primary-title class="clearfix card-header pt-2 pb-2">
+
+          <router-link :to="{ name:'UserPage', params: { author: item.author } }">
+            <div class="user_name headline">
+              <div class="nickname">{{item.authorNickname}}</div>
+              <div class="name">{{item.author}}</div>
+            </div>
+          </router-link>
+
           <div class="languages" v-if="item.languages">
             <v-chip v-for='(lng, k, i) in item.languages' v-bind:key="i">
               <router-link :to="{ name:'LanguagePage', params: { language: lng } }">
@@ -11,12 +19,6 @@
               </router-link>
             </v-chip>
           </div>
-
-          <router-link :to="{ name:'UserPage', params: { author: item.author } }">
-            <div class="user_name headline">
-              <span class="nickname">{{item.authorNickname}}</span><span class="name">&lt;{{item.author}}&gt;</span>
-            </div>
-          </router-link>
 
           <v-spacer></v-spacer>
 
@@ -61,7 +63,7 @@
             </v-layout>
           </v-container>
 
-          <v-container fluid>
+          <v-container pt-2 fluid>
             <v-layout row wrap>
               <v-flex xs12>
                 <div class="updated-at">
@@ -102,9 +104,17 @@ export default {
 }
 </script>
 
-<style scoped>
-.user_name {
-  display: flex;
+<style lang="scss" scoped>
+.user_name.headline {
+  .nickname {
+    font-size: 16px !important;
+    line-height: 16px !important;
+  }
+
+  .name {
+    font-size: 14px !important;
+    line-height: 14px !important;
+  }
 }
 
 .card-header {
@@ -113,10 +123,10 @@ export default {
 
 .date {
   text-align: center;
-}
 
-.date a {
-  text-decoration: none;
+  a {
+    text-decoration: none;
+  }
 }
 
 .month-day {
@@ -131,7 +141,7 @@ export default {
   text-align: right;
 }
 
-.updated-at a {
+.u  pdated-at a {
   text-decoration: none;
 }
 </style>

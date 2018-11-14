@@ -23,6 +23,7 @@ const core = {
     list: listMap.array,
     subList: subListMap.array,
     targetReport: { content: null },
+    targetUser: {},
     languages: [],
     languageNames: [],
     alerts: [],
@@ -101,7 +102,12 @@ const core = {
   },
   findReport4Update: async function(authorId, id) {
     const newObject = await this.findReport(authorId, id)
-    Object.assign(this.state.targetReport, newObject)
+    // @see https://jp.vuejs.org/v2/guide/reactivity.html#%E5%A4%89%E6%9B%B4%E6%A4%9C%E5%87%BA%E3%81%AE%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85
+    this.state.targetReport = Object.assign(
+      {},
+      this.state.targetReport,
+      newObject
+    )
   },
   postReport: async function() {
     const response = await service.reports.postReport(this.state.targetReport)
@@ -121,7 +127,8 @@ const core = {
   initNewReport() {
     this.state.targetReport = {
       content: '',
-      contentType: 'text/x-markdown'
+      contentType: 'text/x-markdown',
+      languages: []
     }
   },
   removeLanguageOnTargetReport(name) {
@@ -140,6 +147,12 @@ const core = {
     response.data.forEach(lng => {
       this.state.languages.push(lng)
     })
+  },
+  getMyLanguages() {
+    return this.getLanguagesByXUser(this.state.me.id)
+  },
+  getLanguagesByXUser(id) {
+    return service.languages.getByXUser(id)
   },
   forceUpdateMainList() {
     listMap.forceUpdate()

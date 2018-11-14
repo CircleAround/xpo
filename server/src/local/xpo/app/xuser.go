@@ -13,13 +13,15 @@ import (
 
 // XUserService is Service for XUser
 type XUserService struct {
-	urep *store.XUserRepository
+	urep  *store.XUserRepository
+	ulrep *store.XUserLanguageRepository
 }
 
 // NewXUserService is function for construction
 func NewXUserService() *XUserService {
 	s := new(XUserService)
 	s.urep = store.NewXUserRepository()
+	s.ulrep = store.NewXUserLanguageRepository()
 	return s
 }
 
@@ -70,6 +72,16 @@ func (s *XUserService) GetByName(c context.Context, name string) (*entities.XUse
 
 func (s *XUserService) IsUsedName(c context.Context, name string) (bool, error) {
 	return s.urep.IsUsedName(c, name)
+}
+
+func (s *XUserService) GetLanguages(c context.Context, i string) (l []*entities.XUserLanguage, err error) {
+	xu, err := s.GetByID(c, i)
+	if err != nil {
+		return
+	}
+
+	l, err = s.ulrep.GetByXUser(c, xu)
+	return
 }
 
 func validate(params entities.XUserProfileParams) (*validatekit.Validate, error) {

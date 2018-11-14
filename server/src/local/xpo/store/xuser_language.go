@@ -22,9 +22,9 @@ func (r *XUserLanguageRepository) GetByXUserAndName(c context.Context, xu *entit
 	return
 }
 
-func (r *XUserLanguageRepository) GetByXUser(c context.Context, xu *entities.XUser) (uls []*entities.XUserLanguage, err error) {
-	q := datastore.NewQuery("XUserLanguage").Ancestor(r.KeyOf(c, xu)).Order("Name")
-	uls = make([]*entities.XUserLanguage, 0)
-	_, err = r.Goon(c).GetAll(q, &uls)
-	return
+func (r *XUserLanguageRepository) GetByXUser(c context.Context, xu *entities.XUser) ([]*entities.XUserLanguage, error) {
+	q := datastore.NewQuery("XUserLanguage").Ancestor(r.KeyOf(c, xu)).Order("-ReportCount")
+	var uls []*entities.XUserLanguage
+	_, err := r.Goon(c).GetAll(q, &uls)
+	return uls, err
 }
