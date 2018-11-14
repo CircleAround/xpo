@@ -17,7 +17,7 @@
         <overlay :visible="loading"></overlay>
 
         <div class="used-languages" v-if="usedLanguages">
-          <v-container fluid>
+          <v-container class="pl-0 pr-0" fluid>
             <v-layout row wrap class="light--text">
               <v-checkbox v-for='(lng, k, i) in usedLanguages' v-bind:key="i"
                 :label="lng.name" :value="lng.name" v-model="state.targetReport.languages" multiple>
@@ -149,7 +149,7 @@ export default {
 }
 
 .actions {
-  padding: 5px;
+  padding: 5px 0;
   text-align: right;
   position: relative;
 }

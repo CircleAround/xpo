@@ -107,13 +107,13 @@ export default {
 <style lang="scss" scoped>
 .user_name.headline {
   .nickname {
-    font-size: 16px !important;
-    line-height: 16px !important;
+    font-size: 14px !important;
+    line-height: 1.2 !important;
   }
 
   .name {
-    font-size: 14px !important;
-    line-height: 14px !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
   }
 }
 

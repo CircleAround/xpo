@@ -1,7 +1,7 @@
 <template>
   <v-item-group multiple>
     <v-item
-      v-for="lng in languages"
+      v-for="lng in languages.slice(0, 10)"
       :key="lng.name"
     >
       <v-chip

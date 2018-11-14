@@ -55,8 +55,8 @@
 
       <v-toolbar-items>
         <template v-if="isLoggedIn">
-          <v-btn flat class="user_name" :to="{ name:'UserPage', params: { author: state.me.name } }">
-            <div>
+          <v-btn flat :to="{ name:'UserPage', params: { author: state.me.name } }">
+            <div class="user_name">
               <div class="nickname">{{state.me.nickname}}</div>
               <div class="name">{{state.me.name}}</div>
             </div>
@@ -134,7 +134,9 @@ export default {
 @import '@/scss/main.scss';
 
 .application {
-  font-family: 游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro', 'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+  font-family: 游ゴシック体, 'Yu Gothic', YuGothic, 'ヒラギノ角ゴシック Pro',
+    'Hiragino Kaku Gothic Pro', メイリオ, Meiryo, Osaka, 'ＭＳ Ｐゴシック',
+    'MS PGothic', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: $text-color;
@@ -143,7 +145,7 @@ export default {
 .toolbar {
   .site_title {
     display: inline-block;
-    font-family: 'Avenir', Helvetica, Arial, sans-serif
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
   }
 
   .site_title a {
@@ -153,6 +155,7 @@ export default {
   .user_name {
     text-align: right;
     max-width: 200px;
+    text-transform: none;
 
     a,
     a:visited {
