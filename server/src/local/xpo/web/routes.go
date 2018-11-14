@@ -29,7 +29,10 @@ func Router() *chi.Mux {
 		})
 
 		r.Get("/{authorName:[a-z][0-9a-z_]+}", Handler(GetUserByName))
-		r.Get("/{authorId:[1-9][0-9]*}", Handler(GetUserByID))
+		r.Route("/{authorId:[1-9][0-9]*}", func(r chi.Router) {
+			r.Get("/languages", Handler(GetUserLanguages))
+			r.Get("/", Handler(GetUserByID))
+		})
 	})
 
 	r.Route("/reports", func(r chi.Router) {

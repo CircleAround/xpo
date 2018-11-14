@@ -13,17 +13,28 @@
           {{item}}
         </div>
       </div>
-      <v-autocomplete
-        v-model="state.targetReport.languages"
-        :items="state.languageNames"
-        label="言語"
-        persistent-hint
-        :chips="true"
-        :multiple="true"
-      >
-      </v-autocomplete>
       <div class="actions">
         <overlay :visible="loading"></overlay>
+
+        <div class="used-languages" v-if="usedLanguages">
+          <v-container fluid>
+            <v-layout row wrap class="light--text">
+              <v-checkbox v-for='(lng, k, i) in usedLanguages' v-bind:key="i"
+                :label="lng.name" :value="lng.name" v-model="state.targetReport.languages" multiple>
+              </v-checkbox>
+            </v-layout>
+          </v-container>
+        </div>
+
+        <v-autocomplete
+          v-model="state.targetReport.languages"
+          :items="state.languageNames"
+          label="言語"
+          chips
+          multiple
+        >
+        </v-autocomplete>
+
         <v-tooltip top>
           <v-btn flat slot="activator" fab >
             <v-icon dark>info</v-icon>
@@ -59,11 +70,16 @@ export default {
       markdown: '',
       errors: [],
       state: core.state,
+      usedLanguages: [],
       loading: false
     }
   },
-  created() {
+  created: async function() {
     core.getAllLanguageNames()
+    var res = await core.getMyLanguages()
+    res.data.forEach(lng => {
+      this.usedLanguages.push(lng)
+    })
     this.initialize()
   },
   methods: {
@@ -125,6 +141,11 @@ export default {
   margin: 0 10px;
   padding: 10px;
   background-color: #f2f2f2;
+}
+
+.used-languages {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .actions {

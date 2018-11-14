@@ -143,6 +143,7 @@ export default {
 .toolbar {
   .site_title {
     display: inline-block;
+    font-family: 'Avenir', Helvetica, Arial, sans-serif
   }
 
   .site_title a {
