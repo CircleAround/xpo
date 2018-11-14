@@ -17,10 +17,12 @@
         <overlay :visible="loading"></overlay>
 
         <div class="used-languages" v-if="usedLanguages">
-          <v-container class="pl-0 pr-0" fluid>
+          <v-container fluid class="pl-0 pr-0">
             <v-layout row wrap class="light--text">
               <v-checkbox v-for='(lng, k, i) in usedLanguages' v-bind:key="i"
-                :label="lng.name" :value="lng.name" v-model="state.targetReport.languages" multiple>
+                :label="lng.name" :value="lng.name" v-model="state.targetReport.languages"
+                class="pr-3"
+                multiple>
               </v-checkbox>
             </v-layout>
           </v-container>
@@ -146,6 +148,10 @@ export default {
 .used-languages {
   display: flex;
   flex-wrap: wrap;
+
+  .v-input--checkbox {
+    flex: none;
+  }
 }
 
 .actions {
