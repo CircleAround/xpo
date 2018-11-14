@@ -9,3 +9,8 @@ indexes:
       - name: AuthorID
       - name: ReportedAt
         direction: desc
+  - kind: XUserLanguage
+    ancestor: yes
+    properties:
+      - name: ReportCount
+        direction: desc
