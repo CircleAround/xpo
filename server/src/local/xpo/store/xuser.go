@@ -50,7 +50,7 @@ func (r *XUserRepository) Create(c context.Context, xu *entities.XUser) (err err
 
 		log.Infof(ctx, "%v not found.", xu)
 
-		i := &_XUserNameUniqueIndex{value: xu.Name}
+		i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
 		err = r.CreateUnique(ctx, i)
 		if err != nil {
 			return err
@@ -97,13 +97,13 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 }
 
 func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser, params entities.XUserProfileParams) error {
-	i := &_XUserNameUniqueIndex{value: xu.Name}
-	ni := &_XUserNameUniqueIndex{value: params.Name}
+	i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
+	ni := &entities.IdentityNameUniqueIndex{Value: params.Name}
 	return s.ChangeUniqueValueMustTr(c, i, ni)
 }
 
 // IsUsedName is method for checking UserName already taken.
 func (s *XUserRepository) IsUsedName(c context.Context, name string) (bool, error) {
-	i := _XUserNameUniqueIndex{value: name}
+	i := entities.IdentityNameUniqueIndex{Value: name}
 	return s.Exists(c, &i)
 }
