@@ -13,6 +13,9 @@ func Routes() {
 func Router() *chi.Mux {
 	r := chi.NewRouter()
 
+	r.Handle("/admin", NewAdminHandler())
+	r.Handle("/admin/*", NewAdminHandler())
+
 	r.Get("/", handleRoot)
 	r.Get(loggedInPath, handleLoggedIn)
 

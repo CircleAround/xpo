@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"local/gaekit"
 	"local/xpo/entities"
 
@@ -50,7 +51,7 @@ func (r *XUserRepository) Create(c context.Context, xu *entities.XUser) (err err
 
 		log.Infof(ctx, "%v not found.", xu)
 
-		i := &_XUserNameUniqueIndex{value: xu.Name}
+		i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
 		err = r.CreateUnique(ctx, i)
 		if err != nil {
 			return err
@@ -97,13 +98,49 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 }
 
 func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser, params entities.XUserProfileParams) error {
-	i := &_XUserNameUniqueIndex{value: xu.Name}
-	ni := &_XUserNameUniqueIndex{value: params.Name}
+	i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
+	ni := &entities.IdentityNameUniqueIndex{Value: params.Name}
 	return s.ChangeUniqueValueMustTr(c, i, ni)
 }
 
 // IsUsedName is method for checking UserName already taken.
 func (s *XUserRepository) IsUsedName(c context.Context, name string) (bool, error) {
-	i := _XUserNameUniqueIndex{value: name}
+	i := entities.IdentityNameUniqueIndex{Value: name}
 	return s.Exists(c, &i)
+}
+
+func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
+	q := datastore.NewQuery("_XUserNameUniqueIndex")
+	var uis []entities.XUser
+	keys, err := q.GetAll(c, &uis)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		log.Infof(c, "key: %v", key)
+		value := key.StringID()
+		log.Infof(c, "string name: %v", value)
+
+		if value == "" {
+			log.Errorf(c, "値が取れない: %v", key)
+			return errors.New("値が取れない")
+		}
+
+		ii := &entities.IdentityNameUniqueIndex{Value: value}
+		err = s.Get(c, ii)
+		if err == nil {
+			continue
+		}
+
+		if err != datastore.ErrNoSuchEntity {
+			return err
+		}
+
+		err = s.Put(c, ii)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

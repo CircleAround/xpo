@@ -7,3 +7,8 @@ env_variables:
 
 includes:
   - lib/common.yaml
+
+handlers:
+  - url: /admin/.*
+    login: admin
+    script: _go_app
