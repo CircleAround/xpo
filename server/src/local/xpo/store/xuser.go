@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"errors"
 	"local/gaekit"
 	"local/xpo/entities"
 
@@ -106,4 +107,40 @@ func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser
 func (s *XUserRepository) IsUsedName(c context.Context, name string) (bool, error) {
 	i := entities.IdentityNameUniqueIndex{Value: name}
 	return s.Exists(c, &i)
+}
+
+func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
+	q := datastore.NewQuery("_XUserNameUniqueIndex")
+	var uis []entities.XUser
+	keys, err := q.GetAll(c, &uis)
+	if err != nil {
+		return err
+	}
+
+	for _, key := range keys {
+		log.Infof(c, "key: %v", key)
+		value := key.StringID()
+		log.Infof(c, "string name: %v", value)
+
+		if value == "" {
+			log.Errorf(c, "値が取れない: %v", key)
+			return errors.New("値が取れない")
+		}
+
+		ii := &entities.IdentityNameUniqueIndex{Value: value}
+		err = s.Get(c, ii)
+		if err == nil {
+			continue
+		}
+
+		if err != datastore.ErrNoSuchEntity {
+			return err
+		}
+
+		err = s.Put(c, ii)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

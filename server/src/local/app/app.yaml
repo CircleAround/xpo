@@ -16,3 +16,7 @@ skip_files:
   - ^(.*/)?testarator.go
   - ^(.*)/appengine/aetest/(.*)
   - ^(.*)/pkg/(.*)
+
+handlers:
+  - url: /admin/.*
+    login: admin

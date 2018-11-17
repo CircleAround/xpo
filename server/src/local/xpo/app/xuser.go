@@ -84,6 +84,10 @@ func (s *XUserService) GetLanguages(c context.Context, i string) (l []*entities.
 	return
 }
 
+func (s *XUserService) MigrateUniqueIndex(c context.Context) (err error) {
+	return s.urep.MigrateUniqueIndex(c)
+}
+
 func validate(params entities.XUserProfileParams) (*validatekit.Validate, error) {
 	return domain.ValidateXUserProfileParams(params)
 }
