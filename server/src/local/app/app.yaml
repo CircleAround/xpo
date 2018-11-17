@@ -20,3 +20,4 @@ skip_files:
 handlers:
   - url: /admin/.*
     login: admin
+    script: _go_app
