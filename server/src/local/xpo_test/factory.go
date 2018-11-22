@@ -10,8 +10,9 @@ import (
 
 type TestFactory struct {
 	gaekit.DatastoreAccessObject
-	XUserCounter  int64
-	ReportCounter int64
+	XUserCounter   int64
+	ReportCounter  int64
+	ProjectCounter int64
 }
 
 var singleton *TestFactory
@@ -60,4 +61,13 @@ func (f *TestFactory) BuildReportWithAuthor(c context.Context, xu *entities.XUse
 	report.Author = xu.Name
 	report.AuthorNickname = xu.Nickname
 	return report
+}
+
+func (f *TestFactory) BuildProject() entities.Project {
+	f.ProjectCounter++
+	return entities.Project{
+		Name:          fmt.Sprintf("name%v", f.ProjectCounter),
+		Description:   fmt.Sprintf("description%v", f.ProjectCounter),
+		RepositoryURL: fmt.Sprintf("http://test%v.example.com", f.ProjectCounter),
+	}
 }

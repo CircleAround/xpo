@@ -1,6 +1,7 @@
 package gaekit
 
 import (
+	"github.com/pkg/errors"
 	funk "github.com/thoas/go-funk"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
@@ -28,7 +29,7 @@ func (d *LabelToCounterUpdatingDao) BuildEntities(c context.Context, b []string,
 		l := d.NewFunc(c, value)
 		err := d.Get(c, l)
 		if err != nil && err != datastore.ErrNoSuchEntity {
-			return nil, err
+			return nil, errors.Wrap(err, "Get for increment failed")
 		}
 		d.IncrementFunc()
 		es = append(es, l)
@@ -42,7 +43,7 @@ func (d *LabelToCounterUpdatingDao) BuildEntities(c context.Context, b []string,
 		l := d.NewFunc(c, value)
 		err := d.Get(c, l)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Get for decrement failed")
 		}
 		d.DecrementFunc()
 		es = append(es, l)

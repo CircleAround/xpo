@@ -3,11 +3,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:491c1da65a24421134a5d49ce70ad8cbe72ec884b4f0ca27afe51c2ddb13f12d"
+  digest = "1:b97fec6a0311122142d63f6cb6ed7bdd58de1e1dda0d21e5ab1ff52a23c04d13"
   name = "github.com/favclip/testerator"
   packages = ["."]
   pruneopts = "UT"
-  revision = "04c1c0fc2a5a12ba14068ee37e764af81a4ac575"
+  revision = "c967692c9c6519c9ab44484378e17cd17d05dd5c"
 
 [[projects]]
   digest = "1:b9914f85d95a0968bafd1be1908ba29e2eafafd88d6fd13696be42bf5368c380"
@@ -45,12 +45,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:3a26588bc48b96825977c1b3df964f8fd842cd6860cc26370588d3563433cf11"
+  digest = "1:236d7e1bdb50d8f68559af37dbcf9d142d56b431c9b2176d41e2a009b664cda8"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
-  version = "v1.0.0"
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:c79fb010be38a59d657c48c6ba1d003a8aa651fa56b579d959d74573b7dff8e1"
@@ -101,6 +101,14 @@
   version = "v1.2"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   digest = "1:d1816f8f4877e87cf0a80a25fbc0e7c7a6937bd728ccbf85e2c151c792445a1b"
   name = "github.com/thoas/go-funk"
   packages = ["."]
@@ -114,7 +122,7 @@
   name = "golang.org/x/net"
   packages = ["context"]
   pruneopts = "UT"
-  revision = "c10e9556a7bc0e7c942242b606f0acf024ad5d6a"
+  revision = "adae6a3d119ae4890b46832a2e88a95adc62b8e7"
 
 [[projects]]
   branch = "master"
@@ -159,6 +167,7 @@
     "github.com/jessevdk/go-assets",
     "github.com/mjibson/goon",
     "github.com/pborman/uuid",
+    "github.com/pkg/errors",
     "github.com/thoas/go-funk",
     "golang.org/x/net/context",
     "google.golang.org/appengine",

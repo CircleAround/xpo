@@ -7,6 +7,8 @@ import (
 	"local/xpo/entities"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"google.golang.org/appengine/datastore"
 )
 
@@ -18,37 +20,45 @@ type ReportSearchParams struct {
 	AuthorID       string
 	ReportedAtFrom time.Time
 	ReportedAtTo   time.Time
-	Languages []string
+	Languages      []string
 }
 
 func NewReportRepository() *ReportRepository {
 	return new(ReportRepository)
 }
 
-func (s *ReportRepository) Search(c context.Context, p ReportSearchParams, limit int) (reports []entities.Report, err error) {
-	q := datastore.NewQuery("Report").Order("-ReportedAt")
-	if limit != 0 {
-		q = q.Limit(limit)
+func (s *ReportRepository) Search(c context.Context, p ReportSearchParams, limit int) (reports []*entities.Report, err error) {
+
+	reports = make([]*entities.Report, 0, 10)
+	err = s.FilterSearch(c, "Report", &reports, func(q *datastore.Query) *datastore.Query {
+		q = q.Order("-ReportedAt")
+		if limit != 0 {
+			q = q.Limit(limit)
+		}
+
+		if p.AuthorID != "" {
+			q = q.Filter("AuthorID=", p.AuthorID)
+		}
+
+		if !p.ReportedAtFrom.IsZero() {
+			q = q.Filter("ReportedAt>=", p.ReportedAtFrom)
+		}
+
+		if !p.ReportedAtTo.IsZero() {
+			q = q.Filter("ReportedAt<", p.ReportedAtTo)
+		}
+
+		for _, l := range p.Languages {
+			q = q.Filter("Languages=", l)
+		}
+
+		return q
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "FilterSearch failed")
 	}
 
-	if p.AuthorID != "" {
-		q = q.Filter("AuthorID=", p.AuthorID)
-	}
-
-	if !p.ReportedAtFrom.IsZero() {
-		q = q.Filter("ReportedAt>=", p.ReportedAtFrom)
-	}
-
-	if !p.ReportedAtTo.IsZero() {
-		q = q.Filter("ReportedAt<", p.ReportedAtTo)
-	}
-
-	for _, l := range p.Languages {
-		q = q.Filter("Languages=", l)
-	}
-
-	reports = make([]entities.Report, 0, limit)
-	_, err = s.Goon(c).GetAll(q, &reports)
 	return
 }
 
@@ -59,7 +69,7 @@ func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report 
 		}, 0)
 
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Search failed")
 		}
 
 		xu.ReportCount = int64(len(rs))
@@ -69,7 +79,7 @@ func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report 
 		ra := report.ReportedAt
 		m, err := f.MontlyReportOverview(c, xu, ra.Year(), int(ra.Month()))
 		if err != nil && err != datastore.ErrNoSuchEntity {
-			return err
+			return errors.Wrap(err, "MontlyReportOverview failed")
 		}
 		m.DailyReportCounts[ra.Day()]++
 		m.ReportCount++
@@ -78,7 +88,7 @@ func (f *ReportRepository) Create(c context.Context, xu *entities.XUser, report 
 
 		es, err := f.buildLanguageEntities(c, xu, []string{}, report.Languages)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "buildLanguageEntities failed")
 		}
 		return f.PutMulti(c, append(es, report, m, xu))
 	})
@@ -89,12 +99,12 @@ func (f *ReportRepository) Update(c context.Context, xu *entities.XUser, report 
 		br := &entities.Report{ID: report.ID, AuthorKey: report.AuthorKey}
 		err := f.Get(c, br)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Get failed")
 		}
 
 		es, err := f.buildLanguageEntities(c, xu, br.Languages, report.Languages)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "buildLanguageEntities")
 		}
 
 		return f.PutMulti(c, append(es, report))
@@ -120,12 +130,12 @@ func (s *ReportRepository) NewMonthlyReportOverview(ak *datastore.Key, y, m int)
 func (f *ReportRepository) buildLanguageEntities(c context.Context, xu *entities.XUser, b []string, a []string) ([]interface{}, error) {
 	es, err := newLanguageLabelToCounterUpdatingDao().BuildEntities(c, b, a)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "newLanguageLabelToCounterUpdatingDao().BuildEntities(c, b, a) failed")
 	}
 
 	ues, err := newLanguageLabelToXUserCounterUpdatingDao(xu).BuildEntities(c, b, a)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "newLanguageLabelToXUserCounterUpdatingDao(xu).BuildEntities(c, b, a) failed")
 	}
 
 	return append(es, ues...), nil

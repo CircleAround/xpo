@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
@@ -30,16 +31,19 @@ func (s *XUserService) Create(c context.Context, u user.User, params entities.XU
 	log.Infof(c, "Create: %v", params)
 	v, err := validate(params)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "params Validation failed")
 	}
 
 	xu = &entities.XUser{ID: u.ID, Name: params.Name, Email: u.Email, Nickname: params.Nickname}
 	err = v.Struct(xu)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "xu Validation failed")
 	}
 
 	err = s.urep.Create(c, xu)
+	if err != nil {
+		return nil, errors.Wrap(err, "Create failed")
+	}
 	return
 }
 
@@ -48,9 +52,12 @@ func (s *XUserService) Update(c context.Context, xu *entities.XUser, params enti
 	log.Infof(c, "Update: %v", params)
 	_, err := validate(params)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "params Validation failed")
 	}
 	err = s.urep.Update(c, xu, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "Update failed")
+	}
 	return xu, err
 }
 
@@ -77,10 +84,13 @@ func (s *XUserService) IsUsedName(c context.Context, name string) (bool, error) 
 func (s *XUserService) GetLanguages(c context.Context, i string) (l []*entities.XUserLanguage, err error) {
 	xu, err := s.GetByID(c, i)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "GetByID failed")
 	}
 
 	l, err = s.ulrep.GetByXUser(c, xu)
+	if err != nil {
+		return nil, errors.Wrap(err, "GetByXUser failed")
+	}
 	return
 }
 

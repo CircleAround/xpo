@@ -8,6 +8,7 @@ import (
 	"local/xpo/store"
 	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 )
@@ -40,17 +41,17 @@ func NewReportServiceWithTheTime(tp the_time.Provider) *ReportService {
 	return s
 }
 
-func (s *ReportService) RetriveAll(c context.Context) (reports []entities.Report, err error) {
+func (s *ReportService) RetriveAll(c context.Context) (reports []*entities.Report, err error) {
 	limit := 30
 	return s.rrep.Search(c, store.ReportSearchParams{}, limit)
 }
 
-func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []entities.Report, err error) {
+func (s *ReportService) SearchBy(c context.Context, authorID string, year int, month int, day int) (reports []*entities.Report, err error) {
 	limit := 30
 
 	loc, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "LoadLocation failed")
 	}
 	from := time.Date(year, time.Month(month), day, 0, 0, 0, 0, loc)
 	to := from.AddDate(0, 0, 1)
@@ -62,24 +63,24 @@ func (s *ReportService) SearchBy(c context.Context, authorID string, year int, m
 	}, limit)
 }
 
-func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []entities.Report, err error) {
+func (s *ReportService) SearchByAuthor(c context.Context, authorID string) (reports []*entities.Report, err error) {
 	limit := 30
 	return s.rrep.Search(c, store.ReportSearchParams{
 		AuthorID: authorID,
 	}, limit)
 }
 
-func (s *ReportService) SearchByLanguage(c context.Context, l string) (reports []entities.Report, err error) {
+func (s *ReportService) SearchByLanguage(c context.Context, l string) (reports []*entities.Report, err error) {
 	limit := 30
 	return s.rrep.Search(c, store.ReportSearchParams{
 		Languages: []string{l},
 	}, limit)
 }
 
-func (s *ReportService) SearchByAuthorAndLanguage(c context.Context, aid string, l string) (reports []entities.Report, err error) {
+func (s *ReportService) SearchByAuthorAndLanguage(c context.Context, aid string, l string) (reports []*entities.Report, err error) {
 	limit := 30
 	return s.rrep.Search(c, store.ReportSearchParams{
-		AuthorID: aid,
+		AuthorID:  aid,
 		Languages: []string{l},
 	}, limit)
 }
@@ -100,7 +101,7 @@ func (s *ReportService) Create(c context.Context, xu entities.XUser, params Repo
 	v := newValidate()
 	err = v.Struct(params)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "params Validation failed")
 	}
 
 	report = &entities.Report{}
@@ -121,7 +122,7 @@ func (s *ReportService) Create(c context.Context, xu entities.XUser, params Repo
 
 	err = v.Struct(report)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "report Validation failed")
 	}
 
 	err = s.rrep.Create(c, &xu, report)
@@ -132,12 +133,12 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 	v := newValidate()
 	err = v.Struct(params)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "params Validation failed")
 	}
 
 	report, err = s.FindByXUserAndID(c, xu, params.ID)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "FindByXUserAndID failed")
 	}
 
 	s.setAttributes(&xu, report, params.ReportCreationParams)
@@ -150,9 +151,12 @@ func (s *ReportService) Update(c context.Context, xu entities.XUser, params Repo
 
 	err = v.Struct(report)
 	if err != nil {
-		return
+		return nil, errors.Wrap(err, "report Validation failed")
 	}
 	err = s.rrep.Update(c, &xu, report)
+	if err != nil {
+		return nil, errors.Wrap(err, "Update failed")
+	}
 	return
 }
 

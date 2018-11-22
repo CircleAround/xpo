@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pkg/errors"
 	"google.golang.org/appengine/datastore"
 
 	"golang.org/x/net/context"
@@ -33,14 +34,14 @@ func TestXUserScenario(t *testing.T) {
 
 		xu, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: d.Nickname})
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		{
 			t.Logf("Standard")
 			var ret *entities.XUser
 			if ret, err = s.GetByID(c, xu.ID); err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			checkXUser(t, c, s, f, u, *ret, d)
@@ -51,7 +52,7 @@ func TestXUserScenario(t *testing.T) {
 		t.Logf("GetByName")
 		xu, err := s.GetByName(c, d.Name)
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		if xu.ID != d.ID {
@@ -78,7 +79,7 @@ func TestXUserScenario(t *testing.T) {
 			Nickname: ud.Nickname,
 		})
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 		if ret == nil {
 			t.Fatal("updated ret is nil")
@@ -89,7 +90,7 @@ func TestXUserScenario(t *testing.T) {
 
 		used, err := s.IsUsedName(c, d.Name)
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 		if used {
 			t.Errorf("It should release before name!: %v", d.Name)
@@ -125,14 +126,12 @@ func TestValidation(t *testing.T) {
 
 		{
 			_, err := s.Create(c, u, entities.XUserProfileParams{Name: "a_&", Nickname: d.Nickname})
-			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "username_format")
+			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "identity_name_format")
 		}
 
 		{
 			_, err := s.Create(c, u, entities.XUserProfileParams{Name: "admin", Nickname: d.Nickname})
-			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
-				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
-			}
+			apikit.ShouldHaveInvalidFormatError(t, err, "Name", "reserved_identity_name")
 		}
 	}
 
@@ -155,9 +154,7 @@ func TestValidation(t *testing.T) {
 
 		{
 			_, err := s.Create(c, u, entities.XUserProfileParams{Name: d.Name, Nickname: "reports"}) // reports is blocked
-			if reflect.TypeOf(err) != reflect.TypeOf(&apikit.InvalidParameterError{}) {
-				t.Fatalf("It should be apikit.InvalidParameterError: %v, %v", reflect.TypeOf(err), err)
-			}
+			apikit.ShouldHaveInvalidFormatError(t, err, "Nickname", "reserved_identity_name")
 		}
 
 	}
@@ -179,7 +176,7 @@ func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.Tes
 
 	used, err := s.IsUsedName(c, d.Name)
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 	if !used {
 		t.Fatalf("It should Name is Used!: %v", d.Name)
@@ -192,6 +189,8 @@ func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.Tes
 		if err == nil {
 			t.Fatal("It should error on creating duplicated user")
 		}
+
+		err = errors.Cause(err)
 
 		if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.DuplicatedObjectError{}) {
 			t.Fatalf("It should be DuplicatedObjectError: %v", reflect.TypeOf(err))
@@ -211,6 +210,8 @@ func checkXUser(t *testing.T, c context.Context, s *app.XUserService, f *xpo.Tes
 		if err == nil {
 			t.Fatal("It should error on creating duplicated name user")
 		}
+
+		err = errors.Cause(err)
 
 		if reflect.TypeOf(err) != reflect.TypeOf(&gaekit.ValueNotUniqueError{}) {
 			t.Fatalf("It should be ValueNotUniqueError: %v", reflect.TypeOf(err))

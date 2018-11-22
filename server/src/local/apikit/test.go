@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pkg/errors"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -13,6 +14,8 @@ func ShouldHaveValidationError(t *testing.T, err error, property string, tag str
 	if err == nil {
 		t.Fatal("It should have error")
 	}
+
+	err = errors.Cause(err)
 
 	if reflect.TypeOf(err) != reflect.TypeOf(validator.ValidationErrors{}) {
 		t.Fatalf("It should be validator.ValidationErrors: %v, %v", reflect.TypeOf(err), err)

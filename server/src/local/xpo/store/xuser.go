@@ -2,9 +2,10 @@ package store
 
 import (
 	"context"
-	"errors"
 	"local/gaekit"
 	"local/xpo/entities"
+
+	"github.com/pkg/errors"
 
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -54,7 +55,7 @@ func (r *XUserRepository) Create(c context.Context, xu *entities.XUser) (err err
 		i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
 		err = r.CreateUnique(ctx, i)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "CreateUnique failed")
 		}
 
 		log.Infof(ctx, "%v not found. create new one.", xu)
@@ -72,7 +73,7 @@ func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params e
 		} else {
 			err = s.updateUniqueIndex(ctx, *xu, params)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "updateUniqueIndex failed")
 			}
 
 			xu.Name = params.Name
@@ -89,7 +90,7 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 	var xus []entities.XUser
 	_, err := s.Goon(c).GetAll(q, &xus)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "GetAll failed")
 	}
 	if len(xus) == 0 {
 		return nil, datastore.ErrNoSuchEntity
@@ -114,7 +115,7 @@ func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
 	var uis []entities.XUser
 	keys, err := q.GetAll(c, &uis)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "GetAll failed")
 	}
 
 	for _, key := range keys {
@@ -139,7 +140,7 @@ func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
 
 		err = s.Put(c, ii)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Put failed")
 		}
 	}
 	return nil

@@ -5,6 +5,7 @@ import (
 
 	"github.com/mjibson/goon"
 	uuid "github.com/pborman/uuid"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -34,7 +35,20 @@ func (s *DatastoreAccessObject) Exists(c context.Context, obj interface{}) (bool
 	if err == datastore.ErrNoSuchEntity {
 		return false, nil
 	}
+	if err != nil {
+		return false, errors.Wrap(err, "Exists failed")
+	}
 	return true, err
+}
+
+func (s *DatastoreAccessObject) FilterSearch(c context.Context, en string, results interface{}, qf func(q *datastore.Query) *datastore.Query) (err error) {
+	q := datastore.NewQuery(en)
+	q = qf(q)
+	_, err = s.Goon(c).GetAll(q, results)
+	if err != nil {
+		err = errors.Wrap(err, "Goon#GetAll failed")
+	}
+	return
 }
 
 func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(context.Context) error) error {
@@ -50,7 +64,7 @@ func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(con
 		}
 
 		if err != datastore.ErrNoSuchEntity {
-			return err
+			return errors.Wrap(err, "Get failed")
 		}
 
 		g.Put(t)
@@ -139,7 +153,7 @@ func (s *DatastoreAccessObject) ChangeUniqueValueMustTr(c context.Context, i Uni
 	log.Infof(c, "CreateUnique")
 	err := s.CreateUnique(c, ni)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "CreateUnique failed")
 	}
 
 	log.Infof(c, "Get")
@@ -147,7 +161,7 @@ func (s *DatastoreAccessObject) ChangeUniqueValueMustTr(c context.Context, i Uni
 	if err == nil {
 		err = s.Delete(c, i)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Delete failed")
 		}
 	} else if err != datastore.ErrNoSuchEntity {
 		return err
