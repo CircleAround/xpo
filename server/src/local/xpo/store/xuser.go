@@ -13,10 +13,11 @@ import (
 
 type XUserRepository struct {
 	gaekit.DatastoreAccessObject
+	ir *IdentityNameUniqueIndexRepository
 }
 
 func NewXUserRepository() *XUserRepository {
-	return new(XUserRepository)
+	return &XUserRepository{ir: NewIdentityNameUniqueIndexRepository()}
 }
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
@@ -99,15 +100,12 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 }
 
 func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser, params entities.XUserProfileParams) error {
-	i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
-	ni := &entities.IdentityNameUniqueIndex{Value: params.Name}
-	return s.ChangeUniqueValueMustTr(c, i, ni)
+	return s.ir.ChangeMustTr(c, xu.Name, params.Name)
 }
 
 // IsUsedName is method for checking UserName already taken.
 func (s *XUserRepository) IsUsedName(c context.Context, name string) (bool, error) {
-	i := entities.IdentityNameUniqueIndex{Value: name}
-	return s.Exists(c, &i)
+	return s.ir.IsUsedName(c, name)
 }
 
 func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
