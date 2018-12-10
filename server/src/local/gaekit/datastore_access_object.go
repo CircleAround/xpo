@@ -103,11 +103,13 @@ func (s *DatastoreAccessObject) FindOrCreate(ctx context.Context, obj interface{
 
 // Put is a method for saving obj
 func (s *DatastoreAccessObject) Put(c context.Context, obj interface{}) (err error) {
+	log.Debugf(c, "Put %v", obj)
 	_, err = s.Goon(c).Put(obj)
 	return
 }
 
 func (s *DatastoreAccessObject) PutMulti(c context.Context, array []interface{}) (err error) {
+	log.Debugf(c, "PutMulti %v", array)
 	_, err = s.Goon(c).PutMulti(array)
 	return
 }

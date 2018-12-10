@@ -1,13 +1,13 @@
-package domain
+package project
 
 import (
 	"local/validatekit"
-	"local/xpo/entities"
+	"local/xpo/domain"
 
 	"github.com/pkg/errors"
 )
 
-func ValidateProject(params *entities.Project) (*validatekit.Validate, error) {
+func Validate(params interface{}) (*validatekit.Validate, error) {
 	v, err := newProjectValidator()
 	if err != nil {
 		return nil, errors.Wrap(err, "newProjectValidator failed")
@@ -24,7 +24,7 @@ func newProjectValidator() (*validatekit.Validate, error) {
 	v := validatekit.NewValidate()
 	v.RegisterRegexValidation("identity_name_format", `^[a-z][0-9a-z_]+$`)
 
-	vali, err := NewReservedIdentityNameValidation()
+	vali, err := domain.NewReservedIdentityNameValidation()
 	if err != nil {
 		return nil, errors.Wrap(err, "NewReservedIdentityNameValidation failed")
 	}

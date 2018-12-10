@@ -40,28 +40,7 @@ func (r *XUserRepository) Create(c context.Context, xu *entities.XUser) (err err
 		return err
 	}
 
-	return r.RunInXGTransaction(c, func(ctx context.Context) error {
-		// for idempotent. if already create success, return process.
-		if err = r.Get(ctx, xu); err == nil {
-			return nil
-		}
-
-		if err != datastore.ErrNoSuchEntity {
-			log.Infof(ctx, "%v error.", err)
-			return err
-		}
-
-		log.Infof(ctx, "%v not found.", xu)
-
-		i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
-		err = r.CreateUnique(ctx, i)
-		if err != nil {
-			return errors.Wrap(err, "CreateUnique failed")
-		}
-
-		log.Infof(ctx, "%v not found. create new one.", xu)
-		return r.Put(ctx, xu)
-	})
+	return NewIdentityNamedEntityCreator(xu, xu.Name).Execute(c, xu)
 }
 
 func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params entities.XUserProfileParams) (err error) {
@@ -72,7 +51,7 @@ func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params e
 				return nil
 			}
 		} else {
-			err = s.updateUniqueIndex(ctx, *xu, params)
+			err = s.ir.ChangeMustTr(c, xu.Name, params.Name)
 			if err != nil {
 				return errors.Wrap(err, "updateUniqueIndex failed")
 			}
@@ -83,7 +62,6 @@ func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params e
 		xu.Nickname = params.Nickname
 		return s.Put(ctx, xu)
 	})
-
 }
 
 func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.XUser, error) {
@@ -97,10 +75,6 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 		return nil, datastore.ErrNoSuchEntity
 	}
 	return &xus[0], nil
-}
-
-func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser, params entities.XUserProfileParams) error {
-	return s.ir.ChangeMustTr(c, xu.Name, params.Name)
 }
 
 // IsUsedName is method for checking UserName already taken.

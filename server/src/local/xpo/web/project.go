@@ -2,7 +2,7 @@ package web
 
 import (
 	"local/apikit/exchi"
-	"local/xpo/app"
+	"local/xpo/domain/project"
 	"local/xpo/entities"
 	"net/http"
 
@@ -17,7 +17,7 @@ func GetUserProjects(w http.ResponseWriter, r *http.Request) error {
 }
 
 func PostProject(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
-	p := app.ProjectCreationParams{}
+	p := project.Params{}
 	if err := parseJSONBody(r, &p); err != nil {
 		return err
 	}
