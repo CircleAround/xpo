@@ -41,7 +41,15 @@ func (s *ProjectRepository) Search(c context.Context, p ProjectSearchParams, lim
 	return
 }
 
-func (r *ProjectRepository) Retrive(c context.Context, xu *entities.XUser, i int64) (*project.Root, error) {
+func (s *ProjectRepository) Build(c context.Context, xu *entities.XUser) *project.Root {
+	pr := &entities.Project{
+		OwnerID:  xu.ID,
+		OwnerKey: s.KeyOf(c, xu),
+	}
+	return project.NewWithEntity(pr)
+}
+
+func (r *ProjectRepository) Find(c context.Context, xu *entities.XUser, i int64) (*project.Root, error) {
 	pr := &entities.Project{
 		OwnerID:  xu.ID,
 		OwnerKey: r.KeyOf(c, xu),
@@ -56,19 +64,12 @@ func (r *ProjectRepository) Retrive(c context.Context, xu *entities.XUser, i int
 	return project.NewWithEntity(pr), nil
 }
 
-func (r *ProjectRepository) Create(c context.Context, pr *entities.Project) (err error) {
-	return NewIdentityNamedEntityCreator(pr, pr.Name).Execute(c, pr)
-}
-
-func (s *ProjectRepository) Update(c context.Context, pr *project.Root) (err error) {
-	return s.RunInXGTransaction(c, func(c context.Context) error {
-		if pr.NameDurtyEvent != nil {
-			err = s.ChangeMustTr(c, pr.NameDurtyEvent.From, pr.NameDurtyEvent.To)
-			if err != nil {
-				return errors.Wrap(err, "updateUniqueIndex failed")
-			}
+func (s *ProjectRepository) Store(c context.Context, pr *project.Root) error {
+	if pr.HasNameChanged() {
+		err := s.ChangeMustTr(c, pr.NameChangedEvent.From, pr.NameChangedEvent.To)
+		if err != nil {
+			return errors.Wrap(err, "updateUniqueIndex failed")
 		}
-		return s.Put(c, pr.Project)
-	})
-
+	}
+	return s.Put(c, pr.Project)
 }

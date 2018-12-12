@@ -23,8 +23,15 @@ func (s *IdentityNameUniqueIndexRepository) IsUsedName(c context.Context, name s
 }
 
 func (s *IdentityNameUniqueIndexRepository) ChangeMustTr(c context.Context, from, to string) error {
-	i := &entities.IdentityNameUniqueIndex{Value: from}
-	ni := &entities.IdentityNameUniqueIndex{Value: to}
+	var i *entities.IdentityNameUniqueIndex
+	if from != "" {
+		i = &entities.IdentityNameUniqueIndex{Value: from}
+	}
+
+	var ni *entities.IdentityNameUniqueIndex
+	if to != "" {
+		ni = &entities.IdentityNameUniqueIndex{Value: to}
+	}
 	return s.ChangeUniqueValueMustTr(c, i, ni)
 }
 

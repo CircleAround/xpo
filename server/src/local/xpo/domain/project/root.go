@@ -2,6 +2,7 @@ package project
 
 import (
 	"local/xpo/entities"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/guregu/null.v3"
@@ -18,15 +19,15 @@ type UpdatingParams struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
-type NameDurtyEvent struct {
+type NameChangedEvent struct {
 	From string
 	To   string
 }
 
 type Root struct {
 	*entities.Project
-	NameDurtyEvent *NameDurtyEvent
-	Error          error
+	NameChangedEvent *NameChangedEvent
+	Error            error
 }
 
 func NewWithEntity(p *entities.Project) *Root {
@@ -37,10 +38,10 @@ func NewWithEntity(p *entities.Project) *Root {
 	}
 }
 
-func (r *Root) SetAttributes(p Params) {
+func (r *Root) UpdateAttributes(p Params) error {
 
 	if r.Name != p.Name {
-		r.NameDurtyEvent = &NameDurtyEvent{From: r.Name, To: p.Name}
+		r.NameChangedEvent = &NameChangedEvent{From: r.Name, To: p.Name}
 		r.Name = p.Name
 	}
 
@@ -51,14 +52,21 @@ func (r *Root) SetAttributes(p Params) {
 	if !p.RepositoryURL.IsZero() {
 		r.RepositoryURL = p.RepositoryURL.ValueOrZero()
 	}
-}
 
-func (r *Root) Validate() bool {
-	_, err := Validate(r.Project)
-	if err == nil {
-		return true
+	now := time.Now()
+	r.UpdatedAt = now
+	if r.CreatedAt.IsZero() {
+		r.CreatedAt = now
 	}
 
-	r.Error = errors.Wrap(err, "validate failed")
-	return false
+	_, err := Validate(r.Project)
+	if err == nil {
+		return nil
+	}
+
+	return errors.Wrap(err, "validate failed")
+}
+
+func (r *Root) HasNameChanged() bool {
+	return r.NameChangedEvent != nil
 }

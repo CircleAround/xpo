@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 
@@ -26,28 +24,25 @@ func (s *ProjectService) SearchByOwnerID(c context.Context, i string) ([]*entiti
 }
 
 func (s *ProjectService) Create(c context.Context, xu *entities.XUser, p *project.Params) (*entities.Project, error) {
-	now := time.Now()
-
-	pr := &entities.Project{
-		OwnerID:       xu.ID,
-		OwnerKey:      s.ps.KeyOf(c, xu),
-		Description:   p.Description.ValueOrZero(),
-		RepositoryURL: p.RepositoryURL.ValueOrZero(),
-		Name:          p.Name,
-		CreatedAt:     now,
-		UpdatedAt:     now,
-	}
-
-	_, err := project.Validate(pr)
+	_, err := project.Validate(p)
 	if err != nil {
-		return nil, errors.Wrap(err, "validate failed")
+		return nil, errors.Wrap(err, "params validate failed")
 	}
 
-	err = s.ps.Create(c, pr)
+	prj := s.ps.Build(c, xu)
+	err = prj.UpdateAttributes(*p)
 	if err != nil {
-		return nil, errors.Wrap(err, "Put failed")
+		return nil, errors.Wrap(err, "UpdateAttributes failed")
 	}
-	return pr, nil
+
+	err = s.ps.RunInXGTransaction(c, func(c context.Context) error {
+		err = s.ps.Store(c, prj)
+		if err != nil {
+			return errors.Wrap(err, "Store failed")
+		}
+		return nil
+	})
+	return prj.Project, err
 }
 
 func (s *ProjectService) Update(c context.Context, xu *entities.XUser, p *project.UpdatingParams) (*entities.Project, error) {
@@ -56,22 +51,24 @@ func (s *ProjectService) Update(c context.Context, xu *entities.XUser, p *projec
 		return nil, errors.Wrap(err, "params validate failed")
 	}
 
-	prj, err := s.ps.Retrive(c, xu, p.ID)
-	if err != nil {
-		return nil, errors.Wrap(err, "Retrive failed")
-	}
+	var prj project.Root
+	err = s.ps.RunInXGTransaction(c, func(c context.Context) error {
+		prj, err := s.ps.Find(c, xu, p.ID)
+		if err != nil {
+			return errors.Wrap(err, "Retrive failed")
+		}
 
-	prj.SetAttributes(p.Params)
-	now := time.Now()
-	prj.UpdatedAt = now
+		err = prj.UpdateAttributes(p.Params)
+		if err != nil {
+			return errors.Wrap(err, "UpdateAttributes failed")
+		}
 
-	if !prj.Validate() {
-		return nil, errors.Wrap(prj.Error, "validate failed")
-	}
+		err = s.ps.Store(c, prj)
+		if err != nil {
+			return errors.Wrap(err, "Store failed")
+		}
+		return nil
+	})
 
-	err = s.ps.Update(c, prj)
-	if err != nil {
-		return nil, errors.Wrap(err, "Put failed")
-	}
-	return prj.Project, nil
+	return prj.Project, err
 }

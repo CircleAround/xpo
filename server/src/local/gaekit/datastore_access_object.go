@@ -11,6 +11,10 @@ import (
 	"google.golang.org/appengine/log"
 )
 
+func KeyOf(c context.Context, obj interface{}) *datastore.Key {
+	return goon.FromContext(c).Key(obj)
+}
+
 // DatastoreAccessObject is Datastore Access Object
 type DatastoreAccessObject struct {
 }
@@ -21,7 +25,7 @@ func (s *DatastoreAccessObject) Goon(c context.Context) *goon.Goon {
 
 // KeyOf is a method for getting key from obj
 func (s *DatastoreAccessObject) KeyOf(c context.Context, obj interface{}) *datastore.Key {
-	return s.Goon(c).Key(obj)
+	return KeyOf(c, obj)
 }
 
 // Get is a method for retriving object
@@ -152,21 +156,25 @@ func (s *DatastoreAccessObject) ChangeUniqueValueMustTr(c context.Context, i Uni
 		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
 	}
 
-	log.Infof(c, "CreateUnique")
-	err := s.CreateUnique(c, ni)
-	if err != nil {
-		return errors.Wrap(err, "CreateUnique failed")
+	if ni != nil {
+		log.Infof(c, "CreateUnique")
+		err := s.CreateUnique(c, ni)
+		if err != nil {
+			return errors.Wrap(err, "CreateUnique failed")
+		}
 	}
 
-	log.Infof(c, "Get")
-	err = s.Get(c, i)
-	if err == nil {
-		err = s.Delete(c, i)
-		if err != nil {
-			return errors.Wrap(err, "Delete failed")
+	if i != nil {
+		log.Infof(c, "Get")
+		err := s.Get(c, i)
+		if err == nil {
+			err = s.Delete(c, i)
+			if err != nil {
+				return errors.Wrap(err, "Delete failed")
+			}
+		} else if err != datastore.ErrNoSuchEntity {
+			return err
 		}
-	} else if err != datastore.ErrNoSuchEntity {
-		return err
 	}
 
 	log.Infof(c, "end ChangeUniqueValueMustTr")
