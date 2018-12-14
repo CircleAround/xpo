@@ -10,7 +10,7 @@ export default {
       core.initNewReport()
       this.updateMarkdown()
     },
-    doPostReport() {
+    doSaveReport() {
       return core.postReport().then(() => {
         core.alert('投稿しました！', 'success')
       })

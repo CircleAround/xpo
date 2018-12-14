@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"runtime"
 	"strconv"
 	"testing"
 
 	"context"
 
 	"github.com/favclip/testerator"
+	"github.com/pkg/errors"
 	"google.golang.org/appengine/aetest"
 )
 
@@ -41,21 +41,14 @@ func BootstrapTest(m *testing.M) {
 func StartTest(t *testing.T) (aetest.Instance, context.Context, func()) {
 	i, c, err := testerator.SpinUp()
 	if err != nil {
-		t.Fatal(err)
+		Fatal(t, err)
 	}
 
 	done := func() {
 		testerator.SpinDown()
 
 		if err := recover(); err != nil {
-			t.Logf("[ERROR] %s\n", err)
-			for depth := 0; ; depth++ {
-				_, file, line, ok := runtime.Caller(depth)
-				if !ok {
-					break
-				}
-				t.Logf("======> %d: %v:%d", depth, file, line)
-			}
+			t.Logf("[ERROR] %+v\n", err)
 		}
 	}
 
@@ -69,12 +62,12 @@ func UnmarshalJSONBody(rr *httptest.ResponseRecorder, data interface{}) error {
 func NewRequestWithBody(i aetest.Instance, method string, path string, data interface{}) (*http.Request, error) {
 	res, err := json.Marshal(&data)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Martial failed")
 	}
 
 	req, err := i.NewRequest(method, path, bytes.NewBuffer(res))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "NewRequest failed")
 	}
 	req.Header.Set("Content-Length", strconv.Itoa(len(res)))
 	return req, nil
@@ -82,4 +75,12 @@ func NewRequestWithBody(i aetest.Instance, method string, path string, data inte
 
 func NewPostRequest(i aetest.Instance, path string, data interface{}) (*http.Request, error) {
 	return NewRequestWithBody(i, "POST", path, data)
+}
+
+func Fatalm(t *testing.T, err error, m string) {
+	t.Fatalf("[STACKTRACE]%+v\n[MESSAGE]%v", err, m)
+}
+
+func Fatal(t *testing.T, err error) {
+	t.Fatalf("[STACKTRACE]%+v\n", err)
 }

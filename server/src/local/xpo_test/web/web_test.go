@@ -40,7 +40,7 @@ func TestWebXUserScenario(t *testing.T) {
 			t.Log("no headers")
 			req, err := i.NewRequest("GET", "/users/me", nil)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			rr := ServeHTTP(req)
@@ -54,7 +54,7 @@ func TestWebXUserScenario(t *testing.T) {
 
 			req, err := i.NewRequest("GET", "/users/me", nil)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			req.Header.Set("Origin", origin)
@@ -84,7 +84,7 @@ func TestWebXUserScenario(t *testing.T) {
 
 			req, err := XHGet(i, "/users/me")
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			rr := ServeHTTP(req)
@@ -99,7 +99,7 @@ func TestWebXUserScenario(t *testing.T) {
 
 			req, err := XHGet(i, "/users/me")
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 			aetest.Login(&u, req)
 
@@ -124,7 +124,7 @@ func TestWebXUserScenario(t *testing.T) {
 			data := entities.XUserProfileParams{Name: xu.Name, Nickname: xu.Nickname}
 			req, err := XHPost(i, "/users/me", data)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			aetest.Login(&u, req)
@@ -145,7 +145,7 @@ func TestWebXUserScenario(t *testing.T) {
 
 			req, err := XHGet(i, "/users/me")
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 			aetest.Login(&u, req)
 
@@ -190,7 +190,7 @@ func TestWebXUserScenario(t *testing.T) {
 			t.Logf("path: %v", p)
 			req, err := XHGet(i, p)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			rr := ServeHTTP(req)

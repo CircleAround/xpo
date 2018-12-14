@@ -5,6 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 // ParseJSONBody is parse from requested body formatted JSON
@@ -13,7 +15,7 @@ func ParseJSONBody(r *http.Request, jsonBody interface{}) error {
 	b, err := ioutil.ReadAll(limitedReader)
 	defer r.Body.Close()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "ReadAll failed")
 	}
 
 	return json.Unmarshal(b, jsonBody)
@@ -42,7 +44,7 @@ func writeJSON(w http.ResponseWriter, obj interface{}) error {
 	res, err := json.Marshal(obj)
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Marshal failed")
 	}
 
 	_, err = w.Write(res)

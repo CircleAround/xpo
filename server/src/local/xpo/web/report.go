@@ -6,6 +6,7 @@ import (
 	"local/xpo/entities"
 	"net/http"
 
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 
 	"google.golang.org/appengine/log"
@@ -18,7 +19,7 @@ func GetReport(w http.ResponseWriter, r *http.Request) error {
 	uid := p.Get("authorId")
 	id, err := p.AsInt64("id")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AsInt64 failed")
 	}
 
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().Find(c, uid, id))
@@ -44,15 +45,15 @@ func SearchReportsYmd(w http.ResponseWriter, r *http.Request) error {
 	uid := p.Get("authorId")
 	y, err := p.AsInt("year")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AsInt year failed")
 	}
 	m, err := p.AsInt("month")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AsInt month failed")
 	}
 	d, err := p.AsInt("day")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AsInt day failed")
 	}
 
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchBy(c, uid, y, m, d))
@@ -75,7 +76,6 @@ func SearchReportsByAuthorAndLanguage(w http.ResponseWriter, r *http.Request) er
 	return NewResponder(w, r).RenderObjectOrError(Services.Report().SearchByAuthorAndLanguage(c, uid, l))
 }
 
-
 func PostReport(c context.Context, w http.ResponseWriter, r *http.Request, xu *entities.XUser) error {
 	p := &app.ReportCreationParams{}
 	if err := parseJSONBody(r, &p); err != nil {
@@ -95,7 +95,7 @@ func UpdateReport(c context.Context, w http.ResponseWriter, r *http.Request, xu 
 
 		id, err := exchi.URLParams(r).AsInt64("id")
 		if err != nil {
-			return err
+			return errors.Wrap(err, "URLParams failed")
 		}
 		p.ID = id
 	}

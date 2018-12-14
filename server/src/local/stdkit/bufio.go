@@ -3,6 +3,8 @@ package stdkit
 import (
 	"bufio"
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 func FindLine(reader *bufio.Reader, callback func(line string) bool) (bool, error) {
@@ -12,7 +14,7 @@ func FindLine(reader *bufio.Reader, callback func(line string) bool) (bool, erro
 			if err == io.EOF {
 				return false, nil
 			}
-			return false, err
+			return false, errors.Wrap(err, "ReadLine failed")
 		}
 		// fmt.Println(string(line))
 		if callback(string(line)) {

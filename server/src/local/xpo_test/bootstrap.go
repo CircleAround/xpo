@@ -1,4 +1,4 @@
-package xpo_test
+package xpo
 
 import (
 	"local/testkit"

@@ -5,6 +5,7 @@ import Reports from '@/components/Reports'
 import UserReportsYmd from '@/components/UserReportsYmd'
 import ReportEditForm from '@/components/ReportEditForm'
 import ReportNewForm from '@/components/ReportNewForm'
+import ProjectNewForm from '@/components/ProjectNewForm'
 import SignupForm from '@/components/SignupForm'
 import ProfileEditForm from '@/components/ProfileEditForm'
 import About from '@/components/About'
@@ -39,6 +40,11 @@ const routerConfig = {
       path: '/reports/:authorId/_/:year/:month/:day',
       name: 'UserReportsYmd',
       component: UserReportsYmd
+    },
+    {
+      path: '/projects/new',
+      name: 'ProjectNewForm',
+      component: ProjectNewForm
     },
     {
       path: '/signup',

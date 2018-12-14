@@ -5,7 +5,7 @@
     <div v-if="state.me.id">
       <div class="editor">
         <overlay :visible="loading"></overlay>
-        <textarea v-model="state.targetReport.content" v-focus class="textcontent" @keydown.meta.enter="postReport()" @keyup='updateMarkdown()' :placeholder="$t('ui.placeholder.markdown')"></textarea>
+        <textarea v-model="state.targetReport.content" v-focus class="textcontent" @keydown.meta.enter="saveReport()" @keyup='updateMarkdown()' :placeholder="$t('ui.placeholder.markdown')"></textarea>
         <div class="preview markdown" v-html="markdown"></div>
       </div>
       <div class="errors" v-if="errors.length > 0">
@@ -47,7 +47,7 @@
             <div>Windows: {{$t('ui.help.shortcutkey.post.win')}}</div>
           </div>
         </v-tooltip>
-        <v-btn fab dark color="primary" @click='postReport()'>
+        <v-btn fab dark color="primary" @click='saveReport()'>
           <v-icon dark>done</v-icon>
         </v-btn>
       </div>
@@ -89,14 +89,14 @@ export default {
       throw new Error('Unimplemented: initialize')
     },
 
-    doPostReport() {
-      throw new Error('Unimplemented: doPostReport')
+    doSaveReport() {
+      throw new Error('Unimplemented: doSaveReport')
     },
 
-    postReport() {
+    saveReport() {
       this.loading = true
       this.errors = []
-      this.doPostReport()
+      this.doSaveReport()
         .catch(error => {
           new ErrorHandler(this.$i18n).eachInResponse(
             error.response.data,

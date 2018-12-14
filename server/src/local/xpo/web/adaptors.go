@@ -10,6 +10,7 @@ import (
 	"google.golang.org/appengine/datastore"
 
 	"github.com/iancoleman/strcase"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
@@ -46,8 +47,9 @@ func safeFilter(w http.ResponseWriter, r *http.Request, err error) {
 	}
 
 	c := Context(r)
-	log.Infof(c, "Handle Error: %v", err)
+	log.Infof(c, "Handle Error: %+v", err)
 
+	err = errors.Cause(err)
 	if err == apikit.UnauthorizedError {
 		responseUnauthorized(w, r)
 		return

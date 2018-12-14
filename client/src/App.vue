@@ -11,13 +11,25 @@
           <v-list-tile-action>
             <v-icon>home</v-icon>
           </v-list-tile-action>
-          <v-list-tile-title>MyPage</v-list-tile-title>
+          <v-list-tile-title>My Page</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile to='/reports/new'>
+          <v-list-tile-action>
+            <v-icon>edit</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>New Report</v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile to='/projects/new'>
+          <v-list-tile-action>
+            <v-icon>note_add</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>New Project</v-list-tile-title>
         </v-list-tile>
         <v-list-tile to='/users/me/edit'>
           <v-list-tile-action>
             <v-icon>person</v-icon>
           </v-list-tile-action>
-          <v-list-tile-title>EditProfile</v-list-tile-title>
+          <v-list-tile-title>Edit Profile</v-list-tile-title>
         </v-list-tile>
         <v-list-group
             :v-model="openedOption"

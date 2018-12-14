@@ -2,9 +2,10 @@ package store
 
 import (
 	"context"
-	"errors"
 	"local/gaekit"
 	"local/xpo/entities"
+
+	"github.com/pkg/errors"
 
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
@@ -12,10 +13,11 @@ import (
 
 type XUserRepository struct {
 	gaekit.DatastoreAccessObject
+	ir *IdentityNameUniqueIndexRepository
 }
 
 func NewXUserRepository() *XUserRepository {
-	return new(XUserRepository)
+	return &XUserRepository{ir: NewIdentityNameUniqueIndexRepository()}
 }
 
 // _XUserNameUniqueIndex is unique index of XUser's Name
@@ -38,28 +40,7 @@ func (r *XUserRepository) Create(c context.Context, xu *entities.XUser) (err err
 		return err
 	}
 
-	return r.RunInXGTransaction(c, func(ctx context.Context) error {
-		// for idempotent. if already create success, return process.
-		if err = r.Get(ctx, xu); err == nil {
-			return nil
-		}
-
-		if err != datastore.ErrNoSuchEntity {
-			log.Infof(ctx, "%v error.", err)
-			return err
-		}
-
-		log.Infof(ctx, "%v not found.", xu)
-
-		i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
-		err = r.CreateUnique(ctx, i)
-		if err != nil {
-			return err
-		}
-
-		log.Infof(ctx, "%v not found. create new one.", xu)
-		return r.Put(ctx, xu)
-	})
+	return NewIdentityNamedEntityCreator(xu, xu.Name).Execute(c, xu)
 }
 
 func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params entities.XUserProfileParams) (err error) {
@@ -70,9 +51,9 @@ func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params e
 				return nil
 			}
 		} else {
-			err = s.updateUniqueIndex(ctx, *xu, params)
+			err = s.ir.ChangeMustTr(c, xu.Name, params.Name)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "updateUniqueIndex failed")
 			}
 
 			xu.Name = params.Name
@@ -81,7 +62,6 @@ func (s *XUserRepository) Update(c context.Context, xu *entities.XUser, params e
 		xu.Nickname = params.Nickname
 		return s.Put(ctx, xu)
 	})
-
 }
 
 func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.XUser, error) {
@@ -89,7 +69,7 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 	var xus []entities.XUser
 	_, err := s.Goon(c).GetAll(q, &xus)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "GetAll failed")
 	}
 	if len(xus) == 0 {
 		return nil, datastore.ErrNoSuchEntity
@@ -97,16 +77,9 @@ func (s *XUserRepository) GetByName(c context.Context, name string) (*entities.X
 	return &xus[0], nil
 }
 
-func (s *XUserRepository) updateUniqueIndex(c context.Context, xu entities.XUser, params entities.XUserProfileParams) error {
-	i := &entities.IdentityNameUniqueIndex{Value: xu.Name}
-	ni := &entities.IdentityNameUniqueIndex{Value: params.Name}
-	return s.ChangeUniqueValueMustTr(c, i, ni)
-}
-
 // IsUsedName is method for checking UserName already taken.
 func (s *XUserRepository) IsUsedName(c context.Context, name string) (bool, error) {
-	i := entities.IdentityNameUniqueIndex{Value: name}
-	return s.Exists(c, &i)
+	return s.ir.IsUsedName(c, name)
 }
 
 func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
@@ -114,7 +87,7 @@ func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
 	var uis []entities.XUser
 	keys, err := q.GetAll(c, &uis)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "GetAll failed")
 	}
 
 	for _, key := range keys {
@@ -139,7 +112,7 @@ func (s *XUserRepository) MigrateUniqueIndex(c context.Context) (err error) {
 
 		err = s.Put(c, ii)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "Put failed")
 		}
 	}
 	return nil

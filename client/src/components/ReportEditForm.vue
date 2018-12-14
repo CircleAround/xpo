@@ -15,7 +15,7 @@ export default {
           this.loading = false
         })
     },
-    doPostReport() {
+    doSaveReport() {
       return core.updateReport(this.$route.params).then(() => {
         core.alert('更新しました！', 'success')
       })

@@ -29,11 +29,17 @@ func Router() *chi.Mux {
 
 			r.Get("/", Handler(Auth(GetMe)))
 			r.Put("/", Handler(Auth(UpdateMe)))
+
+			r.Route("/projects", func(r chi.Router) {
+				r.Post("/", Handler(Auth(PostProject)))
+			})
 		})
 
 		r.Get("/{authorName:[a-z][0-9a-z_]+}", Handler(GetUserByName))
+
 		r.Route("/{authorId:[1-9][0-9]*}", func(r chi.Router) {
 			r.Get("/languages", Handler(GetUserLanguages))
+			r.Get("/projects", Handler(GetUserProjects))
 			r.Get("/", Handler(GetUserByID))
 		})
 	})

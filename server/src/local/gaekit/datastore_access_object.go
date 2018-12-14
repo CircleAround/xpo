@@ -5,10 +5,15 @@ import (
 
 	"github.com/mjibson/goon"
 	uuid "github.com/pborman/uuid"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 )
+
+func KeyOf(c context.Context, obj interface{}) *datastore.Key {
+	return goon.FromContext(c).Key(obj)
+}
 
 // DatastoreAccessObject is Datastore Access Object
 type DatastoreAccessObject struct {
@@ -20,7 +25,7 @@ func (s *DatastoreAccessObject) Goon(c context.Context) *goon.Goon {
 
 // KeyOf is a method for getting key from obj
 func (s *DatastoreAccessObject) KeyOf(c context.Context, obj interface{}) *datastore.Key {
-	return s.Goon(c).Key(obj)
+	return KeyOf(c, obj)
 }
 
 // Get is a method for retriving object
@@ -34,7 +39,20 @@ func (s *DatastoreAccessObject) Exists(c context.Context, obj interface{}) (bool
 	if err == datastore.ErrNoSuchEntity {
 		return false, nil
 	}
+	if err != nil {
+		return false, errors.Wrap(err, "Exists failed")
+	}
 	return true, err
+}
+
+func (s *DatastoreAccessObject) FilterSearch(c context.Context, en string, results interface{}, qf func(q *datastore.Query) *datastore.Query) (err error) {
+	q := datastore.NewQuery(en)
+	q = qf(q)
+	_, err = s.Goon(c).GetAll(q, results)
+	if err != nil {
+		err = errors.Wrap(err, "Goon#GetAll failed")
+	}
+	return
 }
 
 func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(context.Context) error) error {
@@ -50,7 +68,7 @@ func (s *DatastoreAccessObject) RunInXGTransaction(c context.Context, f func(con
 		}
 
 		if err != datastore.ErrNoSuchEntity {
-			return err
+			return errors.Wrap(err, "Get failed")
 		}
 
 		g.Put(t)
@@ -89,11 +107,13 @@ func (s *DatastoreAccessObject) FindOrCreate(ctx context.Context, obj interface{
 
 // Put is a method for saving obj
 func (s *DatastoreAccessObject) Put(c context.Context, obj interface{}) (err error) {
+	log.Debugf(c, "Put %v", obj)
 	_, err = s.Goon(c).Put(obj)
 	return
 }
 
 func (s *DatastoreAccessObject) PutMulti(c context.Context, array []interface{}) (err error) {
+	log.Debugf(c, "PutMulti %v", array)
 	_, err = s.Goon(c).PutMulti(array)
 	return
 }
@@ -136,21 +156,25 @@ func (s *DatastoreAccessObject) ChangeUniqueValueMustTr(c context.Context, i Uni
 		return fmt.Errorf("Property not match: %v and %v", i.Property(), ni.Property())
 	}
 
-	log.Infof(c, "CreateUnique")
-	err := s.CreateUnique(c, ni)
-	if err != nil {
-		return err
+	if ni != nil {
+		log.Infof(c, "CreateUnique")
+		err := s.CreateUnique(c, ni)
+		if err != nil {
+			return errors.Wrap(err, "CreateUnique failed")
+		}
 	}
 
-	log.Infof(c, "Get")
-	err = s.Get(c, i)
-	if err == nil {
-		err = s.Delete(c, i)
-		if err != nil {
+	if i != nil {
+		log.Infof(c, "Get")
+		err := s.Get(c, i)
+		if err == nil {
+			err = s.Delete(c, i)
+			if err != nil {
+				return errors.Wrap(err, "Delete failed")
+			}
+		} else if err != datastore.ErrNoSuchEntity {
 			return err
 		}
-	} else if err != datastore.ErrNoSuchEntity {
-		return err
 	}
 
 	log.Infof(c, "end ChangeUniqueValueMustTr")

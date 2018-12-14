@@ -39,7 +39,7 @@ export default {
           required: `{property}は必須です`,
           min: `{property}は短すぎます。`,
           max: `{property}は長すぎます。`,
-          username_format: `{property}は先頭英数小文字かつ半角英数小文字とアンダースコアです`,
+          identity_name_format: `{property}は先頭英数小文字かつ半角英数小文字とアンダースコアです`,
           usernickname_format: `ニックネームには <>/:"'と空白を含めてはいけません`,
           nothing: `{property}が何らかのエラーです`
         },

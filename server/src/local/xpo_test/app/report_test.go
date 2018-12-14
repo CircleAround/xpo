@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/datastore"
 )
@@ -24,7 +25,7 @@ func TestReportScenario(t *testing.T) {
 
 	xu, err := f.CreateXUser(c)
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 
 	d := f.BuildReport()
@@ -32,7 +33,7 @@ func TestReportScenario(t *testing.T) {
 
 	tm, err := time.Parse("2006-01-02 15:04:05 MST", "2014-12-31 12:31:24 JST")
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 	oneHourBefore := tm.Add(-1 * time.Hour)
 
@@ -46,7 +47,7 @@ func TestReportScenario(t *testing.T) {
 		t.Log("Create")
 		r, err := s.Create(c, xu, app.ReportCreationParams{Content: d.Content, ContentType: d.ContentType})
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 		if *r.AuthorKey != *rrep.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
@@ -78,7 +79,7 @@ func TestReportScenario(t *testing.T) {
 			ra := r.ReportedAt
 			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			if len(m.DailyReportCounts) != 32 {
@@ -107,7 +108,7 @@ func TestReportScenario(t *testing.T) {
 			{
 				r, err := s.Update(c, xu, p)
 				if err != nil {
-					t.Fatal(err)
+					testkit.Fatal(t, err)
 				}
 				if r.ID != before.ID {
 					t.Errorf("It should not change ID %v ,%v", before.ID, ud.ID)
@@ -132,6 +133,8 @@ func TestReportScenario(t *testing.T) {
 				if err == nil {
 					t.Error("It should block update by other user, must throw error")
 				}
+
+				err = errors.Cause(err)
 				if err != datastore.ErrNoSuchEntity {
 					t.Errorf("It should block update by other user: %v", err)
 				}
@@ -143,7 +146,7 @@ func TestReportScenario(t *testing.T) {
 			t.Logf("Find: %v", r)
 			hit, err := s.Find(c, xu.ID, r.ID)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			if *hit.AuthorKey != *rrep.KeyOf(c, xu) {
@@ -165,7 +168,7 @@ func TestReportScenario(t *testing.T) {
 			Languages:   []string{"c", "go"},
 		})
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 		if *r.AuthorKey != *rrep.KeyOf(c, xu) {
 			t.Errorf("It should have author's key: %v", r)
@@ -204,7 +207,7 @@ func TestReportScenario(t *testing.T) {
 			ra := oneHourBefore
 			m, err := rrep.MontlyReportOverview(c, &xu, ra.Year(), int(ra.Month()))
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 			if m.DailyReportCounts[ra.Day()] != 2 {
 				t.Errorf("It should have 2 monthly report count: %v, obj: %v", m.DailyReportCounts[ra.Day()], m)
@@ -219,7 +222,7 @@ func TestReportScenario(t *testing.T) {
 		// Create one by another user
 		oxu, err := f.CreateXUser(c)
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		d := f.BuildReport()
@@ -230,7 +233,7 @@ func TestReportScenario(t *testing.T) {
 			Languages:   []string{"c", "javascript"},
 		})
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		{
@@ -258,7 +261,7 @@ func TestReportScenario(t *testing.T) {
 
 			_, err := s.Update(c, oxu, p)
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 		}
 
@@ -280,7 +283,7 @@ func TestReportScenario(t *testing.T) {
 
 				ls, err := us.GetLanguages(c, xu.ID)
 				if err != nil {
-					t.Fatal(err)
+					testkit.Fatal(t, err)
 				}
 				if len(ls) != 2 {
 					t.Errorf("It should have length of 2 : %v,  xuser: %v", ls, xu)
@@ -292,7 +295,7 @@ func TestReportScenario(t *testing.T) {
 			t.Log("Search By Language")
 			rs, err := s.SearchByLanguage(c, "c++")
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			if len(rs) != 1 {
@@ -308,7 +311,7 @@ func TestReportScenario(t *testing.T) {
 			t.Log("Search By Author And Language")
 			rs, err := s.SearchByAuthorAndLanguage(c, oxu.ID, "go")
 			if err != nil {
-				t.Fatal(err)
+				testkit.Fatal(t, err)
 			}
 
 			if len(rs) != 1 {
@@ -325,7 +328,7 @@ func TestReportScenario(t *testing.T) {
 		t.Log("Search By")
 		rs, err := s.SearchBy(c, xu.ID, now.Year(), int(now.Month()), now.Day())
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		if len(rs) != 2 {
@@ -337,7 +340,7 @@ func TestReportScenario(t *testing.T) {
 		t.Log("Search By Author")
 		rs, err := s.SearchByAuthor(c, xu.ID)
 		if err != nil {
-			t.Fatal(err)
+			testkit.Fatal(t, err)
 		}
 
 		if len(rs) != 2 {
@@ -355,7 +358,7 @@ func TestReportValidation(t *testing.T) {
 
 	xu, err := f.CreateXUser(c)
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 
 	v := domain.NewReportValidate()
@@ -424,7 +427,7 @@ func checkLanguageCount(t *testing.T, c context.Context, name string, count int6
 
 	lc, err := lrep.GetByName(c, name)
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 	if lc.ReportCount != count {
 		t.Errorf("Language %v should have %v ReportCount but %v", name, count, lc.ReportCount)
@@ -438,7 +441,7 @@ func checkXUserLanguageCount(t *testing.T, c context.Context, xu *entities.XUser
 	t.Logf("XUserLanguage: %v", lc)
 
 	if err != nil {
-		t.Fatal(err)
+		testkit.Fatal(t, err)
 	}
 	if lc.ReportCount != count {
 		t.Errorf("XUserLanguage %v should have %v ReportCount but %v", name, count, lc.ReportCount)
