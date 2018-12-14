@@ -7,7 +7,7 @@ export default {
   name: 'ProjectNewForm',
   methods: {
     initialize() {
-      core.initNewReport()
+
     },
     doSaveReport() {
       // return core.postReport().then(() => {
